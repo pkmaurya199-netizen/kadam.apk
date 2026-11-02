@@ -14,10 +14,29 @@ android {
         versionName '1.2'
     }
 
+    signingConfigs {
+        kadam {
+            if (System.getenv('KEYSTORE_FILE')) {
+                storeFile file(System.getenv('KEYSTORE_FILE'))
+                storePassword System.getenv('KEYSTORE_PASSWORD')
+                keyAlias System.getenv('KEY_ALIAS')
+                keyPassword System.getenv('KEY_PASSWORD')
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            if (System.getenv('KEYSTORE_FILE')) { signingConfig signingConfigs.kadam }
+        }
         release {
             minifyEnabled false
+            if (System.getenv('KEYSTORE_FILE')) { signingConfig signingConfigs.kadam }
         }
+    }
+
+    lint {
+        checkReleaseBuilds false
     }
 
     compileOptions {

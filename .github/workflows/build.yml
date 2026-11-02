@@ -17,7 +17,22 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Prepare signing key (if secrets are set)
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/kadam-release.jks"
+            echo "KEYSTORE_FILE=$RUNNER_TEMP/kadam-release.jks" >> "$GITHUB_ENV"
+            echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> "$GITHUB_ENV"
+            echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> "$GITHUB_ENV"
+            echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> "$GITHUB_ENV"
+            echo "SIGNED=yes" >> "$GITHUB_ENV"
+          fi
       - run: gradle assembleDebug --no-daemon
+      - name: Build Play Store bundle (only when signed)
+        if: env.SIGNED == 'yes'
+        run: gradle bundleRelease --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: Kadam-APK
@@ -28,4 +43,6 @@ jobs:
         run: |
           cp app/build/outputs/apk/debug/app-debug.apk Kadam.apk
           gh release delete latest --yes --cleanup-tag || true
-          gh release create latest Kadam.apk --title "Kadam APK" --notes "Debug build of the Kadam walk and earn app." --target "${{ github.sha }}"
+          FILES="Kadam.apk"
+          if [ -f app/build/outputs/bundle/release/app-release.aab ]; then cp app/build/outputs/bundle/release/app-release.aab Kadam.aab; FILES="Kadam.apk Kadam.aab"; fi
+          gh release create latest $FILES --title "Kadam APK" --notes "Debug build of the Kadam walk and earn app." --target "${{ github.sha }}"
