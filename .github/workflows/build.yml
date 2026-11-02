@@ -6,6 +6,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -20,3 +22,10 @@ jobs:
         with:
           name: Kadam-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+      - name: Publish APK to Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk Kadam.apk
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest Kadam.apk --title "Kadam APK" --notes "Debug build of the Kadam walk and earn app." --target "${{ github.sha }}"
