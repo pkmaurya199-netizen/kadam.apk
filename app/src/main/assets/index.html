@@ -378,6 +378,56 @@ body.acct{background:linear-gradient(180deg,var(--accent-soft) 0,var(--bg) 340px
 .ctile b{font-family:var(--display);font-size:17px;line-height:1.15;color:var(--ink);overflow-wrap:anywhere}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* compact sizing, closer to the reference home */
+body{font-size:14px}
+.screen{gap:12px;padding-block:10px calc(88px + env(safe-area-inset-bottom,0px))}
+.hdr h1{font-size:19px}
+.logo{width:32px;height:32px;border-radius:10px}
+.logo svg{width:20px;height:20px}
+.brandname{font-size:18px}
+.iconbtn{width:34px;height:34px}
+.iconbtn svg{width:19px;height:19px}
+.iconbtn i{top:6px;right:7px;width:8px;height:8px}
+button.pill{min-height:34px;padding:4px 10px;font-size:14px;gap:5px}
+.pill svg{width:16px;height:16px}
+.gauge{width:min(62vw,232px)}
+.gauge-c .num{font-size:42px}
+.gauge-c .foot svg{width:24px;height:24px}
+.hero{gap:4px}
+.hero-status{font-size:11.5px}
+.demo-row .chip{min-height:30px;padding:3px 10px;font-size:12.5px}
+.tiles{gap:8px}
+.mt{border-radius:16px;padding:12px 10px;gap:4px}
+.mt .ic{width:24px;height:24px}
+.mt .ic svg{width:22px;height:22px}
+.mt .l{font-size:12px}
+.mt .v{font-size:15px}
+.sec-h h2{font-size:16px}
+.card{padding:14px;border-radius:16px}
+.water{margin:8px 0;align-items:start}
+.gl.f{aspect-ratio:auto;gap:2px;align-content:start}
+.gl .ml{font-size:10px;color:var(--sky-d);font-weight:600}
+.gl.add{width:78%;justify-self:center;background:var(--fire);color:#fff}
+.gl.add svg{width:16px;height:16px}
+.goal{font-size:13px}
+.rowcard{padding:11px 12px;border-radius:16px;gap:10px}
+.rc-ic{width:38px;height:38px}
+.rc-ic svg{width:20px;height:20px}
+.rc-t b{font-size:15px}
+.rc-t small{font-size:12px}
+.rc-go .tag{font-size:11px;padding:3px 8px}
+.wk{gap:6px;margin-top:8px}
+.wkb{height:92px;max-width:30px}
+.wkc{font-size:11.5px;gap:6px}
+.mini2{gap:8px}
+.mini{padding:12px;border-radius:14px;gap:4px}
+.mini .tag2{font-size:11px;padding:2px 8px}
+.mini .l{font-size:12px}
+.mini .v{font-size:15px}
+.socials{gap:8px}
+.soc{padding:12px;border-radius:16px;gap:6px}
+.nav button{font-size:10.5px;padding:5px 2px;gap:1px}
+.nav svg{width:22px;height:22px}
 </style>
 <style>html,body{margin:0}:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
 </head>
@@ -431,7 +481,7 @@ var HI={
 '10K Day':'10K दिन','7-Day Streak':'7 दिन स्ट्रीक','Gamer':'गेमर','First Redeem':'पहला रिडीम','Referrer':'रेफ़रर','50K Steps':'50K कदम',
 'Walk':'चलो','Earn coins':'सिक्के कमाओ','Redeem rewards':'रिवॉर्ड पाओ','Every 1,000 steps becomes 1 coin.':'हर 1,000 कदम पर 1 सिक्का।','Daily logins, challenges, games and friends add more.':'रोज़ लॉगिन, चैलेंज, गेम और दोस्त और सिक्के दिलाते हैं।','Spend coins on recharges and vouchers.':'सिक्कों से रिचार्ज और वाउचर लें।',
 'Next':'आगे','Allow activity access and continue':'एक्टिविटी की अनुमति दें और आगे बढ़ें','Steps are counted from your phone sensor or Health app. We read only step counts.':'कदम आपके फ़ोन सेंसर या हेल्थ ऐप से गिने जाते हैं। हम सिर्फ़ कदमों की गिनती पढ़ते हैं।',
-'Sign in':'साइन इन','Signing in...':'साइन इन हो रहा है...','Sign-in cancelled':'साइन इन रद्द हुआ','Google sign-in error':'Google साइन इन में दिक्कत','Sign-in failed. Please try again.':'साइन इन नहीं हुआ। दोबारा कोशिश करें।','Could not start Google sign-in':'Google साइन इन शुरू नहीं हो सका','Next glass in':'अगला गिलास','Watch ad, earn coin':'विज्ञापन देखें, सिक्का पाएँ','ads watched today':'विज्ञापन आज देखे','Watch ad for 1 coin':'1 सिक्के के लिए विज्ञापन देखें','All ads watched today':'आज के सभी विज्ञापन देख लिए','Lv':'स्तर','Each ad adds 1 coin (1,000 steps) to today\'s limit. Up to 3 times a day.':'हर विज्ञापन से आज की सीमा में 1 सिक्का (1,000 कदम) जुड़ता है। दिन में अधिकतम 3 बार।','used today':'आज इस्तेमाल','Limit maxed for today':'आज की सीमा पूरी','Watch ad: +1,000 steps':'विज्ञापन देखें: +1,000 कदम','Advertisement':'विज्ञापन','Sample ad':'नमूना विज्ञापन','Google ads will appear here in the final app':'फ़ाइनल ऐप में यहाँ Google विज्ञापन आएँगे','Reward in':'इनाम में','Done! Collect your reward.':'हो गया! इनाम लीजिए।','Collect +1,000 steps limit':'+1,000 कदम की सीमा लें','Collect 1 coin':'1 सिक्का लें','Daily limit +1,000 steps':'दैनिक सीमा +1,000 कदम','Walk. Earn. Redeem.':'चलिए. कमाइए. रिडीम कीजिए.','Phone number':'फ़ोन नंबर','Referral code (optional)':'रेफ़रल कोड (वैकल्पिक)','Send OTP':'OTP भेजें','Continue with Google':'Google से जारी रखें','Enter OTP':'OTP डालें','Verify':'वेरिफ़ाई करें','Change number':'नंबर बदलें','Demo OTP is 1234':'डेमो OTP 1234 है','Enter a 10-digit phone number':'10 अंकों का फ़ोन नंबर डालें','Wrong OTP':'गलत OTP','That referral code is not valid':'यह रेफ़रल कोड सही नहीं है','You and your friend get 5 coins each.':'आपको और आपके दोस्त को 5-5 सिक्के मिलते हैं।',
+'Sign in':'साइन इन','Extend':'बढ़ाएँ','Signing in...':'साइन इन हो रहा है...','Sign-in cancelled':'साइन इन रद्द हुआ','Google sign-in error':'Google साइन इन में दिक्कत','Sign-in failed. Please try again.':'साइन इन नहीं हुआ। दोबारा कोशिश करें।','Could not start Google sign-in':'Google साइन इन शुरू नहीं हो सका','Next glass in':'अगला गिलास','Watch ad, earn coin':'विज्ञापन देखें, सिक्का पाएँ','ads watched today':'विज्ञापन आज देखे','Watch ad for 1 coin':'1 सिक्के के लिए विज्ञापन देखें','All ads watched today':'आज के सभी विज्ञापन देख लिए','Lv':'स्तर','Each ad adds 1 coin (1,000 steps) to today\'s limit. Up to 3 times a day.':'हर विज्ञापन से आज की सीमा में 1 सिक्का (1,000 कदम) जुड़ता है। दिन में अधिकतम 3 बार।','used today':'आज इस्तेमाल','Limit maxed for today':'आज की सीमा पूरी','Watch ad: +1,000 steps':'विज्ञापन देखें: +1,000 कदम','Advertisement':'विज्ञापन','Sample ad':'नमूना विज्ञापन','Google ads will appear here in the final app':'फ़ाइनल ऐप में यहाँ Google विज्ञापन आएँगे','Reward in':'इनाम में','Done! Collect your reward.':'हो गया! इनाम लीजिए।','Collect +1,000 steps limit':'+1,000 कदम की सीमा लें','Collect 1 coin':'1 सिक्का लें','Daily limit +1,000 steps':'दैनिक सीमा +1,000 कदम','Walk. Earn. Redeem.':'चलिए. कमाइए. रिडीम कीजिए.','Phone number':'फ़ोन नंबर','Referral code (optional)':'रेफ़रल कोड (वैकल्पिक)','Send OTP':'OTP भेजें','Continue with Google':'Google से जारी रखें','Enter OTP':'OTP डालें','Verify':'वेरिफ़ाई करें','Change number':'नंबर बदलें','Demo OTP is 1234':'डेमो OTP 1234 है','Enter a 10-digit phone number':'10 अंकों का फ़ोन नंबर डालें','Wrong OTP':'गलत OTP','That referral code is not valid':'यह रेफ़रल कोड सही नहीं है','You and your friend get 5 coins each.':'आपको और आपके दोस्त को 5-5 सिक्के मिलते हैं।',
 'Calories':'कैलोरी','Distance':'दूरी','Daily Water Intake':'रोज़ का पानी','Drink 8 glasses, get 1 coin':'8 गिलास पानी पिएँ, 1 सिक्का पाएँ','Daily Reward':'रोज़ का इनाम','rewards claimed today':'इनाम आज क्लेम हुए','to claim':'क्लेम करने को','day streak':'दिन की स्ट्रीक','Keep walking daily to grow your streak.':'स्ट्रीक बढ़ाने के लिए रोज़ चलते रहें।','Weekly Progress':'साप्ताहिक प्रगति','Walking coins':'चलने के सिक्के','Daily Limit':'रोज़ की सीमा','Follow Us & Get Reward':'फ़ॉलो करें, इनाम पाएँ','Leaderboard':'लीडरबोर्ड','See where you rank':'देखें आप कहाँ हैं','Get 5 coins per friend':'हर दोस्त पर 5 सिक्के','Follow us':'हमें फ़ॉलो करें','Daily Rewards':'रोज़ के इनाम','Water goal':'पानी का लक्ष्य','You':'आप','This week':'इस हफ़्ते','Sample players for preview':'प्रीव्यू के लिए नमूना खिलाड़ी','No new notifications':'कोई नई सूचना नहीं','Close':'बंद करें','Add a glass of water':'एक गिलास पानी जोड़ें','Remove a glass':'एक गिलास हटाएँ','Demo mode, step sensor not available in preview':'डेमो मोड, प्रीव्यू में स्टेप सेंसर उपलब्ध नहीं',
 'Mon':'सोम','Tue':'मंगल','Wed':'बुध','Thu':'गुरु','Fri':'शुक्र','Sat':'शनि','Sun':'रवि','Game Play':'गेम प्ले','Store':'स्टोर','Account':'अकाउंट',
 'Edit':'बदलें','Refer a friend':'दोस्त को रेफ़र करें','PREMIUM':'प्रीमियम','Unlock ad-free walks, bonus rewards & more':'बिना विज्ञापन वाक, बोनस इनाम और बहुत कुछ पाएँ','Kadam Plus is coming soon':'Kadam Plus जल्द आ रहा है',
@@ -811,9 +861,9 @@ function dailyDone(){var n=S.lastLogin===dkey()?1:0;['d5','d10','dg'].forEach(fu
 function readyCount(){var n=S.lastLogin===dkey()?0:1;challenges().forEach(function(c){if(c.scope==='d'&&!isClaimed(c)&&c.prog>=c.target)n++;});return n;}
 function gaugeSVG(pct){
   var R=84,C=2*Math.PI*R,arc=C*0.75,ang=(135+270*pct)*Math.PI/180,hx=(100+R*Math.cos(ang)).toFixed(1),hy=(100+R*Math.sin(ang)).toFixed(1);
-  return '<svg viewBox="0 0 200 200" role="img" aria-label="'+fmt(S.steps)+' '+t('steps')+'">'+
+  return '<svg viewBox="0 0 200 200" role="img" aria-label="'+fmt(S.steps)+' '+t('steps')+'"><defs><linearGradient id="kg" gradientUnits="userSpaceOnUse" gradientTransform="rotate(-135 100 100)" x1="30" y1="170" x2="170" y2="30"><stop offset="0" stop-color="#f59e0b"/><stop offset="1" stop-color="#2f9e44"/></linearGradient></defs>'+
     '<circle cx="100" cy="100" r="84" fill="none" stroke-width="16" stroke-linecap="round" transform="rotate(135 100 100)" stroke-dasharray="'+arc.toFixed(1)+' '+C.toFixed(1)+'" style="stroke:var(--line)"/>'+
-    (pct>0?'<circle class="prog" cx="100" cy="100" r="84" fill="none" stroke-width="16" stroke-linecap="round" transform="rotate(135 100 100)" stroke-dasharray="'+(arc*pct).toFixed(1)+' '+C.toFixed(1)+'" style="stroke:var(--accent)"/>':'')+
+    (pct>0?'<circle class="prog" cx="100" cy="100" r="84" fill="none" stroke-width="16" stroke-linecap="round" transform="rotate(135 100 100)" stroke-dasharray="'+(arc*pct).toFixed(1)+' '+C.toFixed(1)+'" style="stroke:url(#kg)"/>':'')+
     '<circle cx="'+hx+'" cy="'+hy+'" r="9" stroke-width="3" style="fill:var(--coin);stroke:var(--bg)"/></svg>';
 }
 function glassSVG(fill){
@@ -851,7 +901,7 @@ function homeHTML(){
   var pct=Math.min(S.steps/CFG.RING_TARGET,1),kcal=(S.steps*0.04).toFixed(1),km=(S.steps*0.00075).toFixed(2),
       lv=level(),done=dailyDone(),ready=readyCount(),glasses='',i;
   for(i=0;i<8;i++){
-    if(i<S.water)glasses+='<button class="gl" data-a="unwater" aria-label="'+t('Remove a glass')+'"'+((i===S.water-1&&!S.waterDone)?'':' disabled')+'>'+glassSVG(true)+'</button>';
+    if(i<S.water)glasses+='<button class="gl f" data-a="unwater" aria-label="'+t('Remove a glass')+'"'+((i===S.water-1&&!S.waterDone)?'':' disabled')+'>'+glassSVG(true)+'<span class="ml">250ml</span></button>';
     else if(i===S.water)glasses+='<button class="gl add" data-a="water"'+(wcool()>0?' disabled style="opacity:.45"':'')+' aria-label="'+t('Add a glass of water')+'">'+svgi('plus',20,2.6)+'</button>';
     else glasses+='<div class="gl">'+glassSVG(false)+'</div>';
   }
@@ -864,17 +914,17 @@ function homeHTML(){
   '<section class="hero"><div class="gauge">'+gaugeSVG(pct)+'<div class="gauge-c"><span class="foot">'+footSVG(30)+'</span><span class="num">'+fmt(S.steps)+'</span><span class="small muted">'+t('of 10,000 steps')+'</span></div></div>'+
     stepStatusHTML()+'</section>'+
   '<section class="tiles">'+
-    '<div class="mt peach"><span class="ic">'+coin(30)+'</span><span class="l">'+t('Coins today')+'</span><span class="v">'+Math.min(S.steps/CFG.STEPS_PER_COIN,stepCap()).toFixed(2)+'</span></div>'+
-    '<div class="mt sky"><span class="ic">'+svgi('flame',28,1.8)+'</span><span class="l">'+t('Calories')+'</span><span class="v">'+kcal+' kcal</span></div>'+
-    '<div class="mt mint"><span class="ic">'+svgi('walker',28,1.8)+'</span><span class="l">'+t('Distance')+'</span><span class="v">'+km+' km</span></div></section>'+
-  '<section class="card"><div class="sec-h"><h2 style="font-size:18px">'+t('Daily Water Intake')+'</h2><span class="muted small">'+(S.water*250)+'ml / 2.0L</span></div>'+
+    '<div class="mt peach"><span class="ic">'+coin(24)+'</span><span class="l">'+t('Coins')+'</span><span class="v">'+Math.min(S.steps/CFG.STEPS_PER_COIN,stepCap()).toFixed(2)+'</span></div>'+
+    '<div class="mt sky"><span class="ic">'+svgi('flame',22,1.8)+'</span><span class="l">'+t('Calories')+'</span><span class="v">'+kcal+' kcal</span></div>'+
+    '<div class="mt mint"><span class="ic">'+svgi('walker',22,1.8)+'</span><span class="l">'+t('Distance')+'</span><span class="v">'+km+' km</span></div></section>'+
+  '<section class="card"><div class="sec-h"><h2 style="font-size:16px">'+t('Daily Water Intake')+'</h2><span class="muted small">'+(S.water*250)+'ml / 2.0L</span></div>'+
     '<div class="water">'+glasses+'</div><p class="goal">'+(S.waterDone?svgi('check',18,2.6):'')+t('Drink 8 glasses, get 1 coin')+'</p>'+waterWaitHTML()+'</section>'+
   '<button class="rowcard" data-a="sub" data-v="daily"><span class="rc-ic peach">'+svgi('gift',24)+'</span><span class="rc-t"><b>'+t('Daily Reward')+'</b><small>'+done+'/5 '+t('rewards claimed today')+'</small></span><span class="rc-go">'+(ready?'<span class="tag">'+ready+' '+t('to claim')+'</span>':'')+svgi('chev',20)+'</span></button>'+
   '<button class="rowcard fire" data-a="sub" data-v="daily"><span class="rc-ic fire">'+svgi('flame',24)+'</span><span class="rc-t"><b>'+liveStreak()+' '+t('day streak')+'</b><small>'+t('Keep walking daily to grow your streak.')+'</small></span><span class="rc-go">'+svgi('chev',20)+'</span></button>'+
   '<section class="card"><div class="sec-h"><h2 style="font-size:19px">'+t('Weekly Progress')+'</h2><span class="reward" style="color:var(--accent-d)">'+footSVG(16)+fmt(S.weekSteps)+' '+t('steps')+'</span></div>'+weekHTML()+'</section>'+
   '<section class="mini2">'+
     '<button class="mini" data-a="sub" data-v="profile"><span class="tag2">Lv '+(lv+1)+'</span><span class="l">'+t('Level')+'</span><span class="v">'+t(LEVELS[lv].n)+'</span></button>'+
-    '<button class="mini" data-a="limit"><span class="tag2">'+S.stepCoins+'/'+stepCap()+'</span><span class="l">'+t('Walking coins')+'</span><span class="v">'+t('Daily Limit')+'</span></button></section>'+
+    '<button class="mini" data-a="limit"><span class="tag2">'+(S.limitAds||0)+'/'+LIMIT_AD_MAX+'</span><span class="l">'+t('Extend')+'</span><span class="v">'+t('Daily Limit')+'</span></button></section>'+
   '<section class="sec"><div class="sec-h"><h2>'+t('Follow Us & Get Reward')+'</h2></div>'+
     '<button class="rowcard" data-a="sub" data-v="leaderboard"><span class="rc-ic mint">'+svgi('board',24)+'</span><span class="rc-t"><b style="font-size:16px">'+t('Leaderboard')+'</b><small>'+t('See where you rank')+'</small></span><span class="rc-go">'+svgi('chev',20)+'</span></button>'+
     '<button class="rowcard" data-a="sub" data-v="refer"><span class="rc-ic sky">'+svgi('users',24)+'</span><span class="rc-t"><b style="font-size:16px">'+t('Refer & Earn')+'</b><small>'+t('Get 5 coins per friend')+'</small></span><span class="rc-go">'+svgi('chev',20)+'</span></button>'+
