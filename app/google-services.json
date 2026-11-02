@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "877631972845",
+    "project_id": "kadam-4049a",
+    "storage_bucket": "kadam-4049a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:877631972845:android:dcb4b600851f1e767bf3e4",
+        "android_client_info": {
+          "package_name": "kadam.walkearn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "877631972845-thrvedk9jqkvrj65coh89fjt1rhhj1on.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "kadam.walkearn",
+            "certificate_hash": "714da235e2c1524a458fc5f34616acb0b0d9ec86"
+          }
+        },
+        {
+          "client_id": "877631972845-sbk9f47ahhrmjgrutlcud5v5k8jab8e8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAv8TDepjNX3cignkq5atYJuKa3ZEE0BrQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "877631972845-sbk9f47ahhrmjgrutlcud5v5k8jab8e8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
