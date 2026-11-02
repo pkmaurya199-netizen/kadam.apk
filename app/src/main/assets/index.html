@@ -402,6 +402,12 @@ body.acct{background:linear-gradient(180deg,var(--accent-soft) 0,var(--bg) 340px
 /* ---------- config (every number here is an example; tune it with the coin economy sheet) ---------- */
 var CFG={STEPS_PER_COIN:1000,DAILY_STEP_COIN_CAP:10,GAME_DAILY_CAP:5,LOGIN:[1,1,1,1,1,1,5],REF_REWARD:5,REF_CAP:50,BADGE_BONUS:1,RING_TARGET:10000,DEMO_OTP:'1234'};
 var KEY='kadam-walk-earn-v1';
+/* inside the Android app, window.KadamNative reads the phone's step sensor */
+var NATIVE=(typeof window!=='undefined'&&window.KadamNative)||null;
+var NAT=null;
+function nativeInfo(){if(!NATIVE)return null;try{return JSON.parse(NATIVE.status());}catch(e){return null;}}
+function trackingLive(){return !!(NAT&&NAT.supported&&NAT.granted);}
+function askNative(){if(NATIVE){try{NATIVE.requestPermission();}catch(e){}}}
 
 /* ---------- Hindi strings (English text is the key) ---------- */
 var HI={
@@ -433,6 +439,7 @@ var HI={
 'Export steps data':'कदमों का डेटा एक्सपोर्ट करें','Copy this table and paste it into a spreadsheet.':'इस टेबल को कॉपी करके स्प्रेडशीट में चिपकाएँ।','Follow':'फ़ॉलो करें','Following':'फ़ॉलो कर रहे हैं','Contact us':'संपर्क करें','Copy':'कॉपी','Example address for this preview.':'इस प्रीव्यू के लिए उदाहरण पता।','Signed in with Google (demo)':'Google से साइन इन (डेमो)','Preview build':'प्रीव्यू बिल्ड',
 'How do I earn coins?':'सिक्के कैसे कमाएँ?','How does referral work?':'रेफ़रल कैसे काम करता है?','My steps are not counting':'मेरे कदम गिने नहीं जा रहे','How long do orders take?':'ऑर्डर में कितना समय लगता है?',
 'Free':'फ्री','Reward':'इनाम','Goal':'लक्ष्य','Progress':'प्रगति','Coin':'सिक्का','Daily Challenge':'रोज़ का चैलेंज','Weekly Challenge':'साप्ताहिक चैलेंज','week of':'सप्ताह','Every day':'हर दिन','This week':'इस हफ़्ते','Game':'गेम','Logins':'लॉगिन','Friend':'दोस्त','Active':'चालू','No completed challenges yet':'अभी कोई चैलेंज पूरा नहीं हुआ','No active challenges':'कोई चालू चैलेंज नहीं',
+'This phone has no step sensor. Demo mode.':'इस फ़ोन में स्टेप सेंसर नहीं है। डेमो मोड।','Allow activity access to count steps':'कदम गिनने के लिए एक्टिविटी की अनुमति दें','Allow step tracking':'स्टेप ट्रैकिंग की अनुमति दें','Step tracking active':'स्टेप ट्रैकिंग चालू है',
 'Search products & categories':'प्रोडक्ट और कैटेगरी खोजें','Trending Products':'ट्रेंडिंग प्रोडक्ट','Search results':'खोज के नतीजे','All categories':'सब कैटेगरी','No products found':'कोई प्रोडक्ट नहीं मिला',
 'Electronics':'इलेक्ट्रॉनिक्स','Gadgets & Access.':'गैजेट और एक्सेसरीज़','Fashion & Clothing':'फ़ैशन और कपड़े','Personal Care':'पर्सनल केयर','Snacks & Beverages':'स्नैक्स और पेय','Fitness Essentials':'फ़िटनेस सामान','Home & Lifestyle':'घर और लाइफ़स्टाइल','Recharge & More':'रिचार्ज और बहुत कुछ',
 'USE YOUR COINS':'अपने सिक्के इस्तेमाल करें','Premium fitness essentials':'प्रीमियम फ़िटनेस सामान','Shop now':'अभी लें','Your coins.':'आपके सिक्के।','Your rewards.':'आपके इनाम।','Turn your Kadam coins into real products':'अपने कदम सिक्कों को असली प्रोडक्ट में बदलें','Get coins':'सिक्के पाएँ','Coins':'सिक्के',
@@ -828,6 +835,13 @@ function loginCardHTML(){
     (claimedToday?'<button class="btn block" disabled>'+t('Claimed today')+' · '+t('Come back tomorrow')+'</button>':'<button class="btn gold block" data-a="claim-login">'+t('Claim')+' +'+nextR+'</button>')+'</section>';
 }
 
+function demoChips(){return [100,500,1000,2500].map(function(n){return '<button class="chip" data-a="walk" data-v="'+n+'">+'+fmt(n)+'</button>';}).join('');}
+function stepStatusHTML(){
+  if(!NATIVE)return '<div class="hero-status"><i></i>'+t('Demo mode, step sensor not available in preview')+'</div><div class="demo-row">'+demoChips()+'</div>';
+  if(NAT&&!NAT.supported)return '<div class="hero-status"><i style="background:var(--danger)"></i>'+t('This phone has no step sensor. Demo mode.')+'</div><div class="demo-row">'+demoChips()+'</div>';
+  if(NAT&&!NAT.granted)return '<div class="hero-status"><i style="background:var(--coin)"></i>'+t('Allow activity access to count steps')+'</div><button class="btn primary" data-a="allow">'+t('Allow step tracking')+'</button>';
+  return '<div class="hero-status"><i></i>'+t('Step tracking active')+'</div>';
+}
 function homeHTML(){
   var pct=Math.min(S.steps/CFG.RING_TARGET,1),kcal=(S.steps*0.04).toFixed(1),km=(S.steps*0.00075).toFixed(2),
       lv=level(),done=dailyDone(),ready=readyCount(),glasses='',i;
@@ -843,8 +857,7 @@ function homeHTML(){
   }).join('');
   return homeHeader()+
   '<section class="hero"><div class="gauge">'+gaugeSVG(pct)+'<div class="gauge-c"><span class="foot">'+footSVG(30)+'</span><span class="num">'+fmt(S.steps)+'</span><span class="small muted">'+t('of 10,000 steps')+'</span></div></div>'+
-    '<div class="hero-status"><i></i>'+t('Demo mode, step sensor not available in preview')+'</div>'+
-    '<div class="demo-row">'+[100,500,1000,2500].map(function(n){return '<button class="chip" data-a="walk" data-v="'+n+'">+'+fmt(n)+'</button>';}).join('')+'</div></section>'+
+    stepStatusHTML()+'</section>'+
   '<section class="tiles">'+
     '<div class="mt peach"><span class="ic">'+coin(30)+'</span><span class="l">'+t('Coins today')+'</span><span class="v">'+Math.min(S.steps/CFG.STEPS_PER_COIN,CFG.DAILY_STEP_COIN_CAP).toFixed(2)+'</span></div>'+
     '<div class="mt sky"><span class="ic">'+svgi('flame',28,1.8)+'</span><span class="l">'+t('Calories')+'</span><span class="v">'+kcal+' kcal</span></div>'+
@@ -987,7 +1000,7 @@ function shopHTML(){
   return storeHeader()+
   '<label class="search" for="q">'+svgi('search',22)+'<input id="q" type="search" autocomplete="off" placeholder="'+t('Search products & categories')+'" value="'+esc(UI.q||'')+'"></label>'+
   bannersHTML()+catsHTML()+'<section id="prod">'+productsHTML()+'</section>'+
-  '<section class="card demo"><div class="row" style="justify-content:space-between"><span class="small muted">'+t('Demo: add coins to try redeeming')+'</span><button class="btn" data-a="democoins">+5,000</button></div></section>';
+  (NATIVE?'':'<section class="card demo"><div class="row" style="justify-content:space-between"><span class="small muted">'+t('Demo: add coins to try redeeming')+'</span><button class="btn" data-a="democoins">+5,000</button></div></section>');
 }
 function ordersHTML(){
   return subHeader(t('My orders'))+(S.orders.length?'<div class="stack">'+S.orders.map(function(o){
@@ -1215,7 +1228,8 @@ document.addEventListener('click',function(e){
   if(a!=='del'&&UI.delArm){UI.delArm=false;}
   switch(a){
     case 'lang':S.lang=v;save();render();break;
-    case 'obnext':if(UI.slide<2)UI.slide++;else{UI.auth='login';}render();break;
+    case 'obnext':if(UI.slide<2)UI.slide++;else{UI.auth='login';askNative();}render();break;
+    case 'allow':askNative();break;
     case 'obback':UI.slide=Math.max(0,UI.slide-1);render();break;
     case 'sendotp':{
       var ph=(document.getElementById('ph').value||'').replace(/\D/g,''),rf=(document.getElementById('rf').value||'').trim().toUpperCase();
@@ -1317,7 +1331,24 @@ document.addEventListener('keydown',function(e){
 rollover();
 if(processOrders())save();
 checkBadges();save();
+if(NATIVE)NAT=nativeInfo();
 render();
+function syncNative(){
+  if(!NATIVE||S.stage!=='app')return;
+  var before=JSON.stringify(NAT);
+  NAT=nativeInfo();
+  if(trackingLive()){
+    rollover();
+    if(NAT.steps>S.steps){addSteps(NAT.steps-S.steps);return;}
+  }
+  if(JSON.stringify(NAT)!==before)render();
+}
+window.kadamSync=syncNative;
+if(NATIVE){
+  syncNative();
+  setInterval(syncNative,4000);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)syncNative();});
+}
 setInterval(function(){
   var c=rollover(),o=processOrders();
   if(c||o){save();if(S.stage==='app'&&!L.run&&!UI.confirm&&!UI.prod&&document.activeElement.id!=='q')render();}
