@@ -771,6 +771,112 @@ button.mt:active {
   filter: brightness(0.96);
 }
 
+
+/* ==================== SCREEN & TAB TRANSITIONS ==================== */
+@keyframes tabEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.995);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes subScreenEnter {
+  0% {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.screen {
+  will-change: opacity, transform;
+}
+
+.screen.is-tab {
+  animation: tabEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.screen.is-sub {
+  animation: subScreenEnter 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Nav Item Bouncy Pop */
+.nav button[aria-current="page"] svg {
+  animation: navIconPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes navIconPop {
+  0% { transform: scale(0.75); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.nav button {
+  transition: color 0.18s ease, transform 0.12s ease;
+}
+.nav button:active {
+  transform: scale(0.92);
+}
+
+/* Touch Active Response on interactive components */
+.card, .banner-hero, .at, .pro, button.mt, .pill, .chip, .iconbtn, .soc, .ad-deal-item, .ad-acc-promo-card {
+  transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.12s ease, box-shadow 0.12s ease;
+}
+.card:active, .at:active, .pro:active, .banner-hero:active, button.mt:active, .ad-acc-promo-card:active {
+  transform: scale(0.97);
+}
+.pill:active, .chip:active {
+  transform: scale(0.94);
+}
+.iconbtn:active {
+  transform: scale(0.88);
+}
+
+/* Staggered micro-entrance for home tiles */
+.is-tab .tiles > *:nth-child(1) { animation: tileSlideIn 0.26s cubic-bezier(0.16, 1, 0.3, 1) 0.03s both; }
+.is-tab .tiles > *:nth-child(2) { animation: tileSlideIn 0.26s cubic-bezier(0.16, 1, 0.3, 1) 0.07s both; }
+.is-tab .tiles > *:nth-child(3) { animation: tileSlideIn 0.26s cubic-bezier(0.16, 1, 0.3, 1) 0.11s both; }
+
+@keyframes tileSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Sheet & Overlay Transitions */
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes sheetIn {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.overlay {
+  animation: overlayIn 0.2s ease-out both;
+}
+.sheet {
+  animation: sheetIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 </style>
 <style>html,body{margin:0}:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
 </head>
@@ -3048,7 +3154,7 @@ function render(){
   else if(UI.sub==='catpage')body=catPageHTML();
   else if(S.tab==='profile')body=accountHTML();
   else body=({home:homeHTML,challenges:challengesHTML,games:gamesHTML,shop:shopHTML,wallet:coinsHTML}[S.tab]||homeHTML)();
-  root.innerHTML='<main class="screen">'+body+'</main>'+adBottomBarHTML()+navHTML()+(UI.confirm?sheetHTML():'')+(UI.cj?joinSheetHTML():'')+(UI.prod?prodSheetHTML():'')+(UI.exp?expSheetHTML():'')+(UI.notifOpen?notifSheetHTML():'')+(UI.limit?limitSheetHTML():'')+(UI.ad?adSheetHTML():'');
+  root.innerHTML='<main class="screen '+(UI.sub?'is-sub':'is-tab')+'">'+body+'</main>'+adBottomBarHTML()+navHTML()+(UI.confirm?sheetHTML():'')+(UI.cj?joinSheetHTML():'')+(UI.prod?prodSheetHTML():'')+(UI.exp?expSheetHTML():'')+(UI.notifOpen?notifSheetHTML():'')+(UI.limit?limitSheetHTML():'')+(UI.ad?adSheetHTML():'');
 }
 
 /* ---------- actions ---------- */
