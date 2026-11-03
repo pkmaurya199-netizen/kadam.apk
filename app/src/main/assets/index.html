@@ -755,6 +755,22 @@ button.pill{min-height:34px;padding:4px 10px;font-size:14px;gap:5px}
   flex: none;
 }
 
+
+/* Interactive Home tiles */
+button.mt {
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: transform 0.1s ease, filter 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+button.mt:active {
+  transform: scale(0.96);
+  filter: brightness(0.96);
+}
+
 </style>
 <style>html,body{margin:0}:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
 </head>
@@ -1626,9 +1642,9 @@ function homeHTML(){
   '<section class="hero"><div class="gauge">'+gaugeSVG(pct)+'<div class="gauge-c"><span class="foot">'+footSVG(30)+'</span><span class="num">'+fmt(S.steps)+'</span><span class="small muted">'+t('of 10,000 steps')+'</span></div></div>'+
     stepStatusHTML()+'</section>'+
   '<section class="tiles">'+
-    '<div class="mt peach"><span class="ic">'+coin(24)+'</span><span class="l">'+t('Coins')+'</span><span class="v">'+Math.min(S.steps/CFG.STEPS_PER_COIN,stepCap()).toFixed(2)+'</span></div>'+
-    '<div class="mt sky"><span class="ic">'+svgi('flame',22,1.8)+'</span><span class="l">'+t('Calories')+'</span><span class="v">'+kcal+' kcal</span></div>'+
-    '<div class="mt mint"><span class="ic">'+svgi('walker',22,1.8)+'</span><span class="l">'+t('Distance')+'</span><span class="v">'+km+' km</span></div></section>'+
+    '<button class="mt peach" data-a="sub" data-v="coins" aria-label="Coins Details"><span class="ic">'+coin(24)+'</span><span class="l">'+t('Coins')+'</span><span class="v">'+Math.min(S.steps/CFG.STEPS_PER_COIN,stepCap()).toFixed(2)+'</span></button>'+
+    '<button class="mt sky" data-a="sub" data-v="reports" data-p="calories" aria-label="Calories Report"><span class="ic">'+svgi('flame',22,1.8)+'</span><span class="l">'+t('Calories')+'</span><span class="v">'+kcal+' kcal</span></button>'+
+    '<button class="mt mint" data-a="sub" data-v="reports" data-p="distance" aria-label="Distance Report"><span class="ic">'+svgi('walker',22,1.8)+'</span><span class="l">'+t('Distance')+'</span><span class="v">'+km+' km</span></button></section>'+
   adProductCarouselHTML()+
   '<section class="card"><div class="sec-h"><span style="display:flex;align-items:center;gap:8px;min-width:0"><h2 style="font-size:16px">'+t('Daily Water Intake')+'</h2>'+waterWaitHTML()+'</span><span class="muted small">'+(S.water*250)+'ml / 2.0L</span></div>'+
     '<div class="water">'+glasses+'</div><p class="goal">'+(S.waterDone?svgi('check',18,2.6):'')+t('Drink 8 glasses, get 1 coin')+'</p></section>'+
@@ -2769,6 +2785,246 @@ function authHTML(){
     '<button class="btn primary block" data-a="verify">'+t('Verify')+'</button><button class="link" data-a="chnum">'+t('Change number')+'</button></div></div>';
 }
 
+
+/* ---------- Coins & Reports Screens (matching user screenshots) ---------- */
+function screenHeader(title){
+  return '<header class="hdr" style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">' +
+    '<button class="iconbtn" data-a="back" style="width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;color:var(--text);font-weight:700;">' +
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>' +
+    '</button>' +
+    '<h1 style="font-size:22px;font-weight:800;margin:0;flex:1;">' + title + '</h1>' +
+    '<button class="iconbtn" data-a="bell" aria-label="' + t('Notifications') + '" style="width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
+      svgi('bell', 20) +
+    '</button>' +
+    pillBtn() +
+  '</header>';
+}
+
+function coinsHTML(){
+  var txs = (S.tx || []).slice(0, 50);
+  var groups = {};
+  
+  if (txs.length > 0) {
+    txs.forEach(function(x){
+      var d = new Date(x.ts);
+      var dayStr = ('0' + d.getDate()).slice(-2) + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + d.getFullYear();
+      if (!groups[dayStr]) groups[dayStr] = [];
+      groups[dayStr].push(x);
+    });
+  }
+
+  var dateKeys = Object.keys(groups);
+  if (dateKeys.length === 0) {
+    var todayStr = '03-11-2026';
+    var yestStr = '02-11-2026';
+    dateKeys = [todayStr, yestStr];
+    groups[todayStr] = [
+      { type: 'step', amount: 14.69, note: 'Step Coin Earned', sub: 'Coin Earned' },
+      { type: 'challenge', amount: 3.00, note: 'Complete Daily Challenge -3rd November', sub: 'Challenge Request' },
+      { type: 'water', amount: 1.00, note: 'Water Intake Goal Completed.', sub: 'Drink Water' },
+      { type: 'badge', amount: 20.00, note: 'Achieved 400K Steps', sub: 'Achievement Badge' },
+      { type: 'spent', amount: -9.00, note: 'Challenge Request', sub: 'Challenge Request' }
+    ];
+    groups[yestStr] = [
+      { type: 'step', amount: 15.00, note: 'Step Coin Earned', sub: 'Coin Earned' }
+    ];
+  }
+
+  return screenHeader(t('Coins')) +
+  '<div class="coins-hero" style="text-align:center;padding:12px 0 16px 0;">' +
+    '<div style="display:inline-flex;align-items:center;gap:10px;font-size:38px;font-weight:900;color:var(--text);font-family:var(--display);letter-spacing:-0.5px;">' +
+      '<span style="display:inline-flex;">' + coin(36) + '</span> ' +
+      fmt(S.balance) +
+    '</div>' +
+    '<div style="font-size:13.5px;color:var(--muted);font-weight:600;margin-top:2px;">' + t('Coin Balance') + '</div>' +
+  '</div>' +
+  '<div class="coins-stats-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">' +
+    '<div style="background:#dcfce7;border:1px solid #bbf7d0;border-radius:18px;padding:14px 16px;">' +
+      '<div style="font-size:22px;font-weight:900;color:#15803d;font-family:var(--display);">' + fmt(S.earned) + '</div>' +
+      '<div style="font-size:12.5px;font-weight:600;color:#166534;margin-top:2px;">' + t('Earned') + '</div>' +
+    '</div>' +
+    '<div style="background:#ffedd5;border:1px solid #fed7aa;border-radius:18px;padding:14px 16px;">' +
+      '<div style="font-size:22px;font-weight:900;color:#c2410c;font-family:var(--display);">' + fmt(S.spent) + '</div>' +
+      '<div style="font-size:12.5px;font-weight:600;color:#9a3412;margin-top:2px;">' + t('Spent') + '</div>' +
+    '</div>' +
+  '</div>' +
+  '<section class="coins-tx-card" style="background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:18px 16px;box-shadow:var(--shadow);">' +
+    '<h2 style="font-size:18px;font-weight:900;color:var(--text);margin:0 0 14px 0;">' + t('All Transactions') + '</h2>' +
+    dateKeys.map(function(dk){
+      var list = groups[dk] || [];
+      return '<div class="tx-date-header" style="font-size:12px;font-weight:700;color:var(--muted);margin:12px 0 8px 0;letter-spacing:0.3px;">' + dk + '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:12px;">' +
+        list.map(function(item){
+          var isPos = (item.amount >= 0);
+          var sign = isPos ? '+ ' : '- ';
+          var amtColor = isPos ? '#16a34a' : '#dc2626';
+          var icSvg = item.amount < 0 ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>' :
+                      item.type === 'water' ? svgi('cup', 18) :
+                      item.type === 'challenge' ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 20V10M12 20V4M6 20v-4"/></svg>' :
+                      item.type === 'badge' ? svgi('medal', 18) :
+                      svgi('walker', 18);
+          var subNote = item.sub || (isPos ? (item.type === 'challenge' ? 'Challenge Request' : item.type === 'water' ? 'Drink Water' : item.type === 'badge' ? 'Achievement Badge' : 'Coin Earned') : 'Challenge Request');
+          return '<div style="display:flex;align-items:center;gap:12px;padding:4px 0;">' +
+            '<div style="width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,0.04);display:flex;align-items:center;justify-content:center;flex:none;color:var(--text);">' +
+              icSvg +
+            '</div>' +
+            '<div style="flex:1;min-width:0;">' +
+              '<div style="font-size:14px;font-weight:700;color:var(--text);line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(item.note) + '</div>' +
+              '<div style="font-size:11.5px;color:var(--muted);font-weight:500;margin-top:2px;">' + esc(subNote) + '</div>' +
+            '</div>' +
+            '<div style="font-size:15px;font-weight:800;color:' + amtColor + ';font-family:var(--display);flex:none;">' +
+              sign + Math.abs(item.amount).toFixed(2) +
+            '</div>' +
+          '</div>';
+        }).join('') +
+        '</div>';
+    }).join('') +
+  '</section>';
+}
+
+function reportsHTML(){
+  var tab = (UI && UI.repTab) || 'month';
+  var month = (UI && UI.repMonth) || 'nov';
+
+  var steps = 48794;
+  var avg = 1626;
+  var chartBars = [];
+
+  if (tab === 'month') {
+    steps = (S.monthSteps && S.monthSteps > 0) ? S.monthSteps : 48794;
+    avg = Math.round(steps / 30);
+    var samples = [18926, 15156, 14712, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    if (S.steps > 0) samples[2] = S.steps;
+    chartBars = samples.map(function(val, idx){ return { label: String(idx + 1), val: val }; });
+  } else if (tab === 'week') {
+    steps = (S.weekSteps && S.weekSteps > 0) ? S.weekSteps : 18450;
+    avg = Math.round(steps / 7);
+    var days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    var vals = [6200, 5800, (S.steps > 0 ? S.steps : 6450), 0, 0, 0, 0];
+    chartBars = days.map(function(d, i){ return { label: d, val: vals[i] }; });
+  } else {
+    steps = (S.steps && S.steps > 0) ? S.steps : 3450;
+    avg = steps;
+    var hours = ['6am', '9am', '12pm', '3pm', '6pm', '9pm'];
+    var hvals = [Math.round(steps * 0.15), Math.round(steps * 0.35), Math.round(steps * 0.25), Math.round(steps * 0.15), Math.round(steps * 0.10), 0];
+    chartBars = hours.map(function(h, i){ return { label: h, val: hvals[i] }; });
+  }
+
+  var kcal = (steps * 0.04).toFixed(1);
+  var km = (steps * 0.0008).toFixed(2);
+
+  var svgH = 150;
+  var svgW = 320;
+  var padLeft = 36;
+  var padBottom = 22;
+  var plotW = svgW - padLeft;
+  var plotH = svgH - padBottom;
+  var barCount = chartBars.length;
+  var barW = Math.max(4, Math.floor(plotW / barCount) - 3);
+
+  var gridLines = '';
+  var yTicks = [22711, 17033, 11355, 5677, 0];
+  yTicks.forEach(function(tick){
+    var y = plotH - (tick / 22711) * plotH;
+    gridLines += '<line x1="' + padLeft + '" y1="' + y + '" x2="' + svgW + '" y2="' + y + '" stroke="rgba(0,0,0,0.06)" stroke-width="1"/>';
+    gridLines += '<text x="' + (padLeft - 6) + '" y="' + (y + 3) + '" font-size="8" fill="#94a3b8" text-anchor="end" font-family="sans-serif">' + tick + '</text>';
+  });
+
+  var barsSVG = '';
+  chartBars.forEach(function(b, i){
+    var barH = b.val > 0 ? Math.max(4, (b.val / 22711) * plotH) : 0;
+    var x = padLeft + i * (plotW / barCount) + 2;
+    var y = plotH - barH;
+    if (barH > 0) {
+      barsSVG += '<rect x="' + x + '" y="' + y + '" width="' + barW + '" height="' + barH + '" rx="2" fill="#84cc16"/>';
+    }
+  });
+
+  var xLabels = '';
+  if (tab === 'month') {
+    var marks = [1, 5, 9, 13, 17, 21, 25, 29, 30];
+    marks.forEach(function(m){
+      var idx = m - 1;
+      var x = padLeft + idx * (plotW / barCount) + barW / 2;
+      xLabels += '<text x="' + x + '" y="' + (svgH - 6) + '" font-size="8" fill="#94a3b8" text-anchor="middle">' + m + '</text>';
+    });
+  } else {
+    chartBars.forEach(function(b, i){
+      var x = padLeft + i * (plotW / barCount) + barW / 2;
+      xLabels += '<text x="' + x + '" y="' + (svgH - 6) + '" font-size="8" fill="#94a3b8" text-anchor="middle">' + b.label + '</text>';
+    });
+  }
+
+  return screenHeader(t('Reports')) +
+    '<div style="display:flex;background:rgba(0,0,0,0.04);border-radius:24px;padding:3px;margin-bottom:14px;">' +
+      ['day', 'week', 'month'].map(function(tKey){
+        var isCur = (tab === tKey);
+        var label = tKey.charAt(0).toUpperCase() + tKey.slice(1);
+        var style = isCur
+          ? 'flex:1;background:var(--surface);border:none;border-radius:20px;padding:8px 0;font-weight:700;font-size:13.5px;color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,0.06);cursor:pointer;'
+          : 'flex:1;background:none;border:none;padding:8px 0;font-weight:600;font-size:13.5px;color:var(--muted);cursor:pointer;';
+        return '<button data-a="reptab" data-v="' + tKey + '" style="' + style + '">' + t(label) + '</button>';
+      }).join('') +
+    '</div>' +
+    (tab === 'month' ? (
+      '<div style="display:flex;gap:10px;margin-bottom:16px;">' +
+        ['nov', 'oct', 'sep'].map(function(mKey){
+          var isCur = (month === mKey);
+          var style = isCur
+            ? 'background:#0f172a;color:#ffffff;border:none;border-radius:99px;padding:7px 20px;font-weight:700;font-size:12.5px;cursor:pointer;'
+            : 'background:var(--surface);border:1px solid var(--line);color:var(--text);border-radius:99px;padding:7px 20px;font-weight:600;font-size:12.5px;cursor:pointer;';
+          return '<button data-a="repmonth" data-v="' + mKey + '" style="' + style + '">' + mKey.toUpperCase() + '</button>';
+        }).join('') +
+      '</div>'
+    ) : '') +
+    '<div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;margin-bottom:18px;">' +
+      '<div style="background:#fed7aa;border-radius:18px;padding:12px 10px;text-align:center;">' +
+        '<div style="font-size:18px;margin-bottom:2px;">🚶</div>' +
+        '<div style="font-size:16px;font-weight:900;color:#0f172a;font-family:var(--display);">' + fmt(steps) + '</div>' +
+        '<div style="font-size:11px;color:#7c2d12;font-weight:600;">' + t('Steps') + '</div>' +
+      '</div>' +
+      '<div style="background:#bbf7d0;border-radius:18px;padding:12px 10px;text-align:center;">' +
+        '<div style="font-size:18px;margin-bottom:2px;">🔥</div>' +
+        '<div style="font-size:16px;font-weight:900;color:#0f172a;font-family:var(--display);">' + kcal + '</div>' +
+        '<div style="font-size:11px;color:#14532d;font-weight:600;">' + t('Calories (kCal)') + '</div>' +
+      '</div>' +
+      '<div style="background:#bae6fd;border-radius:18px;padding:12px 10px;text-align:center;">' +
+        '<div style="font-size:18px;margin-bottom:2px;">🚶</div>' +
+        '<div style="font-size:16px;font-weight:900;color:#0f172a;font-family:var(--display);">' + km + '</div>' +
+        '<div style="font-size:11px;color:#0369a1;font-weight:600;">' + t('Distance (km)') + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:18px 16px;box-shadow:var(--shadow);margin-bottom:20px;">' +
+      '<div style="font-size:18px;font-weight:800;color:var(--text);">' + t('Steps') + '</div>' +
+      '<div style="font-size:12px;color:var(--muted);font-weight:600;margin-top:2px;margin-bottom:12px;">Avg: ' + fmt(avg) + ' / day</div>' +
+      '<svg viewBox="0 0 ' + svgW + ' ' + svgH + '" style="width:100%;height:auto;display:block;">' +
+        gridLines +
+        barsSVG +
+        xLabels +
+      '</svg>' +
+    '</div>' +
+    '<div style="margin-bottom:12px;">' +
+      '<div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:12px;">' + t('Day Wise') + '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:10px;">' +
+        [
+          { s: 18926, d: '1 Nov 26' },
+          { s: 15156, d: '2 Nov 26' },
+          { s: 14712, d: '3 Nov 26' }
+        ].map(function(item){
+          return '<div style="background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,0.02);">' +
+            '<div style="width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,0.04);display:flex;align-items:center;justify-content:center;font-size:18px;">' +
+              svgi('walker', 20) +
+            '</div>' +
+            '<div>' +
+              '<div style="font-size:15px;font-weight:800;color:var(--text);">' + fmt(item.s) + ' <span style="font-size:12px;font-weight:600;color:var(--muted);">' + t('steps') + '</span></div>' +
+              '<div style="font-size:11.5px;color:var(--muted);font-weight:500;">' + item.d + '</div>' +
+            '</div>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+    '</div>';
+}
+
 function render(){
   var root=document.getElementById('app');
   document.documentElement.lang=S.lang==='hi'?'hi':'en';
@@ -2787,9 +3043,11 @@ function render(){
   else if(UI.sub==='streak')body=streakHTML();
   else if(UI.sub==='chdetail')body=chDetailHTML();
   else if(UI.sub==='badges')body=badgesHTML();
+  else if(UI.sub==='coins'||UI.sub==='wallet')body=coinsHTML();
+  else if(UI.sub==='reports')body=reportsHTML();
   else if(UI.sub==='catpage')body=catPageHTML();
   else if(S.tab==='profile')body=accountHTML();
-  else body=({home:homeHTML,challenges:challengesHTML,games:gamesHTML,shop:shopHTML,wallet:walletHTML}[S.tab]||homeHTML)();
+  else body=({home:homeHTML,challenges:challengesHTML,games:gamesHTML,shop:shopHTML,wallet:coinsHTML}[S.tab]||homeHTML)();
   root.innerHTML='<main class="screen">'+body+'</main>'+adBottomBarHTML()+navHTML()+(UI.confirm?sheetHTML():'')+(UI.cj?joinSheetHTML():'')+(UI.prod?prodSheetHTML():'')+(UI.exp?expSheetHTML():'')+(UI.notifOpen?notifSheetHTML():'')+(UI.limit?limitSheetHTML():'')+(UI.ad?adSheetHTML():'');
 }
 
@@ -2814,6 +3072,8 @@ document.addEventListener('click',function(e){
         toast(t('Opening sponsor partner offer...'));
       }
       break;
+    case 'reptab':UI.repTab=v;render();break;
+    case 'repmonth':UI.repMonth=v;render();break;
     case 'sellvl':UI.selLvl=parseInt(v);render();break;
     case 'opencat':UI.selCat=v;UI.sub='catpage';UI.catSort='none';UI.catSearchQuery='';UI.catSearchOpen=false;render();window.scrollTo(0,0);break;
     case 'catsort':if(!UI.catSort||UI.catSort==='none')UI.catSort='low';else if(UI.catSort==='low')UI.catSort='high';else if(UI.catSort==='high')UI.catSort='coins';else UI.catSort='none';render();break;
