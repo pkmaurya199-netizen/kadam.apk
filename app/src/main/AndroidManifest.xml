@@ -11,6 +11,12 @@
     <uses-feature
         android:name="android.hardware.sensor.stepcounter"
         android:required="false" />
+    <uses-feature
+        android:name="android.hardware.sensor.stepdetector"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.sensor.accelerometer"
+        android:required="false" />
 
     <application
         android:allowBackup="true"
