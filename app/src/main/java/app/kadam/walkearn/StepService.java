@@ -76,7 +76,7 @@ public class StepService extends Service implements SensorEventListener {
         Notification.Builder b = Build.VERSION.SDK_INT >= 26
                 ? new Notification.Builder(this, CHANNEL)
                 : new Notification.Builder(this);
-        return b.setContentTitle("Kadam")
+        return b.setContentTitle("StepMudra")
                 .setContentText("Step tracking active")
                 .setSmallIcon(R.drawable.ic_stat)
                 .setContentIntent(pi)
