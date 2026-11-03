@@ -732,77 +732,158 @@ function claimChallenge(id){
   var c=findCh(id);
   if(!c||!c.joined||c.claimed||c.ended||!c.done)return;
   S.claims[c.id]=c.key;
+  S.chWins = (S.chWins || 0) + 1;
   addTx('challenge',c.reward,c.title);toast('+'+c.reward+' coins');
   checkBadges();save();render();
 }
+function totalChWins(){
+  var wins = S.chWins || 0;
+  if(S.claims){
+    wins = Math.max(wins, Object.keys(S.claims).length);
+  }
+  return wins;
+}
+
 var BADGES=[
-  // 1. STEPS (10 Badges) - Reward 3 to 30
-  {id:'s_5k',cat:'steps',name:'5K Stepper',desc:'Walk 5,000 steps in a day',target:5000,reward:3,test:function(){return S.steps>=5000;},cur:function(){return S.steps;},u:'steps',ic:'👟'},
-  {id:'s_10k',cat:'steps',name:'10K Stepper',desc:'Walk 10,000 steps in a day',target:10000,reward:4,test:function(){return S.steps>=10000;},cur:function(){return S.steps;},u:'steps',ic:'🏃'},
-  {id:'s_25k',cat:'steps',name:'25K Walker',desc:'Walk 25,000 lifetime steps',target:25000,reward:5,test:function(){return S.totalSteps>=25000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🚶'},
-  {id:'s_50k',cat:'steps',name:'50K Walker',desc:'Walk 50,000 lifetime steps',target:50000,reward:7,test:function(){return S.totalSteps>=50000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🥉'},
-  {id:'s_100k',cat:'steps',name:'100K Century Club',desc:'Walk 100,000 lifetime steps',target:100000,reward:10,test:function(){return S.totalSteps>=100000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🥈'},
-  {id:'s_200k',cat:'steps',name:'200K Roadie',desc:'Walk 200,000 lifetime steps',target:200000,reward:14,test:function(){return S.totalSteps>=200000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🥇'},
-  {id:'s_350k',cat:'steps',name:'350K Marathoner',desc:'Walk 350,000 lifetime steps',target:350000,reward:18,test:function(){return S.totalSteps>=350000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🏆'},
-  {id:'s_500k',cat:'steps',name:'Half Million Titan',desc:'Walk 500,000 lifetime steps',target:500000,reward:22,test:function(){return S.totalSteps>=500000;},cur:function(){return S.totalSteps;},u:'steps',ic:'👑'},
-  {id:'s_750k',cat:'steps',name:'750K Legend',desc:'Walk 750,000 lifetime steps',target:750000,reward:26,test:function(){return S.totalSteps>=750000;},cur:function(){return S.totalSteps;},u:'steps',ic:'⚡'},
-  {id:'s_1m',cat:'steps',name:'1 Million Steps God',desc:'Reach 1,000,000 lifetime steps',target:1000000,reward:30,test:function(){return S.totalSteps>=1000000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🌟'},
+  // ==========================================
+  // 1. STEPS (14 Badges) - Range: 1 to 30 Coins
+  // ==========================================
+  // Easy (4 to 7 days, 1-3 coins)
+  {id:'s_40k',cat:'steps',lvl:'Easy',name:'40K First Step',desc:'Walk 40,000 lifetime steps (4-5 days effort)',target:40000,reward:1,test:function(){return S.totalSteps>=40000;},cur:function(){return S.totalSteps;},u:'steps',ic:'👟'},
+  {id:'s_70k',cat:'steps',lvl:'Easy',name:'70K Week Starter',desc:'Walk 70,000 lifetime steps (1 full week)',target:70000,reward:2,test:function(){return S.totalSteps>=70000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🏃'},
+  {id:'s_100k',cat:'steps',lvl:'Easy',name:'100K Century Club',desc:'Walk 100,000 lifetime steps (~10-14 days)',target:100000,reward:3,test:function(){return S.totalSteps>=100000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🚶'},
+  // Moderate (2 to 6 weeks, 6-11 coins)
+  {id:'s_175k',cat:'steps',lvl:'Moderate',name:'175K Pacer',desc:'Walk 175,000 lifetime steps (~2.5 weeks)',target:175000,reward:6,test:function(){return S.totalSteps>=175000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🥉'},
+  {id:'s_275k',cat:'steps',lvl:'Moderate',name:'275K Strider',desc:'Walk 275,000 lifetime steps (~4 weeks / 1 month)',target:275000,reward:8,test:function(){return S.totalSteps>=275000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🥈'},
+  {id:'s_400k',cat:'steps',lvl:'Moderate',name:'400K Trekker',desc:'Walk 400,000 lifetime steps (~6 weeks)',target:400000,reward:11,test:function(){return S.totalSteps>=400000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🥇'},
+  // Hard (2 to 4 months, 15-22 coins)
+  {id:'s_600k',cat:'steps',lvl:'Hard',name:'600K Endurance Pro',desc:'Walk 600,000 lifetime steps (2 months of walking)',target:600000,reward:15,test:function(){return S.totalSteps>=600000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🏆'},
+  {id:'s_850k',cat:'steps',lvl:'Hard',name:'850K Road Warrior',desc:'Walk 850,000 lifetime steps (~3 months)',target:850000,reward:18,test:function(){return S.totalSteps>=850000;},cur:function(){return S.totalSteps;},u:'steps',ic:'⚡'},
+  {id:'s_1m',cat:'steps',lvl:'Hard',name:'1 Million Legend',desc:'Reach 1,000,000 lifetime steps (3.5+ months)',target:1000000,reward:20,test:function(){return S.totalSteps>=1000000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🌟'},
+  {id:'s_1_25m',cat:'steps',lvl:'Hard',name:'1.25 Million Titan',desc:'Walk 1,250,000 lifetime steps (4+ months)',target:1250000,reward:22,test:function(){return S.totalSteps>=1250000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🎖️'},
+  // Legendary (5+ Months, 25-30 coins)
+  {id:'s_1_5m',cat:'steps',lvl:'Legendary',name:'1.5 Million Titan (5 Mo)',desc:'Walk 1,500,000 lifetime steps (5 months daily dedication)',target:1500000,reward:25,test:function(){return S.totalSteps>=1500000;},cur:function(){return S.totalSteps;},u:'steps',ic:'👑'},
+  {id:'s_2m',cat:'steps',lvl:'Legendary',name:'2 Million Master (7 Mo)',desc:'Walk 2,000,000 lifetime steps (7+ months of walking)',target:2000000,reward:27,test:function(){return S.totalSteps>=2000000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🔥'},
+  {id:'s_2_5m',cat:'steps',lvl:'Legendary',name:'2.5 Million Grandmaster (9 Mo)',desc:'Walk 2,500,000 lifetime steps (9+ months dedication)',target:2500000,reward:28,test:function(){return S.totalSteps>=2500000;},cur:function(){return S.totalSteps;},u:'steps',ic:'💎'},
+  {id:'s_3m',cat:'steps',lvl:'Legendary',name:'3 Million Steps God (1 Year)',desc:'Reach 3,000,000 lifetime steps (1 full year walking deity)',target:3000000,reward:30,test:function(){return S.totalSteps>=3000000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🌌'},
 
-  // 2. DISTANCE (8 Badges) - Reward 3 to 30
-  {id:'d_5km',cat:'distance',name:'5 KM Explorer',desc:'Cover 5 km total distance',target:5,reward:3,test:function(){return (S.totalSteps*0.00075)>=5;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🗺️'},
-  {id:'d_10km',cat:'distance',name:'10 KM Strider',desc:'Cover 10 km total distance',target:10,reward:4,test:function(){return (S.totalSteps*0.00075)>=10;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🧭'},
-  {id:'d_25km',cat:'distance',name:'25 KM City Trekker',desc:'Cover 25 km total distance',target:25,reward:6,test:function(){return (S.totalSteps*0.00075)>=25;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🏙️'},
-  {id:'d_50km',cat:'distance',name:'50 KM Highway Star',desc:'Cover 50 km total distance',target:50,reward:9,test:function(){return (S.totalSteps*0.00075)>=50;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🛣️'},
-  {id:'d_100km',cat:'distance',name:'100 KM Cross Country',desc:'Cover 100 km total distance',target:100,reward:13,test:function(){return (S.totalSteps*0.00075)>=100;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🚀'},
-  {id:'d_250km',cat:'distance',name:'250 KM State Rover',desc:'Cover 250 km total distance',target:250,reward:18,test:function(){return (S.totalSteps*0.00075)>=250;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'⛰️'},
-  {id:'d_500km',cat:'distance',name:'500 KM Ultra Voyager',desc:'Cover 500 km total distance',target:500,reward:24,test:function(){return (S.totalSteps*0.00075)>=500;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🌠'},
-  {id:'d_1000km',cat:'distance',name:'1,000 KM Bharat Yatri',desc:'Cover 1,000 km total distance',target:1000,reward:30,test:function(){return (S.totalSteps*0.00075)>=1000;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🇮🇳'},
+  // ==========================================
+  // 2. DISTANCE (12 Badges) - Range: 1 to 30 Coins
+  // ==========================================
+  // Easy (4 to 7 days, 1-3 coins)
+  {id:'d_30km',cat:'distance',lvl:'Easy',name:'30 KM First Trek',desc:'Cover 30 km total distance (~4-5 days)',target:30,reward:1,test:function(){return (S.totalSteps*0.00075)>=30;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🗺️'},
+  {id:'d_55km',cat:'distance',lvl:'Easy',name:'55 KM Week Rover',desc:'Cover 55 km total distance (~1 full week)',target:55,reward:2,test:function(){return (S.totalSteps*0.00075)>=55;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🧭'},
+  {id:'d_80km',cat:'distance',lvl:'Easy',name:'80 KM City Explorer',desc:'Cover 80 km total distance (~10-12 days)',target:80,reward:3,test:function(){return (S.totalSteps*0.00075)>=80;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🏙️'},
+  // Moderate (2 to 6 weeks, 6-11 coins)
+  {id:'d_150km',cat:'distance',lvl:'Moderate',name:'150 KM Highway Cruiser',desc:'Cover 150 km total distance (~3 weeks)',target:150,reward:6,test:function(){return (S.totalSteps*0.00075)>=150;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🛣️'},
+  {id:'d_225km',cat:'distance',lvl:'Moderate',name:'225 KM State Explorer',desc:'Cover 225 km total distance (~1 month)',target:225,reward:8,test:function(){return (S.totalSteps*0.00075)>=225;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🚀'},
+  {id:'d_320km',cat:'distance',lvl:'Moderate',name:'320 KM Trailblazer',desc:'Cover 320 km total distance (~6 weeks)',target:320,reward:11,test:function(){return (S.totalSteps*0.00075)>=320;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'⛰️'},
+  // Hard (2 to 4 months, 15-22 coins)
+  {id:'d_500km',cat:'distance',lvl:'Hard',name:'500 KM Ultra Voyager',desc:'Cover 500 km total distance (~2.5 months)',target:500,reward:15,test:function(){return (S.totalSteps*0.00075)>=500;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🌠'},
+  {id:'d_700km',cat:'distance',lvl:'Hard',name:'700 KM Interstate Runner',desc:'Cover 700 km total distance (~3.5 months)',target:700,reward:18,test:function(){return (S.totalSteps*0.00075)>=700;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'✈️'},
+  {id:'d_950km',cat:'distance',lvl:'Hard',name:'950 KM Grand Yatri',desc:'Cover 950 km total distance (4+ months)',target:950,reward:22,test:function(){return (S.totalSteps*0.00075)>=950;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🇮🇳'},
+  // Legendary (5+ Months, 25-30 coins)
+  {id:'d_1200km',cat:'distance',lvl:'Legendary',name:'1,200 KM Bharat Explorer (5 Mo)',desc:'Cover 1,200 km total distance (5 months daily walking)',target:1200,reward:25,test:function(){return (S.totalSteps*0.00075)>=1200;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🛡️'},
+  {id:'d_1600km',cat:'distance',lvl:'Legendary',name:'1,600 KM Coastal Journey (7 Mo)',desc:'Cover 1,600 km total distance (7 months journey)',target:1600,reward:28,test:function(){return (S.totalSteps*0.00075)>=1600;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🌊'},
+  {id:'d_2200km',cat:'distance',lvl:'Legendary',name:'2,200 KM Cross Country God (9+ Mo)',desc:'Cover 2,200 km across India (9+ months dedication)',target:2200,reward:30,test:function(){return (S.totalSteps*0.00075)>=2200;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🕉️'},
 
-  // 3. CALORIES (8 Badges) - Reward 3 to 30
-  {id:'c_200',cat:'calories',name:'Spark Starter',desc:'Burn 200 total calories',target:200,reward:3,test:function(){return (S.totalSteps*0.04)>=200;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'✨'},
-  {id:'c_500',cat:'calories',name:'Calorie Burner',desc:'Burn 500 total calories',target:500,reward:4,test:function(){return (S.totalSteps*0.04)>=500;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'🔥'},
-  {id:'c_1000',cat:'calories',name:'Fat Torch',desc:'Burn 1,000 total calories',target:1000,reward:6,test:function(){return (S.totalSteps*0.04)>=1000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'🕯️'},
-  {id:'c_2500',cat:'calories',name:'Flame Walker',desc:'Burn 2,500 total calories',target:2500,reward:9,test:function(){return (S.totalSteps*0.04)>=2500;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'💥'},
-  {id:'c_5000',cat:'calories',name:'Inferno Walker',desc:'Burn 5,000 total calories',target:5000,reward:13,test:function(){return (S.totalSteps*0.04)>=5000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'🌋'},
-  {id:'c_10000',cat:'calories',name:'Firestorm Master',desc:'Burn 10,000 total calories',target:10000,reward:18,test:function(){return (S.totalSteps*0.04)>=10000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'⚡'},
-  {id:'c_25000',cat:'calories',name:'Volcano Titan',desc:'Burn 25,000 total calories',target:25000,reward:24,test:function(){return (S.totalSteps*0.04)>=25000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'☄️'},
-  {id:'c_50000',cat:'calories',name:'Supernova Master',desc:'Burn 50,000 total calories',target:50000,reward:30,test:function(){return (S.totalSteps*0.04)>=50000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'☀️'},
+  // ==========================================
+  // 3. CALORIES (12 Badges) - Range: 1 to 30 Coins
+  // ==========================================
+  // Easy (4 to 7 days, 1-3 coins)
+  {id:'c_1500',cat:'calories',lvl:'Easy',name:'1.5K Calorie Burn',desc:'Burn 1,500 total calories (~4-5 days)',target:1500,reward:1,test:function(){return (S.totalSteps*0.04)>=1500;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'✨'},
+  {id:'c_2800',cat:'calories',lvl:'Easy',name:'2.8K Active Burner',desc:'Burn 2,800 total calories (~1 full week)',target:2800,reward:2,test:function(){return (S.totalSteps*0.04)>=2800;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'🔥'},
+  {id:'c_4200',cat:'calories',lvl:'Easy',name:'4.2K Energy Torch',desc:'Burn 4,200 total calories (~10-12 days)',target:4200,reward:3,test:function(){return (S.totalSteps*0.04)>=4200;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'⚡'},
+  // Moderate (2 to 6 weeks, 6-11 coins)
+  {id:'c_7500',cat:'calories',lvl:'Moderate',name:'7.5K Fat Melter',desc:'Burn 7,500 total calories (~3 weeks)',target:7500,reward:6,test:function(){return (S.totalSteps*0.04)>=7500;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'💥'},
+  {id:'c_12000',cat:'calories',lvl:'Moderate',name:'12K Firestarter',desc:'Burn 12,000 total calories (~1 month)',target:12000,reward:8,test:function(){return (S.totalSteps*0.04)>=12000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'🌋'},
+  {id:'c_18000',cat:'calories',lvl:'Moderate',name:'18K Inferno',desc:'Burn 18,000 total calories (~6 weeks)',target:18000,reward:11,test:function(){return (S.totalSteps*0.04)>=18000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'☀️'},
+  // Hard (2 to 4 months, 15-22 coins)
+  {id:'c_26000',cat:'calories',lvl:'Hard',name:'26K Calorie Titan',desc:'Burn 26,000 total calories (~2.5 months)',target:26000,reward:15,test:function(){return (S.totalSteps*0.04)>=26000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'☄️'},
+  {id:'c_36000',cat:'calories',lvl:'Hard',name:'36K Iron Metabolism',desc:'Burn 36,000 total calories (~3.5 months)',target:36000,reward:18,test:function(){return (S.totalSteps*0.04)>=36000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'🛡️'},
+  {id:'c_48000',cat:'calories',lvl:'Hard',name:'48K Nuclear Engine',desc:'Burn 48,000 total calories (4+ months)',target:48000,reward:22,test:function(){return (S.totalSteps*0.04)>=48000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'☢️'},
+  // Legendary (5+ Months, 25-30 coins)
+  {id:'c_60000',cat:'calories',lvl:'Legendary',name:'60,000 Calorie Inferno (5 Mo)',desc:'Burn 60,000 total calories (5 months daily dedication)',target:60000,reward:25,test:function(){return (S.totalSteps*0.04)>=60000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'🪐'},
+  {id:'c_80000',cat:'calories',lvl:'Legendary',name:'80,000 Calorie Phoenix (7 Mo)',desc:'Burn 80,000 total calories (7 months warrior burn)',target:80000,reward:28,test:function(){return (S.totalSteps*0.04)>=80000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'🦅'},
+  {id:'c_110000',cat:'calories',lvl:'Legendary',name:'110,000 Calorie Supernova (9+ Mo)',desc:'Burn 110,000 total calories (9+ months walking god)',target:110000,reward:30,test:function(){return (S.totalSteps*0.04)>=110000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'🌟'},
 
-  // 4. DAILY STREAK (8 Badges) - Reward 3 to 30
-  {id:'st_3',cat:'streak',name:'3-Day Warmup',desc:'Keep a 3-day walking streak',target:3,reward:3,test:function(){return S.best>=3;},cur:function(){return S.best;},u:'days',ic:'🌱'},
-  {id:'st_7',cat:'streak',name:'7-Day Streak',desc:'Keep a 7-day walking streak',target:7,reward:5,test:function(){return S.best>=7;},cur:function(){return S.best;},u:'days',ic:'🌿'},
-  {id:'st_14',cat:'streak',name:'2-Week Consistent',desc:'Keep a 14-day walking streak',target:14,reward:8,test:function(){return S.best>=14;},cur:function(){return S.best;},u:'days',ic:'🌳'},
-  {id:'st_21',cat:'streak',name:'21-Day Habit',desc:'Keep a 21-day walking streak',target:21,reward:12,test:function(){return S.best>=21;},cur:function(){return S.best;},u:'days',ic:'💪'},
-  {id:'st_30',cat:'streak',name:'30-Day Champion',desc:'Keep a 30-day walking streak',target:30,reward:16,test:function(){return S.best>=30;},cur:function(){return S.best;},u:'days',ic:'🏅'},
-  {id:'st_60',cat:'streak',name:'60-Day Iron Will',desc:'Keep a 60-day walking streak',target:60,reward:20,test:function(){return S.best>=60;},cur:function(){return S.best;},u:'days',ic:'🛡️'},
-  {id:'st_90',cat:'streak',name:'90-Day Quarter Titan',desc:'Keep a 90-day walking streak',target:90,reward:25,test:function(){return S.best>=90;},cur:function(){return S.best;},u:'days',ic:'⚔️'},
-  {id:'st_180',cat:'streak',name:'Half Year Legend',desc:'Keep a 180-day walking streak',target:180,reward:30,test:function(){return S.best>=180;},cur:function(){return S.best;},u:'days',ic:'👑'},
+  // ==========================================
+  // 4. STREAK (12 Badges) - Range: 2 to 30 Coins
+  // ==========================================
+  // Easy (1 week minimum, 2-3 coins)
+  {id:'st_7',cat:'streak',lvl:'Easy',name:'7-Day Habit',desc:'Maintain an unbroken 7-day streak (1 full week)',target:7,reward:2,test:function(){return Math.max(S.streak||0,S.best||0)>=7;},cur:function(){return Math.max(S.streak||0,S.best||0);},u:'days',ic:'🌱'},
+  {id:'st_10',cat:'streak',lvl:'Easy',name:'10-Day Devotion',desc:'Maintain an unbroken 10-day streak',target:10,reward:3,test:function(){return Math.max(S.streak||0,S.best||0)>=10;},cur:function(){return Math.max(S.streak||0,S.best||0);},u:'days',ic:'🌿'},
+  // Moderate (2 to 5 weeks, 6-12 coins)
+  {id:'st_14',cat:'streak',lvl:'Moderate',name:'Fortnight Master',desc:'Maintain an unbroken 14-day streak (2 weeks)',target:14,reward:6,test:function(){return Math.max(S.streak||0,S.best||0)>=14;},cur:function(){return Math.max(S.streak||0,S.best||0);},u:'days',ic:'🥉'},
+  {id:'st_21',cat:'streak',lvl:'Moderate',name:'21-Day Habit Formed',desc:'Maintain an unbroken 21-day streak (3 weeks)',target:21,reward:8,test:function(){return Math.max(S.streak||0,S.best||0)>=21;},cur:function(){return Math.max(S.streak||0,S.best||0);},u:'days',ic:'🥈'},
+  {id:'st_30',cat:'streak',lvl:'Moderate',name:'1 Month Iron Will',desc:'Maintain an unbroken 30-day streak (1 full month)',target:30,reward:12,test:function(){return Math.max(S.streak||0,S.best||0)>=30;},cur:function(){return Math.max(S.streak||0,S.best||0);},u:'days',ic:'🥇'},
+  // Hard (2 to 4 months, 15-22 coins)
+  {id:'st_45',cat:'streak',lvl:'Hard',name:'45-Day Discipline',desc:'Maintain a 45-day unbroken streak (1.5 months)',target:45,reward:15,test:function(){return Math.max(S.streak||0,S.best||0)>=45;},cur:function(){return Math.max(S.streak||0,S.best||0);},u:'days',ic:'🧘'},
+  {id:'st_60',cat:'streak',lvl:'Hard',name:'2 Months Unstoppable',desc:'Maintain a 60-day unbroken streak (2 full months)',target:60,reward:18,test:function(){return Math.max(S.streak||0,S.best||0)>=60;},cur:function(){return Math.max(S.streak||0,S.best||0);},u:'days',ic:'🛡️'},
+  {id:'st_90',cat:'streak',lvl:'Hard',name:'Quarter Year Legend',desc:'Maintain a 90-day unbroken streak (3 full months)',target:90,reward:20,test:function(){return Math.max(S.streak||0,S.best||0)>=90;},cur:function(){return Math.max(S.streak||0,S.best||0);},u:'days',ic:'⚔️'},
+  {id:'st_120',cat:'streak',lvl:'Hard',name:'4 Months Diamond Streak',desc:'Maintain a 120-day unbroken streak (4 full months)',target:120,reward:22,test:function(){return Math.max(S.streak||0,S.best||0)>=120;},cur:function(){return Math.max(S.streak||0,S.best||0);},u:'days',ic:'💎'},
+  // Legendary (5+ Months, 25-30 coins)
+  {id:'st_150',cat:'streak',lvl:'Legendary',name:'150 Days Iron Legend (5 Mo)',desc:'Maintain 150-day unbroken daily streak (5 full months non-stop!)',target:150,reward:25,test:function(){return Math.max(S.streak||0,S.best||0)>=150;},cur:function(){return Math.max(S.streak||0,S.best||0);},u:'days',ic:'👑'},
+  {id:'st_180',cat:'streak',lvl:'Legendary',name:'Half Year Deity (6 Mo)',desc:'Maintain 180-day unbroken daily streak (6 months unbroken dedication!)',target:180,reward:28,test:function(){return Math.max(S.streak||0,S.best||0)>=180;},cur:function(){return Math.max(S.streak||0,S.best||0);},u:'days',ic:'⚡'},
+  {id:'st_250',cat:'streak',lvl:'Legendary',name:'250 Days Immortal (8+ Mo)',desc:'Maintain 250-day unbroken daily streak (8+ months daily legend!)',target:250,reward:30,test:function(){return Math.max(S.streak||0,S.best||0)>=250;},cur:function(){return Math.max(S.streak||0,S.best||0);},u:'days',ic:'🌌'},
 
-  // 5. COIN COLLECTION (8 Badges) - Reward 3 to 30
-  {id:'coin_10',cat:'coins',name:'Pocket Coins',desc:'Earn 10 lifetime coins',target:10,reward:3,test:function(){return S.earned>=10;},cur:function(){return S.earned;},u:'coins',ic:'🪙'},
-  {id:'coin_25',cat:'coins',name:'Coin Saver',desc:'Earn 25 lifetime coins',target:25,reward:4,test:function(){return S.earned>=25;},cur:function(){return S.earned;},u:'coins',ic:'💰'},
-  {id:'coin_50',cat:'coins',name:'Piggy Banker',desc:'Earn 50 lifetime coins',target:50,reward:6,test:function(){return S.earned>=50;},cur:function(){return S.earned;},u:'coins',ic:'🏦'},
-  {id:'coin_100',cat:'coins',name:'Century Earner',desc:'Earn 100 lifetime coins',target:100,reward:10,test:function(){return S.earned>=100;},cur:function(){return S.earned;},u:'coins',ic:'💵'},
-  {id:'coin_250',cat:'coins',name:'Wealth Walker',desc:'Earn 250 lifetime coins',target:250,reward:15,test:function(){return S.earned>=250;},cur:function(){return S.earned;},u:'coins',ic:'💎'},
-  {id:'coin_500',cat:'coins',name:'Coin Tycoon',desc:'Earn 500 lifetime coins',target:500,reward:20,test:function(){return S.earned>=500;},cur:function(){return S.earned;},u:'coins',ic:'🏰'},
-  {id:'coin_750',cat:'coins',name:'Treasure Master',desc:'Earn 750 lifetime coins',target:750,reward:25,test:function(){return S.earned>=750;},cur:function(){return S.earned;},u:'coins',ic:'👑'},
-  {id:'coin_1000',cat:'coins',name:'Kadam Millionaire',desc:'Earn 1,000 lifetime coins',target:1000,reward:30,test:function(){return S.earned>=1000;},cur:function(){return S.earned;},u:'coins',ic:'🏆'},
+  // ==========================================
+  // 5. COINS (12 Badges) - Range: 1 to 30 Coins
+  // ==========================================
+  // Easy (4 to 7 days, 1-3 coins)
+  {id:'cn_40',cat:'coins',lvl:'Easy',name:'40 Coins Saver',desc:'Earn 40 lifetime coins (~4-5 days)',target:40,reward:1,test:function(){return S.earned>=40;},cur:function(){return S.earned;},u:'coins',ic:'🪙'},
+  {id:'cn_75',cat:'coins',lvl:'Easy',name:'75 Coins Earner',desc:'Earn 75 lifetime coins (~1 week)',target:75,reward:2,test:function(){return S.earned>=75;},cur:function(){return S.earned;},u:'coins',ic:'💰'},
+  {id:'cn_120',cat:'coins',lvl:'Easy',name:'120 Coins Piggy Bank',desc:'Earn 120 lifetime coins (~10-12 days)',target:120,reward:3,test:function(){return S.earned>=120;},cur:function(){return S.earned;},u:'coins',ic:'🏦'},
+  // Moderate (2 to 6 weeks, 6-11 coins)
+  {id:'cn_200',cat:'coins',lvl:'Moderate',name:'200 Coins Copper Stack',desc:'Earn 200 lifetime coins (~3 weeks)',target:200,reward:6,test:function(){return S.earned>=200;},cur:function(){return S.earned;},u:'coins',ic:'🥉'},
+  {id:'cn_320',cat:'coins',lvl:'Moderate',name:'320 Coins Silver Stash',desc:'Earn 320 lifetime coins (~1 month)',target:320,reward:8,test:function(){return S.earned>=320;},cur:function(){return S.earned;},u:'coins',ic:'🥈'},
+  {id:'cn_500',cat:'coins',lvl:'Moderate',name:'500 Coins Gold Vault',desc:'Earn 500 lifetime coins (~6 weeks)',target:500,reward:11,test:function(){return S.earned>=500;},cur:function(){return S.earned;},u:'coins',ic:'🥇'},
+  // Hard (2 to 4 months, 15-22 coins)
+  {id:'cn_750',cat:'coins',lvl:'Hard',name:'750 Coins Treasurer',desc:'Earn 750 lifetime coins (~2.5 months)',target:750,reward:15,test:function(){return S.earned>=750;},cur:function(){return S.earned;},u:'coins',ic:'💎'},
+  {id:'cn_1100',cat:'coins',lvl:'Hard',name:'1,100 Coins Half Mill',desc:'Earn 1,100 lifetime coins (~3.5 months)',target:1100,reward:18,test:function(){return S.earned>=1100;},cur:function(){return S.earned;},u:'coins',ic:'💍'},
+  {id:'cn_1500',cat:'coins',lvl:'Hard',name:'1,500 Coins Wealthy Walker',desc:'Earn 1,500 lifetime coins (4+ months)',target:1500,reward:22,test:function(){return S.earned>=1500;},cur:function(){return S.earned;},u:'coins',ic:'👑'},
+  // Legendary (5+ Months, 25-30 coins)
+  {id:'cn_2000',cat:'coins',lvl:'Legendary',name:'2,000 Coins Tycoon (5 Mo)',desc:'Earn 2,000 lifetime coins (5 months earnings)',target:2000,reward:25,test:function(){return S.earned>=2000;},cur:function(){return S.earned;},u:'coins',ic:'🏰'},
+  {id:'cn_2600',cat:'coins',lvl:'Legendary',name:'2,600 Coins Kadam Baron (7 Mo)',desc:'Earn 2,600 lifetime coins (7 months wealth)',target:2600,reward:28,test:function(){return S.earned>=2600;},cur:function(){return S.earned;},u:'coins',ic:'✨'},
+  {id:'cn_3500',cat:'coins',lvl:'Legendary',name:'3,500 Coins Billionaire (9+ Mo)',desc:'Earn 3,500 lifetime coins (9+ months dedication)',target:3500,reward:30,test:function(){return S.earned>=3500;},cur:function(){return S.earned;},u:'coins',ic:'🌟'},
 
-  // 6. WATCH ADS (6 Badges) - Reward 3 to 30
-  {id:'ad_1',cat:'ads',name:'First Ad Viewer',desc:'Watch your first ad reward',target:1,reward:3,test:function(){return (S.adsTotal||S.adsD||0)>=1;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'📺'},
-  {id:'ad_5',cat:'ads',name:'5 Ads Supporter',desc:'Watch 5 reward ads',target:5,reward:5,test:function(){return (S.adsTotal||S.adsD||0)>=5;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'🎬'},
-  {id:'ad_15',cat:'ads',name:'15 Ads Bronze',desc:'Watch 15 reward ads',target:15,reward:9,test:function(){return (S.adsTotal||S.adsD||0)>=15;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'🥉'},
-  {id:'ad_30',cat:'ads',name:'30 Ads Silver',desc:'Watch 30 reward ads',target:30,reward:14,test:function(){return (S.adsTotal||S.adsD||0)>=30;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'🥈'},
-  {id:'ad_60',cat:'ads',name:'60 Ads Gold',desc:'Watch 60 reward ads',target:60,reward:20,test:function(){return (S.adsTotal||S.adsD||0)>=60;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'🥇'},
-  {id:'ad_100',cat:'ads',name:'100 Ads Patron',desc:'Watch 100 reward ads',target:100,reward:30,test:function(){return (S.adsTotal||S.adsD||0)>=100;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'👑'},
+  // ==========================================
+  // 6. WATCH ADS (10 Badges) - Range: 1 to 30 Coins
+  // ==========================================
+  // Easy (4 to 7 days, 1-3 coins)
+  {id:'ad_20',cat:'ads',lvl:'Easy',name:'20 Ads Supporter',desc:'Watch 20 reward ads (~4-5 days)',target:20,reward:1,test:function(){return (S.adsTotal||S.adsD||0)>=20;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'📺'},
+  {id:'ad_35',cat:'ads',lvl:'Easy',name:'35 Ads Regular',desc:'Watch 35 reward ads (~7-8 days)',target:35,reward:2,test:function(){return (S.adsTotal||S.adsD||0)>=35;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'🎬'},
+  {id:'ad_50',cat:'ads',lvl:'Easy',name:'50 Ads Helper',desc:'Watch 50 reward ads (~10-12 days)',target:50,reward:3,test:function(){return (S.adsTotal||S.adsD||0)>=50;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'🍿'},
+  // Moderate (2 to 6 weeks, 6-12 coins)
+  {id:'ad_90',cat:'ads',lvl:'Moderate',name:'90 Ads Bronze Viewer',desc:'Watch 90 reward ads (~3 weeks)',target:90,reward:6,test:function(){return (S.adsTotal||S.adsD||0)>=90;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'🥉'},
+  {id:'ad_150',cat:'ads',lvl:'Moderate',name:'150 Ads Silver Viewer',desc:'Watch 150 reward ads (~1 month)',target:150,reward:9,test:function(){return (S.adsTotal||S.adsD||0)>=150;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'🥈'},
+  {id:'ad_225',cat:'ads',lvl:'Moderate',name:'225 Ads Gold Patron',desc:'Watch 225 reward ads (~6 weeks)',target:225,reward:12,test:function(){return (S.adsTotal||S.adsD||0)>=225;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'🥇'},
+  // Hard (2 to 4 months, 16-20 coins)
+  {id:'ad_320',cat:'ads',lvl:'Hard',name:'320 Ads Loyal Fan',desc:'Watch 320 reward ads (~2.5 months)',target:320,reward:16,test:function(){return (S.adsTotal||S.adsD||0)>=320;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'💎'},
+  {id:'ad_420',cat:'ads',lvl:'Hard',name:'420 Ads Super Sponsor',desc:'Watch 420 reward ads (~3.5 months)',target:420,reward:20,test:function(){return (S.adsTotal||S.adsD||0)>=420;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'🏆'},
+  // Legendary (5+ Months, 25-30 coins)
+  {id:'ad_550',cat:'ads',lvl:'Legendary',name:'550 Ads Grand Patron (5 Mo)',desc:'Watch 550 reward ads (5 months dedicated viewing)',target:550,reward:25,test:function(){return (S.adsTotal||S.adsD||0)>=550;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'👑'},
+  {id:'ad_750',cat:'ads',lvl:'Legendary',name:'750 Ads Benefactor (7+ Mo)',desc:'Watch 750 reward ads (7+ months unwavering support)',target:750,reward:30,test:function(){return (S.adsTotal||S.adsD||0)>=750;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'🌟'},
 
-  // 7. GAMES & SPECIAL (6 Badges) - Reward 3 to 30
-  {id:'g_1',cat:'special',name:'Game Novice',desc:'Play your first 2048 game',target:1,reward:3,test:function(){return S.everGame;},cur:function(){return S.everGame?1:0;},u:'game',ic:'🎮'},
-  {id:'g_10',cat:'special',name:'Game Pro',desc:'Play 10 games today or lifetime',target:10,reward:8,test:function(){return (S.gamesToday||0)>=5||S.everGame;},cur:function(){return S.gamesToday||0;},u:'games',ic:'🕹️'},
-  {id:'w_1',cat:'special',name:'Hydrated Starter',desc:'Log water intake for 1st time',target:1,reward:3,test:function(){return (S.water||0)>=1;},cur:function(){return S.water||0;},u:'water',ic:'💧'},
-  {id:'w_8',cat:'special',name:'Hydration Hero',desc:'Complete daily 8-glass water goal',target:8,reward:6,test:function(){return S.waterDone||(S.water>=8);},cur:function(){return S.water||0;},u:'glasses',ic:'🌊'},
-  {id:'rf_1',cat:'special',name:'Friendly Walker',desc:'Refer 1 friend successfully',target:1,reward:7,test:function(){return S.friends.some(function(f){return f.status==='done';});},cur:function(){return S.friends.filter(function(f){return f.status==='done';}).length;},u:'friend',ic:'🤝'},
-  {id:'sh_1',cat:'special',name:'Smart Shopper',desc:'Redeem your first store reward',target:1,reward:10,test:function(){return S.orders.length>0;},cur:function(){return S.orders.length;},u:'order',ic:'🛍️'}
+  // ==========================================
+  // 7. CHALLENGES & SPECIAL (12 Badges) - Range: 2 to 30 Coins
+  // ==========================================
+  // Easy (4 to 7 days, 2-3 coins)
+  {id:'sp_ch5',cat:'special',lvl:'Easy',name:'5 Challenges Won',desc:'Complete and claim 5 challenges (~5-7 days)',target:5,reward:2,test:function(){return totalChWins()>=5;},cur:function(){return totalChWins();},u:'wins',ic:'🚩'},
+  {id:'sp_ref1',cat:'special',lvl:'Easy',name:'Community Builder',desc:'Invite 1 friend who joins and walks',target:1,reward:3,test:function(){return (S.friends||[]).some(function(f){return f.status==='done';})||(S.friends||[]).length>=1;},cur:function(){return (S.friends||[]).length;},u:'friend',ic:'🤝'},
+  // Moderate (2 to 6 weeks, 6-12 coins)
+  {id:'sp_ch15',cat:'special',lvl:'Moderate',name:'15 Challenges Master',desc:'Complete and claim 15 challenges (~2-3 weeks)',target:15,reward:6,test:function(){return totalChWins()>=15;},cur:function(){return totalChWins();},u:'wins',ic:'🎯'},
+  {id:'sp_sh1',cat:'special',lvl:'Moderate',name:'Smart Shopper',desc:'Redeem your first reward product from store',target:1,reward:8,test:function(){return (S.orders||[]).length>0;},cur:function(){return (S.orders||[]).length;},u:'order',ic:'🛍️'},
+  {id:'sp_ch30',cat:'special',lvl:'Moderate',name:'30 Challenges Victor',desc:'Complete and claim 30 challenges (~1 month)',target:30,reward:10,test:function(){return totalChWins()>=30;},cur:function(){return totalChWins();},u:'wins',ic:'🏆'},
+  {id:'sp_ref3',cat:'special',lvl:'Moderate',name:'Squad Leader',desc:'Invite 3 friends to Kadam',target:3,reward:12,test:function(){return (S.friends||[]).length>=3;},cur:function(){return (S.friends||[]).length;},u:'friends',ic:'👥'},
+  // Hard (2 to 4 months, 16-22 coins)
+  {id:'sp_ch50',cat:'special',lvl:'Hard',name:'50 Challenges Champion',desc:'Complete and claim 50 challenges (~2.5 months)',target:50,reward:16,test:function(){return totalChWins()>=50;},cur:function(){return totalChWins();},u:'wins',ic:'⚡'},
+  {id:'sp_ch75',cat:'special',lvl:'Hard',name:'75 Challenges Conquered',desc:'Complete and claim 75 challenges (~3.5 months)',target:75,reward:20,test:function(){return totalChWins()>=75;},cur:function(){return totalChWins();},u:'wins',ic:'🎖️'},
+  {id:'sp_ref5',cat:'special',lvl:'Hard',name:'Influencer',desc:'Invite 5 active walking friends',target:5,reward:22,test:function(){return (S.friends||[]).length>=5;},cur:function(){return (S.friends||[]).length;},u:'friends',ic:'📢'},
+  // Legendary (5+ Months, 25-30 coins)
+  {id:'sp_ch100',cat:'special',lvl:'Legendary',name:'100 Challenges Centurion (5 Mo)',desc:'Complete & claim 100 challenges (5 months daily dedication!)',target:100,reward:25,test:function(){return totalChWins()>=100;},cur:function(){return totalChWins();},u:'wins',ic:'🛡️'},
+  {id:'sp_ch140',cat:'special',lvl:'Legendary',name:'140 Challenges Legend (7 Mo)',desc:'Complete & claim 140 challenges (7 months relentless effort!)',target:140,reward:28,test:function(){return totalChWins()>=140;},cur:function(){return totalChWins();},u:'wins',ic:'👑'},
+  {id:'sp_ch180',cat:'special',lvl:'Legendary',name:'180 Challenges God (9+ Mo)',desc:'Complete & claim 180 challenges (9+ months supreme consistency!)',target:180,reward:30,test:function(){return totalChWins()>=180;},cur:function(){return totalChWins();},u:'wins',ic:'🌟'}
 ];
 
 function checkBadges(){
@@ -832,13 +913,13 @@ function badgesHTML(){
 
   var cats=[
     ['all','All ('+BADGES.length+')','🏅'],
-    ['steps','Steps (10)','🚶'],
-    ['distance','Distance (8)','🛣️'],
-    ['calories','Calories (8)','🔥'],
-    ['streak','Streak (8)','⚡'],
-    ['coins','Coins (8)','🪙'],
-    ['ads','Watch Ads (6)','📺'],
-    ['special','Special (6)','⭐']
+    ['steps','Steps ('+BADGES.filter(function(x){return x.cat==='steps';}).length+')','🚶'],
+    ['distance','Distance ('+BADGES.filter(function(x){return x.cat==='distance';}).length+')','🛣️'],
+    ['calories','Calories ('+BADGES.filter(function(x){return x.cat==='calories';}).length+')','🔥'],
+    ['streak','Streak ('+BADGES.filter(function(x){return x.cat==='streak';}).length+')','⚡'],
+    ['coins','Coins ('+BADGES.filter(function(x){return x.cat==='coins';}).length+')','🪙'],
+    ['ads','Watch Ads ('+BADGES.filter(function(x){return x.cat==='ads';}).length+')','📺'],
+    ['special','Special ('+BADGES.filter(function(x){return x.cat==='special';}).length+')','⭐']
   ];
 
   return subHeader(t('Badges & Achievements'))+
@@ -848,7 +929,7 @@ function badgesHTML(){
         '<div class="row" style="gap:10px;align-items:center;">'+
           '<span style="font-size:28px;">🏅</span>'+
           '<div>'+
-            '<h2 style="font-size:17px;font-weight:800;margin:0;">54 Badges & Achievements</h2>'+
+            '<h2 style="font-size:17px;font-weight:800;margin:0;">'+BADGES.length+' Badges &amp; Achievements</h2>'+
             '<div style="font-size:11px;color:var(--muted);">'+unlockedCount+' of '+BADGES.length+' Unlocked ('+totalPct+'%)</div>'+
           '</div>'+
         '</div>'+
@@ -875,11 +956,19 @@ function badgesHTML(){
         var numCur=Number(curVal)||0;
         var pct=Math.min(100,Math.floor((numCur/b.target)*100));
 
+        var lvlBadge = b.lvl === 'Legendary'
+          ? '<span style="font-size:8px;font-weight:800;padding:2px 6px;border-radius:6px;background:rgba(239,68,68,0.18);color:#ef4444;border:1px solid rgba(239,68,68,0.3);white-space:nowrap;">👑 5+ Months</span>'
+          : b.lvl === 'Hard'
+          ? '<span style="font-size:8px;font-weight:800;padding:2px 6px;border-radius:6px;background:rgba(249,115,22,0.18);color:#f97316;border:1px solid rgba(249,115,22,0.3);white-space:nowrap;">🟠 Hard</span>'
+          : b.lvl === 'Moderate'
+          ? '<span style="font-size:8px;font-weight:800;padding:2px 6px;border-radius:6px;background:rgba(234,179,8,0.18);color:#eab308;border:1px solid rgba(234,179,8,0.3);white-space:nowrap;">🟡 Moderate</span>'
+          : '<span style="font-size:8px;font-weight:800;padding:2px 6px;border-radius:6px;background:rgba(34,197,94,0.18);color:#22c55e;border:1px solid rgba(34,197,94,0.3);white-space:nowrap;">🟢 Easy</span>';
+
         var statusContent='';
         if(on){
-          statusContent='<span style="font-size:10.5px;font-weight:800;color:#22c55e;background:rgba(34,197,94,0.15);padding:3px 8px;border-radius:99px;display:inline-flex;align-items:center;gap:3px;">✓ Unlocked</span>';
+          statusContent='<span style="font-size:10px;font-weight:800;color:#22c55e;background:rgba(34,197,94,0.15);padding:3px 8px;border-radius:99px;display:inline-flex;align-items:center;gap:3px;">✓ Unlocked</span>';
         } else if(canClaim){
-          statusContent='<button class="btn gold" data-a="claimbadge" data-v="'+b.id+'" style="padding:4px 8px;font-size:10.5px;font-weight:800;border-radius:8px;min-height:26px;animation:pulse 1.8s infinite;">🎁 Claim +'+b.reward+' '+coin(12)+'</button>';
+          statusContent='<button class="btn gold" data-a="claimbadge" data-v="'+b.id+'" style="padding:4px 8px;font-size:10px;font-weight:800;border-radius:8px;min-height:26px;animation:pulse 1.8s infinite;">🎁 Claim +'+b.reward+' '+coin(12)+'</button>';
         } else {
           statusContent='<div style="width:100%;"><div class="bar" style="height:4px;border-radius:99px;margin:2px 0;"><i style="width:'+pct+'%"></i></div><div style="font-size:9.5px;color:var(--muted);display:flex;justify-content:space-between;"><span>'+fmt(numCur)+'/'+fmt(b.target)+' '+b.u+'</span><span>'+pct+'%</span></div></div>';
         }
@@ -887,7 +976,10 @@ function badgesHTML(){
         return '<article class="card" style="padding:12px;border-radius:18px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;border:1px solid '+(on?'rgba(235,160,0,0.4)':'var(--line)')+';background:'+(on?'radial-gradient(circle at 90% 10%,rgba(235,160,0,0.12) 0,var(--surface) 60%)':'var(--surface)')+';box-shadow:var(--shadow);min-width:0;">'+
           '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;">'+
             '<span style="font-size:24px;line-height:1;filter:'+(on?'none':'grayscale(1) opacity(0.55)')+';">'+b.ic+'</span>'+
-            '<span style="font-size:11px;font-weight:800;color:var(--coin-d);background:var(--coin-soft);padding:2px 7px;border-radius:99px;white-space:nowrap;flex:none;">'+coin(12)+' +'+b.reward+'</span>'+
+            '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">'+
+              '<span style="font-size:11px;font-weight:800;color:var(--coin-d);background:var(--coin-soft);padding:2px 7px;border-radius:99px;white-space:nowrap;flex:none;">'+coin(12)+' +'+b.reward+'</span>'+
+              lvlBadge+
+            '</div>'+
           '</div>'+
           '<div style="min-width:0;">'+
             '<h4 style="font-size:12.5px;font-weight:700;margin:0;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(b.name)+'</h4>'+
@@ -2154,7 +2246,7 @@ function accountHTML(){
     '<button class="at r" data-a="sub" data-v="refer"><span class="ai">'+svgi('users',22)+'</span><span><b>'+fmt(refEarn)+'</b><small>'+t('Refer a friend')+'</small></span></button></section>'+
   '<button class="pro" data-a="pro"><span class="ai">'+svgi('crown',24)+'</span><span class="grow"><b>Kadam Plus <span class="premium">'+t('PREMIUM')+'</span></b><small>'+t('Unlock ad-free walks, bonus rewards & more')+'</small></span><span class="chev">'+svgi('chev',18)+'</span></button>'+
   '<section class="panel">'+
-    arow('medal',t('Badges & Achievements'),t('54 Badges · Calories, Steps, Distance, Coins'),'sub','badges')+
+    arow('medal',t('Badges & Achievements'),t(BADGES.length + ' Badges · 4 Difficulty Tiers, 1-30 Coins'),'sub','badges')+
     arow('user',t('Profile'),t('Name, level and badges'),'sub','profile')+
     arow('users',t('Friends'),t('Find and follow other walkers'),'sub','friends')+
     arow('board',t('Leaderboard'),t('Stay updated and motivated'),'sub','leaderboard')+
@@ -2329,8 +2421,8 @@ document.addEventListener('click',function(e){
       UI.ad={kind:v,end:Date.now()+AD_SECS*1000};render();break;}
     case 'adclose':UI.ad=null;render();break;
     case 'adclaim':{if(!UI.ad||Date.now()<UI.ad.end)break;rollover();var k=UI.ad.kind;UI.ad=null;
-      if(k==='reward'){if((S.adsD||0)<AD_MAX){S.adsD=(S.adsD||0)+1;addTx('challenge',1,'Watched an ad');toast('+1 coin');}}
-      else if((S.limitAds||0)<LIMIT_AD_MAX){S.limitAds=(S.limitAds||0)+1;creditSteps();toast(t('Daily limit +1,000 steps'));}
+      if(k==='reward'){if((S.adsD||0)<AD_MAX){S.adsD=(S.adsD||0)+1;S.adsTotal=(S.adsTotal||0)+1;addTx('challenge',1,'Watched an ad');toast('+1 coin');checkBadges();}}
+      else if((S.limitAds||0)<LIMIT_AD_MAX){S.limitAds=(S.limitAds||0)+1;S.adsTotal=(S.adsTotal||0)+1;creditSteps();toast(t('Daily limit +1,000 steps'));checkBadges();}
       save();render();break;}
     case 'bell':UI.notifOpen=true;render();break;
     case 'closen':UI.notifOpen=false;render();break;
