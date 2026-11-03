@@ -46,7 +46,7 @@ public class MainActivity extends Activity {
     private static final int REQ_SIGNIN = 9;
     
     // Official Google AdMob Test Rewarded Video Ad Unit ID
-    private static final String TEST_REWARDED_AD_ID = "ca-app-pub-3940256099942544/5224354917";
+    private static final String TEST_REWARDED_AD_ID = "ca-app-pub-1680367915210629/8430598203";
     
     private WebView web;
     private boolean tracking = false;
