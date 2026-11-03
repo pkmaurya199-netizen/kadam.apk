@@ -2429,7 +2429,14 @@ document.addEventListener('click',function(e){
     case 'watchad':{rollover();
       if(v==='reward'&&(S.adsD||0)>=AD_MAX){toast(t('All ads watched today'));break;}
       if(v==='limit'&&(S.limitAds||0)>=LIMIT_AD_MAX){toast(t('Limit maxed for today'));break;}
-      UI.ad={kind:v,end:Date.now()+AD_SECS*1000};render();break;}
+      if(window.KadamNative && typeof window.KadamNative.showRewardedAd === 'function'){
+        toast('🎬 Loading Video Ad...');
+        window.KadamNative.showRewardedAd(v);
+      } else {
+        UI.ad={kind:v,end:Date.now()+AD_SECS*1000};
+        render();
+      }
+      break;}
     case 'adclose':UI.ad=null;render();break;
     case 'adclaim':{if(!UI.ad||Date.now()<UI.ad.end)break;rollover();var k=UI.ad.kind;UI.ad=null;
       if(k==='reward'){if((S.adsD||0)<AD_MAX){S.adsD=(S.adsD||0)+1;S.adsTotal=(S.adsTotal||0)+1;addTx('challenge',1,'Watched an ad');toast('+1 coin');checkBadges();}}
@@ -2557,6 +2564,35 @@ setInterval(function(){
   if(UI.ad){var r=Math.ceil((UI.ad.end-Date.now())/1000);if(r<=0&&!UI.ad.done){UI.ad.done=true;render();}else{var c=document.getElementById('adcd');if(c)c.textContent=r;}}
 },500);
 window.kadamSync=syncNative;
+window.kadamOnAdRewarded=function(kind){
+  rollover();
+  UI.ad=null;
+  if(kind==='reward'){
+    if((S.adsD||0)<AD_MAX){
+      S.adsD=(S.adsD||0)+1;
+      S.adsTotal=(S.adsTotal||0)+1;
+      addTx('challenge',1,'Watched an AdMob Ad');
+      toast('🎉 +1 Coin earned from Ad!');
+      checkBadges();
+      save();
+      render();
+    }
+  } else if(kind==='limit'){
+    if((S.limitAds||0)<LIMIT_AD_MAX){
+      S.limitAds=(S.limitAds||0)+1;
+      S.adsTotal=(S.adsTotal||0)+1;
+      creditSteps();
+      toast('⚡ Daily limit +1,000 steps added!');
+      checkBadges();
+      save();
+      render();
+    }
+  }
+};
+window.kadamOnAdFallback=function(kind){
+  UI.ad={kind:kind,end:Date.now()+AD_SECS*1000};
+  render();
+};
 if(NATIVE){
   syncNative();
   setInterval(syncNative,4000);
