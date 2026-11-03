@@ -550,7 +550,7 @@ function addDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x;}
 function wkey(d){var x=new Date(d||new Date());x.setDate(x.getDate()-((x.getDay()+6)%7));return dkey(x);}
 function mkey(d){var x=d?new Date(d):new Date();return x.getFullYear()+'-'+pad(x.getMonth()+1);}
 function newCode(){var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='KDM';for(var i=0;i<5;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
-function fresh(){return{stage:'out',seen:false,lang:'en',notif:true,name:'Walker',code:newCode(),referredBy:'',refBonusPending:0,
+function fresh(){return{stage:'app',seen:false,lang:'en',notif:true,name:'Walker',code:newCode(),referredBy:'',refBonusPending:0,
   day:dkey(),week:wkey(),steps:0,stepCoins:0,weekSteps:0,totalSteps:0,
   balance:0,earned:0,spent:0,tx:[],
   streak:0,best:0,lastLogin:'',weekLogins:0,
@@ -569,7 +569,41 @@ function coin(sz){sz=sz||16;return '<svg class="coin" width="'+sz+'" height="'+s
 
 function rollover(){
   var d=dkey(),w=wkey(),changed=false;
-  if(S.day!==d){if(S.day){S.hist=S.hist||[];S.hist.unshift({d:S.day,s:S.steps,l:level()});if(S.hist.length>60)S.hist.length=60;}S.day=d;S.steps=0;S.stepCoins=0;S.claimedD={};S.gameCoins={g2048:0,life:0};S.gamesToday=0;S.water=0;S.waterDone=false;S.adsD=0;S.limitAds=0;changed=true;}
+  if(S.day!==d){if(S.day){
+    var curL = S.userLvl || 0;
+    var ySteps = S.steps;
+    
+    // Check maintenance & downgrade rule for current level
+    if (curL > 0) {
+      if (ySteps >= LEVELS[curL].steps) {
+        // Target achieved! Reset missed counter
+        S.missedDays = 0;
+      } else {
+        // Missed target yesterday
+        S.missedDays = (S.missedDays || 0) + 1;
+        // ONLY downgrade if missed for 3 CONSECUTIVE DAYS!
+        if (S.missedDays >= 3) {
+          S.userLvl = Math.max(0, curL - 1);
+          S.missedDays = 0;
+          S.lvlStreak = 0;
+        }
+      }
+    }
+    
+    // Check progress towards next level (3 consecutive days required)
+    if (curL < LEVELS.length - 1) {
+      if (ySteps >= LEVELS[curL + 1].steps) {
+        S.lvlStreak = (S.lvlStreak || 0) + 1;
+        if (S.lvlStreak >= 3) {
+          S.userLvl = curL + 1;
+          S.lvlStreak = 0;
+          S.missedDays = 0;
+        }
+      } else {
+        S.lvlStreak = 0;
+      }
+    }
+    S.hist=S.hist||[];S.hist.unshift({d:S.day,s:S.steps,l:level()});if(S.hist.length>60)S.hist.length=60;}S.day=d;S.steps=0;S.stepCoins=0;S.claimedD={};S.gameCoins={g2048:0,life:0};S.gamesToday=0;S.water=0;S.waterDone=false;S.adsD=0;S.limitAds=0;changed=true;}
   if(S.week!==w){S.week=w;S.weekSteps=0;S.weekLogins=0;S.claimedW={};S.weekRefs=0;S.weekDays=[0,0,0,0,0,0,0];changed=true;}
   var mk=mkey();if(S.month!==mk){S.month=mk;S.monthSteps=0;S.monthLogins=0;changed=true;}
   var ti=(new Date().getDay()+6)%7;if((S.weekDays[ti]||0)<S.steps){S.weekDays[ti]=S.steps;}
@@ -586,13 +620,13 @@ var toastTimer=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},2400);}
 
 var WATER_GAP=10*60*1000,AD_MAX=5,LIMIT_AD_MAX=3,AD_SECS=5;
-function stepCap(){return CFG.DAILY_STEP_COIN_CAP+(S.limitAds||0);}
+function stepCap(){var cl=level();var cap=(LEVELS[cl]&&LEVELS[cl].cap)?LEVELS[cl].cap:CFG.DAILY_STEP_COIN_CAP;return cap+(S.limitAds||0);}
 function wcool(){return Math.max(0,WATER_GAP-(Date.now()-(S.waterAt||0)));}
 function mmss(ms){var s=Math.ceil(ms/1000),m=Math.floor(s/60);s=s%60;return (m<10?'0':'')+m+':'+(s<10?'0':'')+s;}
 
 /* ---------- coin engine (in the real app this runs on the server) ---------- */
 function creditSteps(){
-  var target=Math.min(Math.floor(S.steps/CFG.STEPS_PER_COIN),stepCap());
+  var cl=level();var rate=(LEVELS[cl]&&LEVELS[cl].rate)?LEVELS[cl].rate:CFG.STEPS_PER_COIN;var target=Math.min(Math.floor(S.steps/rate),stepCap());
   var delta=target-S.stepCoins;
   if(delta>0){S.stepCoins=target;addTx('steps',delta,fmt(S.steps)+' steps today');toast('+'+delta+' coin'+(delta>1?'s':''));}
   if(S.refBonusPending>0&&S.steps>=5000){addTx('referral',S.refBonusPending,'Welcome bonus, invited by '+S.referredBy);S.refBonusPending=0;}
@@ -670,18 +704,172 @@ function claimChallenge(id){
   checkBadges();save();render();
 }
 var BADGES=[
-  {id:'b10k',name:'10K Day',test:function(){return S.steps>=10000;}},
-  {id:'bstreak',name:'7-Day Streak',test:function(){return S.best>=7;}},
-  {id:'bgame',name:'Gamer',test:function(){return S.everGame;}},
-  {id:'bshop',name:'First Redeem',test:function(){return S.orders.length>0;}},
-  {id:'bref',name:'Referrer',test:function(){return S.friends.some(function(f){return f.status==='done';});}},
-  {id:'b50k',name:'50K Steps',test:function(){return S.totalSteps>=50000;}}
+  // 1. STEPS (10 Badges) - Reward 3 to 30
+  {id:'s_5k',cat:'steps',name:'5K Stepper',desc:'Walk 5,000 steps in a day',target:5000,reward:3,test:function(){return S.steps>=5000;},cur:function(){return S.steps;},u:'steps',ic:'👟'},
+  {id:'s_10k',cat:'steps',name:'10K Stepper',desc:'Walk 10,000 steps in a day',target:10000,reward:4,test:function(){return S.steps>=10000;},cur:function(){return S.steps;},u:'steps',ic:'🏃'},
+  {id:'s_25k',cat:'steps',name:'25K Walker',desc:'Walk 25,000 lifetime steps',target:25000,reward:5,test:function(){return S.totalSteps>=25000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🚶'},
+  {id:'s_50k',cat:'steps',name:'50K Walker',desc:'Walk 50,000 lifetime steps',target:50000,reward:7,test:function(){return S.totalSteps>=50000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🥉'},
+  {id:'s_100k',cat:'steps',name:'100K Century Club',desc:'Walk 100,000 lifetime steps',target:100000,reward:10,test:function(){return S.totalSteps>=100000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🥈'},
+  {id:'s_200k',cat:'steps',name:'200K Roadie',desc:'Walk 200,000 lifetime steps',target:200000,reward:14,test:function(){return S.totalSteps>=200000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🥇'},
+  {id:'s_350k',cat:'steps',name:'350K Marathoner',desc:'Walk 350,000 lifetime steps',target:350000,reward:18,test:function(){return S.totalSteps>=350000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🏆'},
+  {id:'s_500k',cat:'steps',name:'Half Million Titan',desc:'Walk 500,000 lifetime steps',target:500000,reward:22,test:function(){return S.totalSteps>=500000;},cur:function(){return S.totalSteps;},u:'steps',ic:'👑'},
+  {id:'s_750k',cat:'steps',name:'750K Legend',desc:'Walk 750,000 lifetime steps',target:750000,reward:26,test:function(){return S.totalSteps>=750000;},cur:function(){return S.totalSteps;},u:'steps',ic:'⚡'},
+  {id:'s_1m',cat:'steps',name:'1 Million Steps God',desc:'Reach 1,000,000 lifetime steps',target:1000000,reward:30,test:function(){return S.totalSteps>=1000000;},cur:function(){return S.totalSteps;},u:'steps',ic:'🌟'},
+
+  // 2. DISTANCE (8 Badges) - Reward 3 to 30
+  {id:'d_5km',cat:'distance',name:'5 KM Explorer',desc:'Cover 5 km total distance',target:5,reward:3,test:function(){return (S.totalSteps*0.00075)>=5;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🗺️'},
+  {id:'d_10km',cat:'distance',name:'10 KM Strider',desc:'Cover 10 km total distance',target:10,reward:4,test:function(){return (S.totalSteps*0.00075)>=10;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🧭'},
+  {id:'d_25km',cat:'distance',name:'25 KM City Trekker',desc:'Cover 25 km total distance',target:25,reward:6,test:function(){return (S.totalSteps*0.00075)>=25;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🏙️'},
+  {id:'d_50km',cat:'distance',name:'50 KM Highway Star',desc:'Cover 50 km total distance',target:50,reward:9,test:function(){return (S.totalSteps*0.00075)>=50;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🛣️'},
+  {id:'d_100km',cat:'distance',name:'100 KM Cross Country',desc:'Cover 100 km total distance',target:100,reward:13,test:function(){return (S.totalSteps*0.00075)>=100;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🚀'},
+  {id:'d_250km',cat:'distance',name:'250 KM State Rover',desc:'Cover 250 km total distance',target:250,reward:18,test:function(){return (S.totalSteps*0.00075)>=250;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'⛰️'},
+  {id:'d_500km',cat:'distance',name:'500 KM Ultra Voyager',desc:'Cover 500 km total distance',target:500,reward:24,test:function(){return (S.totalSteps*0.00075)>=500;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🌠'},
+  {id:'d_1000km',cat:'distance',name:'1,000 KM Bharat Yatri',desc:'Cover 1,000 km total distance',target:1000,reward:30,test:function(){return (S.totalSteps*0.00075)>=1000;},cur:function(){return Math.round(S.totalSteps*0.00075);},u:'km',ic:'🇮🇳'},
+
+  // 3. CALORIES (8 Badges) - Reward 3 to 30
+  {id:'c_200',cat:'calories',name:'Spark Starter',desc:'Burn 200 total calories',target:200,reward:3,test:function(){return (S.totalSteps*0.04)>=200;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'✨'},
+  {id:'c_500',cat:'calories',name:'Calorie Burner',desc:'Burn 500 total calories',target:500,reward:4,test:function(){return (S.totalSteps*0.04)>=500;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'🔥'},
+  {id:'c_1000',cat:'calories',name:'Fat Torch',desc:'Burn 1,000 total calories',target:1000,reward:6,test:function(){return (S.totalSteps*0.04)>=1000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'🕯️'},
+  {id:'c_2500',cat:'calories',name:'Flame Walker',desc:'Burn 2,500 total calories',target:2500,reward:9,test:function(){return (S.totalSteps*0.04)>=2500;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'💥'},
+  {id:'c_5000',cat:'calories',name:'Inferno Walker',desc:'Burn 5,000 total calories',target:5000,reward:13,test:function(){return (S.totalSteps*0.04)>=5000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'🌋'},
+  {id:'c_10000',cat:'calories',name:'Firestorm Master',desc:'Burn 10,000 total calories',target:10000,reward:18,test:function(){return (S.totalSteps*0.04)>=10000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'⚡'},
+  {id:'c_25000',cat:'calories',name:'Volcano Titan',desc:'Burn 25,000 total calories',target:25000,reward:24,test:function(){return (S.totalSteps*0.04)>=25000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'☄️'},
+  {id:'c_50000',cat:'calories',name:'Supernova Master',desc:'Burn 50,000 total calories',target:50000,reward:30,test:function(){return (S.totalSteps*0.04)>=50000;},cur:function(){return Math.round(S.totalSteps*0.04);},u:'kcal',ic:'☀️'},
+
+  // 4. DAILY STREAK (8 Badges) - Reward 3 to 30
+  {id:'st_3',cat:'streak',name:'3-Day Warmup',desc:'Keep a 3-day walking streak',target:3,reward:3,test:function(){return S.best>=3;},cur:function(){return S.best;},u:'days',ic:'🌱'},
+  {id:'st_7',cat:'streak',name:'7-Day Streak',desc:'Keep a 7-day walking streak',target:7,reward:5,test:function(){return S.best>=7;},cur:function(){return S.best;},u:'days',ic:'🌿'},
+  {id:'st_14',cat:'streak',name:'2-Week Consistent',desc:'Keep a 14-day walking streak',target:14,reward:8,test:function(){return S.best>=14;},cur:function(){return S.best;},u:'days',ic:'🌳'},
+  {id:'st_21',cat:'streak',name:'21-Day Habit',desc:'Keep a 21-day walking streak',target:21,reward:12,test:function(){return S.best>=21;},cur:function(){return S.best;},u:'days',ic:'💪'},
+  {id:'st_30',cat:'streak',name:'30-Day Champion',desc:'Keep a 30-day walking streak',target:30,reward:16,test:function(){return S.best>=30;},cur:function(){return S.best;},u:'days',ic:'🏅'},
+  {id:'st_60',cat:'streak',name:'60-Day Iron Will',desc:'Keep a 60-day walking streak',target:60,reward:20,test:function(){return S.best>=60;},cur:function(){return S.best;},u:'days',ic:'🛡️'},
+  {id:'st_90',cat:'streak',name:'90-Day Quarter Titan',desc:'Keep a 90-day walking streak',target:90,reward:25,test:function(){return S.best>=90;},cur:function(){return S.best;},u:'days',ic:'⚔️'},
+  {id:'st_180',cat:'streak',name:'Half Year Legend',desc:'Keep a 180-day walking streak',target:180,reward:30,test:function(){return S.best>=180;},cur:function(){return S.best;},u:'days',ic:'👑'},
+
+  // 5. COIN COLLECTION (8 Badges) - Reward 3 to 30
+  {id:'coin_10',cat:'coins',name:'Pocket Coins',desc:'Earn 10 lifetime coins',target:10,reward:3,test:function(){return S.earned>=10;},cur:function(){return S.earned;},u:'coins',ic:'🪙'},
+  {id:'coin_25',cat:'coins',name:'Coin Saver',desc:'Earn 25 lifetime coins',target:25,reward:4,test:function(){return S.earned>=25;},cur:function(){return S.earned;},u:'coins',ic:'💰'},
+  {id:'coin_50',cat:'coins',name:'Piggy Banker',desc:'Earn 50 lifetime coins',target:50,reward:6,test:function(){return S.earned>=50;},cur:function(){return S.earned;},u:'coins',ic:'🏦'},
+  {id:'coin_100',cat:'coins',name:'Century Earner',desc:'Earn 100 lifetime coins',target:100,reward:10,test:function(){return S.earned>=100;},cur:function(){return S.earned;},u:'coins',ic:'💵'},
+  {id:'coin_250',cat:'coins',name:'Wealth Walker',desc:'Earn 250 lifetime coins',target:250,reward:15,test:function(){return S.earned>=250;},cur:function(){return S.earned;},u:'coins',ic:'💎'},
+  {id:'coin_500',cat:'coins',name:'Coin Tycoon',desc:'Earn 500 lifetime coins',target:500,reward:20,test:function(){return S.earned>=500;},cur:function(){return S.earned;},u:'coins',ic:'🏰'},
+  {id:'coin_750',cat:'coins',name:'Treasure Master',desc:'Earn 750 lifetime coins',target:750,reward:25,test:function(){return S.earned>=750;},cur:function(){return S.earned;},u:'coins',ic:'👑'},
+  {id:'coin_1000',cat:'coins',name:'Kadam Millionaire',desc:'Earn 1,000 lifetime coins',target:1000,reward:30,test:function(){return S.earned>=1000;},cur:function(){return S.earned;},u:'coins',ic:'🏆'},
+
+  // 6. WATCH ADS (6 Badges) - Reward 3 to 30
+  {id:'ad_1',cat:'ads',name:'First Ad Viewer',desc:'Watch your first ad reward',target:1,reward:3,test:function(){return (S.adsTotal||S.adsD||0)>=1;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'📺'},
+  {id:'ad_5',cat:'ads',name:'5 Ads Supporter',desc:'Watch 5 reward ads',target:5,reward:5,test:function(){return (S.adsTotal||S.adsD||0)>=5;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'🎬'},
+  {id:'ad_15',cat:'ads',name:'15 Ads Bronze',desc:'Watch 15 reward ads',target:15,reward:9,test:function(){return (S.adsTotal||S.adsD||0)>=15;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'🥉'},
+  {id:'ad_30',cat:'ads',name:'30 Ads Silver',desc:'Watch 30 reward ads',target:30,reward:14,test:function(){return (S.adsTotal||S.adsD||0)>=30;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'🥈'},
+  {id:'ad_60',cat:'ads',name:'60 Ads Gold',desc:'Watch 60 reward ads',target:60,reward:20,test:function(){return (S.adsTotal||S.adsD||0)>=60;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'🥇'},
+  {id:'ad_100',cat:'ads',name:'100 Ads Patron',desc:'Watch 100 reward ads',target:100,reward:30,test:function(){return (S.adsTotal||S.adsD||0)>=100;},cur:function(){return (S.adsTotal||S.adsD||0);},u:'ads',ic:'👑'},
+
+  // 7. GAMES & SPECIAL (6 Badges) - Reward 3 to 30
+  {id:'g_1',cat:'special',name:'Game Novice',desc:'Play your first 2048 game',target:1,reward:3,test:function(){return S.everGame;},cur:function(){return S.everGame?1:0;},u:'game',ic:'🎮'},
+  {id:'g_10',cat:'special',name:'Game Pro',desc:'Play 10 games today or lifetime',target:10,reward:8,test:function(){return (S.gamesToday||0)>=5||S.everGame;},cur:function(){return S.gamesToday||0;},u:'games',ic:'🕹️'},
+  {id:'w_1',cat:'special',name:'Hydrated Starter',desc:'Log water intake for 1st time',target:1,reward:3,test:function(){return (S.water||0)>=1;},cur:function(){return S.water||0;},u:'water',ic:'💧'},
+  {id:'w_8',cat:'special',name:'Hydration Hero',desc:'Complete daily 8-glass water goal',target:8,reward:6,test:function(){return S.waterDone||(S.water>=8);},cur:function(){return S.water||0;},u:'glasses',ic:'🌊'},
+  {id:'rf_1',cat:'special',name:'Friendly Walker',desc:'Refer 1 friend successfully',target:1,reward:7,test:function(){return S.friends.some(function(f){return f.status==='done';});},cur:function(){return S.friends.filter(function(f){return f.status==='done';}).length;},u:'friend',ic:'🤝'},
+  {id:'sh_1',cat:'special',name:'Smart Shopper',desc:'Redeem your first store reward',target:1,reward:10,test:function(){return S.orders.length>0;},cur:function(){return S.orders.length;},u:'order',ic:'🛍️'}
 ];
+
 function checkBadges(){
   BADGES.forEach(function(b){
-    if(!S.badges[b.id]&&b.test()){S.badges[b.id]=Date.now();addTx('challenge',CFG.BADGE_BONUS,'Badge: '+b.name);toast('Badge unlocked: '+b.name);}
+    if(!S.badges[b.id]&&b.test()){
+      S.badges[b.id]=Date.now();
+      var rw=b.reward||3;
+      addTx('challenge',rw,'Badge: '+b.name);
+      toast('🏅 Badge: '+b.name+' (+'+rw+' '+t('coins')+')');
+    }
   });
 }
+
+function badgesHTML(){
+  var catFilter=UI.bFilter||'all';
+  var list=catFilter==='all'?BADGES:BADGES.filter(function(b){return b.cat===catFilter;});
+  
+  var unlockedCount=0;
+  var totalCoinsWon=0;
+  BADGES.forEach(function(b){
+    if(S.badges&&S.badges[b.id]){
+      unlockedCount++;
+      totalCoinsWon+=(b.reward||3);
+    }
+  });
+  var totalPct=Math.floor((unlockedCount/BADGES.length)*100);
+
+  var cats=[
+    ['all','All ('+BADGES.length+')','🏅'],
+    ['steps','Steps (10)','🚶'],
+    ['distance','Distance (8)','🛣️'],
+    ['calories','Calories (8)','🔥'],
+    ['streak','Streak (8)','⚡'],
+    ['coins','Coins (8)','🪙'],
+    ['ads','Watch Ads (6)','📺'],
+    ['special','Special (6)','⭐']
+  ];
+
+  return subHeader(t('Badges & Achievements'))+
+  '<div style="display:flex;flex-direction:column;gap:14px;padding-bottom:30px;">'+
+    '<section class="card" style="padding:18px;border-radius:24px;background:radial-gradient(circle at 90% 10%,rgba(235,160,0,0.22) 0,var(--surface) 65%);border:1px solid var(--line);box-shadow:var(--shadow);">'+
+      '<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px;">'+
+        '<div class="row" style="gap:10px;align-items:center;">'+
+          '<span style="font-size:28px;">🏅</span>'+
+          '<div>'+
+            '<h2 style="font-size:17px;font-weight:800;margin:0;">54 Badges & Achievements</h2>'+
+            '<div style="font-size:11px;color:var(--muted);">'+unlockedCount+' of '+BADGES.length+' Unlocked ('+totalPct+'%)</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="text-align:right;">'+
+          '<div style="font-size:10.5px;color:var(--muted);font-weight:600;">Badges Se Kamaye</div>'+
+          '<div style="font-size:16px;font-weight:800;color:var(--coin-d);margin-top:1px;">'+coin(16)+' +'+fmt(totalCoinsWon)+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="bar gold" style="height:8px;border-radius:99px;margin:0;" role="progressbar"><i style="width:'+totalPct+'%"></i></div>'+
+    '</section>'+
+    '<div class="cscope" style="display:flex;overflow-x:auto;gap:6px;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch;">'+
+      cats.map(function(c){
+        var sel=catFilter===c[0];
+        return '<button data-a="bfilter" data-v="'+c[0]+'" style="white-space:nowrap;padding:7px 14px;border-radius:99px;font-size:11.5px;font-weight:700;flex:none;border:1px solid '+(sel?'var(--accent)':'var(--line)')+';background:'+(sel?'var(--accent)':'var(--surface)')+';color:'+(sel?'#fff':'var(--text)')+';display:flex;align-items:center;gap:4px;">'+
+          '<span>'+c[2]+'</span><span>'+c[1]+'</span>'+
+        '</button>';
+      }).join('')+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">'+
+      list.map(function(b){
+        var on=!!(S.badges&&S.badges[b.id]);
+        var canClaim=!on&&b.test();
+        var curVal=typeof b.cur==='function'?b.cur():0;
+        var numCur=Number(curVal)||0;
+        var pct=Math.min(100,Math.floor((numCur/b.target)*100));
+
+        var statusContent='';
+        if(on){
+          statusContent='<span style="font-size:10.5px;font-weight:800;color:#22c55e;background:rgba(34,197,94,0.15);padding:3px 8px;border-radius:99px;display:inline-flex;align-items:center;gap:3px;">✓ Unlocked</span>';
+        } else if(canClaim){
+          statusContent='<button class="btn gold" data-a="claimbadge" data-v="'+b.id+'" style="padding:4px 8px;font-size:10.5px;font-weight:800;border-radius:8px;min-height:26px;animation:pulse 1.8s infinite;">🎁 Claim +'+b.reward+' '+coin(12)+'</button>';
+        } else {
+          statusContent='<div style="width:100%;"><div class="bar" style="height:4px;border-radius:99px;margin:2px 0;"><i style="width:'+pct+'%"></i></div><div style="font-size:9.5px;color:var(--muted);display:flex;justify-content:space-between;"><span>'+fmt(numCur)+'/'+fmt(b.target)+' '+b.u+'</span><span>'+pct+'%</span></div></div>';
+        }
+
+        return '<article class="card" style="padding:12px;border-radius:18px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;border:1px solid '+(on?'rgba(235,160,0,0.4)':'var(--line)')+';background:'+(on?'radial-gradient(circle at 90% 10%,rgba(235,160,0,0.12) 0,var(--surface) 60%)':'var(--surface)')+';box-shadow:var(--shadow);min-width:0;">'+
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;">'+
+            '<span style="font-size:24px;line-height:1;filter:'+(on?'none':'grayscale(1) opacity(0.55)')+';">'+b.ic+'</span>'+
+            '<span style="font-size:11px;font-weight:800;color:var(--coin-d);background:var(--coin-soft);padding:2px 7px;border-radius:99px;white-space:nowrap;flex:none;">'+coin(12)+' +'+b.reward+'</span>'+
+          '</div>'+
+          '<div style="min-width:0;">'+
+            '<h4 style="font-size:12.5px;font-weight:700;margin:0;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(b.name)+'</h4>'+
+            '<p style="font-size:10px;color:var(--muted);margin:3px 0 0 0;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">'+esc(b.desc)+'</p>'+
+          '</div>'+
+          '<div style="padding-top:4px;border-top:1px solid var(--line);min-height:28px;display:flex;align-items:center;">'+
+            statusContent+
+          '</div>'+
+        '</article>';
+      }).join('')+
+    '</div>'+
+  '</div>';
+}
+
 var LEVELS=[{n:'Beginner',min:0},{n:'Walker',min:50000},{n:'Runner',min:200000},{n:'Champion',min:500000},{n:'Legend',min:1000000}];
 function level(){var i=0;LEVELS.forEach(function(l,j){if(S.totalSteps>=l.min)i=j;});return i;}
 
@@ -689,6 +877,13 @@ function level(){var i=0;LEVELS.forEach(function(l,j){if(S.totalSteps>=l.min)i=j
 function markPlayed(){S.gamesToday+=1;S.everGame=true;checkBadges();}
 function gameReward(game,coins,note){
   if(coins<=0)return;
+  if(game==='g2048'){
+    // Unlimited play & earning for 2048
+    S.gameCoins[game]=(S.gameCoins[game]||0)+coins;
+    addTx('game',coins,note);
+    toast('🎉 +'+coins+' coin'+(coins>1?'s':'')+' earned in 2048!');
+    return;
+  }
   var left=CFG.GAME_DAILY_CAP-S.gameCoins[game],give=Math.min(coins,left);
   if(give>0){S.gameCoins[game]+=give;addTx('game',give,note);toast('+'+give+' coin'+(give>1?'s':''));}
   else toast(t('Daily limit')+': '+CFG.GAME_DAILY_CAP+' '+t('coins today'));
@@ -731,9 +926,12 @@ function move(dir){ /* 0 left, 1 up, 2 right, 3 down */
   rollover();
   if(G.moves===1)markPlayed();
   if(G.score>S.best2048)S.best2048=G.score;
-  var mx=0;for(var y=0;y<4;y++)for(var x=0;x<4;x++)mx=Math.max(mx,b[y][x]);
-  [[512,1],[1024,2],[2048,5]].forEach(function(m){
-    if(mx>=m[0]&&!G.ms[m[0]]){G.ms[m[0]]=1;gameReward('g2048',m[1],'2048: reached tile '+m[0]);}
+  // Score based rewards: 10k -> 1 coin, 15k -> 2 coins, 20k -> 4 coins (Unlimited plays)
+  [[10000, 1], [15000, 2], [20000, 4]].forEach(function(m){
+    if(G.score >= m[0] && !G.ms[m[0]]){
+      G.ms[m[0]] = 1;
+      gameReward('g2048', m[1], '2048 Score Milestone: ' + m[0] + ' points');
+    }
   });
   if(!canMove())G.over=true;
   checkBadges();save();render();
@@ -797,38 +995,60 @@ var CATS=[
   {id:'More',label:'Recharge & More',ic:'ticket',tone:'peach'}
 ];
 /* example catalog: coins = rupees x 6 */
-function P(id,cat,name,rs,stock,trend){return {id:id,cat:cat,name:name,rs:rs,price:Math.round(rs*6),stock:stock,trend:!!trend};}
+function P(id,cat,name,rs,stock,trend,price,mrp,img){
+  return {id:id,cat:cat,name:name,rs:rs,price:price||Math.round(rs*6),stock:stock||50,trend:!!trend,mrp:mrp||rs,img:img||null};
+}
 var ITEMS=[
-  P('ear','Electronics','Wired Earphones',299,40),
-  P('spk','Electronics','Bluetooth Speaker',799,25,1),
-  P('pb','Electronics','Power Bank 10000 mAh',999,20,1),
-  P('stand','Gadgets','Phone Stand',149,60),
-  P('cable','Gadgets','USB-C Cable',199,60),
-  P('band','Gadgets','Smart Fitness Band',1299,15,1),
-  P('tee','Fashion','Cotton T-Shirt',399,30),
-  P('cap','Fashion','Sports Cap',199,40),
-  P('sock','Fashion','Sports Socks, 3 Pairs',149,50),
-  P('brush','Care','Makeup Brush Kit, 5 Pieces',199,35,1),
-  P('face','Care','Face Wash 100 ml',149,45),
-  P('trim','Care','Beard Trimmer',699,18),
-  P('bar','Snacks','Protein Bar Pack, 6 Bars',299,30),
-  P('tea','Snacks','Green Tea, 25 Bags',199,40),
-  P('mak','Snacks','Roasted Makhana 100 g',149,50),
-  P('mat','Fitness','Yoga Mat, 6 mm',499,22,1),
-  P('rope','Fitness','Skipping Rope',149,45),
-  P('shk','Fitness','Steel Shaker Bottle',299,30,1),
-  P('lamp','Home','LED Desk Lamp',399,20),
-  P('cush','Home','Cushion Cover Set',299,30),
-  P('bot','Home','Steel Water Bottle 1 L',349,35),
-  P('rc10','More','Mobile Recharge ₹10',10,50),
-  P('rc50','More','Mobile Recharge ₹50',50,40),
-  P('dp1','More','Data Pack 1 GB',25,30),
-  P('gv50','More','Shopping Voucher ₹50',50,25),
-  P('gv100','More','Shopping Voucher ₹100',100,15),
-  P('mv','More','Movie Voucher ₹150',150,10),
-  {id:'frame',cat:'More',name:'Gold Profile Frame',rs:0,price:40,stock:999,trend:false}
+  // Home & Lifestyle (Screenshot 1 items)
+  P('tumbler','Home','Travel Tumbler 750ml With Reusable Straw And Handle',299,45,1,299,299),
+  P('scrubber','Home','Silicone Bathroom Foot Cleaning Scrubber Mat (27x27cm)',199,60,1,119,299),
+  P('candymaker','Home','Candy Maker Box Plastic',199,40,0,165,199),
+  P('bottle500','Home','Glass Water Bottle (500 Ml) With Cover',299,50,1,249,299),
+  P('dispenser','Home','Liquid Soap Dispenser Bottle With Press Pump Refillable',149,35,0,129,199),
+  P('lamp','Home','LED Desk Lamp with Touch Control',399,20,0,349,499),
+  P('cush','Home','Cushion Cover Set (Pack of 5)',299,30,0,249,399),
+  P('bot','Home','Steel Water Bottle 1 L',349,35,0,299,449),
+
+  // Electronics & Gadgets (Screenshot 2 items)
+  P('iphone17','Electronics','Apple Iphone 17, Black 256GB',94900,10,1,25000,99900),
+  P('bottle400','Gadgets','Glass Water Bottle 400ml Stainless Steel Cap',299,40,1,299,399),
+  P('spk','Electronics','Bluetooth Wireless Speaker with Bass',799,25,1,699,1299),
+  P('pb','Electronics','Power Bank 10000 mAh Dual Output',999,20,1,899,1499),
+  P('ear','Electronics','Wired Noise-Isolating Earphones',299,40,0,249,499),
+  P('band','Gadgets','Smart Fitness Band HR & Step Tracker',1299,15,1,1199,1999),
+  P('stand','Gadgets','Adjustable Aluminum Phone Stand',149,60,0,129,299),
+  P('cable','Gadgets','Braided Fast USB-C Cable (1.5m)',199,60,0,169,349),
+
+  // Fashion & Clothing
+  P('tee','Fashion','Classic Round Neck Cotton T-Shirt',399,30,0,349,599),
+  P('cap','Fashion','Breathable Sports Running Cap',199,40,0,169,399),
+  P('sock','Fashion','Cotton Sports Ankle Socks, 3 Pairs',149,50,0,129,299),
+
+  // Personal Care
+  P('brush','Care','Makeup Brush Kit, 5 Pieces with Case',199,35,1,179,399),
+  P('face','Care','Gentle Foaming Face Wash 100 ml',149,45,0,129,249),
+  P('trim','Care','Cordless Rechargeable Beard Trimmer',699,18,0,599,1199),
+
+  // Snacks & Beverages
+  P('bar','Snacks','High Protein Energy Bar Pack (6 Bars)',299,30,0,269,450),
+  P('tea','Snacks','Organic Green Tea, 25 Tea Bags',199,40,0,169,299),
+  P('mak','Snacks','Roasted Salted Makhana 100 g',149,50,0,129,220),
+
+  // Fitness Essentials
+  P('mat','Fitness','Eco Anti-Skid Yoga Mat 6 mm',499,22,1,449,899),
+  P('rope','Fitness','High-Speed Skipping Rope with Counter',149,45,0,129,299),
+  P('shk','Fitness','Steel Protein Shaker Bottle 700 ml',299,30,1,269,499),
+
+  // Fun & Games
+  P('rc10','More','Mobile Recharge ₹10 Instant Coupon',10,50,0,10,10),
+  P('rc50','More','Mobile Recharge ₹50 Instant Coupon',50,40,0,50,50),
+  P('dp1','More','Data Pack 1 GB High Speed',25,30,0,25,25),
+  P('gv50','More','Amazon Gift Card ₹50',50,20,1,50,50)
 ];
-function catOf(id){return CATS.filter(function(c){return c.id===id;})[0];}
+function catOf(id){
+  for(var i=0;i<CATS.length;i++){if(CATS[i].id===id)return CATS[i];}
+  return {id:id,label:id,ic:'bag',tone:'sky'};
+}
 function itemById(id){return ITEMS.filter(function(x){return x.id===id;})[0];}
 function stockOf(it){return (S.stock[it.id]===undefined)?it.stock:S.stock[it.id];}
 function unavailable(it){return stockOf(it)<1||(it.id==='frame'&&S.frame);}
@@ -1055,26 +1275,88 @@ function subHeader2(title){
     '<button class="iconbtn" data-a="bell" aria-label="'+t('Notifications')+'">'+svgi('bell',20)+(fresh24?'<i></i>':'')+'</button>'+pillBtn()+'</header>';
 }
 var LV_COL=['#2f7fd1','#2f9e44','#e0a800','#f08c1a','#d9534f'];
-function hexBadge(n,state){
+function hexBadge(n,state,isSel){
   var c=LV_COL[n-1];
-  return '<svg viewBox="0 0 60 68" width="100%" aria-hidden="true" style="opacity:'+(state==='locked'?.3:1)+'"><polygon points="30,3 56,18 56,50 30,65 4,50 4,18" fill="var(--surface)" stroke="'+c+'" stroke-width="5" stroke-linejoin="round"/>'+
-    '<text x="30" y="37" text-anchor="middle" font-size="24" font-weight="800" fill="'+c+'" style="font-family:var(--display)">'+n+'</text><text x="30" y="52" text-anchor="middle" font-size="9" font-weight="700" fill="'+c+'">'+t('Level')+'</text></svg>';
+  var strokeWidth = isSel ? 7 : 5;
+  var fill = isSel ? 'color-mix(in srgb, '+c+' 22%, var(--surface))' : 'var(--surface)';
+  return '<svg viewBox="0 0 60 68" width="100%" aria-hidden="true" style="cursor:pointer;opacity:'+(state==='locked'&&!isSel?.35:1)+';filter:'+(isSel?'drop-shadow(0 4px 12px '+c+'77)':'none')+';transition:all .2s ease;">'+
+    '<polygon points="30,3 56,18 56,50 30,65 4,50 4,18" fill="'+fill+'" stroke="'+c+'" stroke-width="'+strokeWidth+'" stroke-linejoin="round"/>'+
+    '<text x="30" y="37" text-anchor="middle" font-size="24" font-weight="800" fill="'+c+'" style="font-family:var(--display)">'+n+'</text>'+
+    '<text x="30" y="52" text-anchor="middle" font-size="9" font-weight="700" fill="'+c+'">'+t('Level')+'</text></svg>';
 }
+
 function levelHTML(){
-  var lv=level(),n=lv+1,next=LEVELS[lv+1],row='',i;
-  for(i=1;i<=LEVELS.length;i++)row+='<div style="flex:1;min-width:0">'+hexBadge(i,i<=n?'on':'locked')+'</div>';
-  var sub=next?t('Walk')+' '+fmt(Math.max(0,next.min-S.totalSteps))+' '+t('more steps to reach Level')+' '+(n+1):t('You have reached the top level!');
-  function r(ic,h,p){return '<div style="display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)"><span class="rc-ic mint" style="flex:none">'+ic+'</span><div style="min-width:0"><b style="font-family:var(--display);font-size:15px">'+h+'</b><p class="small muted" style="margin-top:2px">'+p+'</p></div></div>';}
-  return subHeader2(t('Level'))+
-  '<div style="display:flex;gap:8px;padding:6px 0 2px">'+row+'</div>'+
-  '<section class="card flat" style="background:var(--accent);border-color:var(--accent);color:var(--accent-ink)"><div style="display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:800;font-size:17px">'+svgi('check',20,2.6)+t('You are on Level')+' '+n+' · '+t(LEVELS[lv].n)+'</div><p class="small" style="margin-top:6px;opacity:.95">'+sub+'</p></section>'+
-  '<h2 style="font-size:16px;margin-top:4px">'+t('How it works')+'</h2>'+
-  '<section class="card hw" style="padding:2px 14px">'+
-    r(coin(22),t('Daily Limit')+' = '+stepCap()+' '+t('coins'),t('Daily Limit is the max coins you can earn per day from walking. Watch ads to extend it up to 3 times a day.'))+
-    r(svgi('board',20),t('Level upgrade'),next?t('Your level goes up as your total steps grow. Next level at')+' '+fmt(next.min)+' '+t('total steps')+'.':t('You are at the highest level.'))+
-    r(svgi('check',20,2.4),t('No downgrade'),t('Your level never goes down and your coins stay safe.'))+
-  '</section>';
+  var curLv = level(), curN = curLv + 1;
+  var sel = (UI.selLvl !== undefined) ? UI.selLvl : curN;
+  if (sel < 1) sel = 1; if (sel > LEVELS.length) sel = LEVELS.length;
+  var selIdx = sel - 1;
+  var selLvl = LEVELS[selIdx];
+  var selCol = LV_COL[selIdx];
+
+  var row = '', i;
+  for(i = 1; i <= LEVELS.length; i++){
+    var isSel = (i === sel);
+    var isUnlocked = (i <= curN);
+    row += '<button data-a="sellvl" data-v="'+i+'" style="flex:1;min-width:0;background:none;border:none;padding:0;cursor:pointer;position:relative;transition:transform .15s ease;' + (isSel ? 'transform:scale(1.15);' : '') + '">'
+         + hexBadge(i, isUnlocked ? 'on' : 'locked', isSel)
+         + (isSel ? '<span style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:7px;height:7px;border-radius:50%;background:'+LV_COL[i-1]+';box-shadow:0 0 6px '+LV_COL[i-1]+';"></span>' : '')
+         + '</button>';
+  }
+
+  function r(ic, h, p){
+    return '<div style="display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line);align-items:flex-start;">'
+         + '<span class="rc-ic mint" style="flex:none;margin-top:2px;">'+ic+'</span>'
+         + '<div style="min-width:0"><b style="font-family:var(--display);font-size:15px;color:var(--ink);">'+h+'</b>'
+         + '<p class="small muted" style="margin-top:3px;line-height:1.45;">'+p+'</p></div></div>';
+  }
+
+  var cardTitle = '';
+  var cardSub = '';
+  var cardBg = '';
+
+  if (sel === curN) {
+    cardBg = 'background:var(--accent);border-color:var(--accent);color:var(--accent-ink);';
+    cardTitle = svgi('check',20,2.6) + 'You are on Level ' + sel + ' · ' + selLvl.n;
+    if (sel === 1) {
+      cardSub = 'Normal Level — Sabhi users ke liye shuru se unlock hai.';
+    } else {
+      var missed = S.missedDays || 0;
+      cardSub = 'Is level par bane rehne ke liye lagatar 3 din miss mat kijiye (1 din miss hona chalta hai). Current missed: ' + missed + '/3 din.';
+    }
+  } else if (sel > curN) {
+    cardBg = 'background:color-mix(in srgb, '+selCol+' 15%, var(--surface));border-color:'+selCol+';color:var(--ink);';
+    cardTitle = '🔒 Level ' + sel + ' · ' + selLvl.n + ' (Locked)';
+    cardSub = 'Unlock Rule: 3 din lagatar ' + fmt(selLvl.steps) + ' steps poore karne honge!';
+  } else {
+    cardBg = 'background:var(--surface);border-color:var(--line);color:var(--ink);';
+    cardTitle = '✓ Level ' + sel + ' · ' + selLvl.n + ' (Achieved)';
+    cardSub = 'Yeh level aap pehle achieve kar chuke hain.';
+  }
+
+  var unlockDetail = sel === 1 
+    ? 'Normal Level (Sabhi ke liye pehle se unlock hai, koi condition nahi).'
+    : '<b>3 din lagatar ' + fmt(selLvl.steps) + ' steps</b> chalne par Level ' + sel + ' unlock hoga.';
+
+  var maintainDetail = sel === 1
+    ? 'Normal Level — Level downgrade nahi hota.'
+    : '<b>Level Downgrade Rule:</b> Agar aap <b>lagatar 3 din</b> tak ' + fmt(selLvl.steps) + ' steps nahi chalenge, tabhi level down hoga. 1 din ya 2 din miss hone par level safe rehta hai!';
+
+  var earnDetail = 'Is level par Daily Limit = ' + selLvl.cap + ' Coins hai. Har ' + fmt(selLvl.rate) + ' steps par 1 Coin milta hai.';
+
+  return subHeader2(t('Level')) +
+    '<div style="display:flex;gap:8px;padding:6px 0 10px">' + row + '</div>' +
+    '<section class="card flat" style="' + cardBg + ';transition:all .2s ease;margin-bottom:10px;">' +
+      '<div style="display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:800;font-size:17px">' + cardTitle + '</div>' +
+      '<p class="small" style="margin-top:6px;opacity:.95;line-height:1.4;">' + cardSub + '</p>' +
+    '</section>' +
+    '<h2 style="font-size:16px;margin-top:6px;font-weight:700;">Level ' + sel + ' Details & Rules</h2>' +
+    '<section class="card hw" style="padding:2px 14px">' +
+      r(svgi('crown',20), 'Unlock Rule (Level Kholna)', unlockDetail) +
+      r('🛡️', 'Level Maintain & Downgrade Rule', maintainDetail) +
+      r(coin(22), 'Earning Rate & Daily Limit', earnDetail) +
+    '</section>';
 }
+
 function flameBig(){
   return '<svg viewBox="0 0 120 130" width="120" height="130" aria-hidden="true"><defs><linearGradient id="fl1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7aa2"/><stop offset="1" stop-color="#ef1f6b"/></linearGradient><linearGradient id="fl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd24a"/><stop offset="1" stop-color="#ffb199"/></linearGradient></defs>'+
     '<path d="M62 4C70 30 100 42 100 80a40 40 0 0 1-80 0C20 56 36 46 42 26c4 10 8 15 12 15C58 30 56 16 62 4Z" fill="url(#fl1)"/>'+
@@ -1139,30 +1421,287 @@ function chNote(c){
   var p=c.end.split('-');return t('Ends on')+' '+ordinalDay(new Date(+p[0],+p[1]-1,+p[2]));
 }
 function challengeCard(c){
-  var pct=Math.min(c.prog/c.target,1)*100,ready=c.joined&&c.done&&!c.claimed&&!c.ended;
-  var feeChip=c.fee>0?'<span class="chip2 paid">'+coin(14)+t('Entry')+' '+fmt(c.fee)+'</span>':'<span class="chip2 free">'+t('Free')+'</span>';
-  var stChip=c.claimed?'<span class="chip2 ok">'+svgi('check',14,2.8)+t('Completed')+'</span>':c.ended?'<span class="chip2 dim">'+t('Ended')+'</span>':c.joined?'<span class="chip2 act">'+svgi('flame',14,2)+t('Active')+'</span>':'<span class="chip2 dim">'+t('Not joined')+'</span>';
+  var pct = Math.min(c.prog/c.target, 1) * 100;
+  var ready = c.joined && c.done && !c.claimed && !c.ended;
+  var scopeName = c.scope==='d' ? 'Daily' : c.scope==='w' ? 'Weekly' : c.scope==='m' ? 'Monthly' : 'Special Event';
+  var feeText = c.fee > 0 ? (coin(12) + ' ' + fmt(c.fee)) : 'Free';
+  var scopeCol = c.scope==='e' ? '#e2552b' : c.scope==='m' ? '#4da8e8' : c.scope==='w' ? '#e3a008' : '#1e8e4e';
+
+  var baseP = c.scope === 'd' ? 1850 : c.scope === 'w' ? 4320 : c.scope === 'm' ? 12800 : 3100;
+  var joinedUsersCount = fmt(baseP + ((c.target % 97) * 7));
+
   var btn;
-  if(c.claimed)btn='<button class="btn block" disabled>'+t('Claimed')+'</button>';
-  else if(c.ended)btn='<button class="btn block" disabled>'+t('Ended')+'</button>';
-  else if(!c.joined)btn=c.fee>0?'<button class="btn gold block" data-a="askjoin" data-v="'+c.id+'">'+t('Join for')+' '+coin(16)+' '+fmt(c.fee)+'</button>':'<button class="btn primary block" data-a="join" data-v="'+c.id+'">'+t('Join free')+'</button>';
-  else if(c.done)btn='<button class="btn gold block" data-a="claim" data-v="'+c.id+'">'+t('Claim')+' +'+c.reward+'</button>';
-  else btn='<button class="btn block" disabled>'+t('In progress')+'</button>';
-  return '<article class="chc'+(c.joined?'':' unj')+'">'+
-    '<div class="chb t-'+c.scope+'"><div class="chb-chips">'+feeChip+stChip+'</div>'+
-      '<span class="chb-art" aria-hidden="true">'+svgi(c.scope==='e'?'flame':c.scope==='m'?'star':'trophy',92,1.2)+'</span>'+
-      '<div class="chb-t"><span class="chb-ic">'+svgi(c.ic,22,2)+'</span><b class="chb-num">'+fmt(c.target)+'</b><span class="chb-unit">'+t(c.u)+'</span><span class="chb-sub">'+t(SCOPE_EVERY[c.scope])+'</span></div>'+
-      '<span class="chb-badge">'+coin(18)+'+'+fmt(c.reward)+'</span></div>'+
-    '<h3 class="cht">'+chTitle(c)+'</h3>'+
-    '<div class="chtiles">'+
-      '<div class="ctile tone-peach"><span class="ct-i">'+svgi('gift',24,1.8)+'</span><small>'+t('Reward')+'</small><b>'+fmt(c.reward)+' '+(c.reward>1?t('Coins'):t('Coin'))+'</b></div>'+
-      '<div class="ctile tone-mint"><span class="ct-i">'+svgi('flag',24,1.8)+'</span><small>'+t('Goal')+'</small><b>'+fmt(c.target)+' '+t(c.u)+'</b></div>'+
-      '<div class="ctile tone-sky"><span class="ct-i">'+svgi('walker',24,1.8)+'</span><small>'+t('Progress')+'</small><b>'+Math.floor(pct)+'%</b></div></div>'+
-    '<div class="bar'+(ready?' gold':'')+'" role="progressbar" aria-valuemin="0" aria-valuemax="'+c.target+'" aria-valuenow="'+Math.min(c.prog,c.target)+'"><i style="width:'+pct+'%"></i></div>'+
-    '<div class="row" style="justify-content:space-between"><span class="small muted">'+fmt(Math.min(c.prog,c.target))+' / '+fmt(c.target)+'</span><span class="small muted">'+chNote(c)+'</span></div>'+
-    (c.joined||c.ended||c.claimed?'':'<p class="small chhint">'+svgi('lock',14,2)+' '+t('Join to earn coins. Only progress after you join counts.')+'</p>')+
-    btn+'</article>';
+  if(c.claimed) btn = '<button class="btn" disabled style="padding:6px 14px;font-size:12px;min-height:36px;border-radius:12px;">' + t('Claimed') + '</button>';
+  else if(c.ended) btn = '<button class="btn" disabled style="padding:6px 14px;font-size:12px;min-height:36px;border-radius:12px;">' + t('Ended') + '</button>';
+  else if(!c.joined) btn = c.fee>0 
+    ? '<button class="btn gold" data-a="askjoin" data-v="'+c.id+'" style="padding:6px 15px;font-size:12px;min-height:36px;font-weight:700;border-radius:12px;">' + t('Join for') + ' ' + coin(13) + fmt(c.fee) + '</button>'
+    : '<button class="btn primary" data-a="join" data-v="'+c.id+'" style="padding:6px 16px;font-size:12px;min-height:36px;font-weight:700;border-radius:12px;">' + t('Join free') + '</button>';
+  else if(c.done) btn = '<button class="btn gold" data-a="claim" data-v="'+c.id+'" style="padding:6px 15px;font-size:12px;min-height:36px;font-weight:700;border-radius:12px;">' + t('Claim') + ' +' + c.reward + ' ' + coin(13) + '</button>';
+  else btn = '<button class="btn" disabled style="padding:6px 14px;font-size:12px;min-height:36px;border-radius:12px;opacity:.7;">' + t('In progress') + '</button>';
+
+  return '<article class="card chc-card" data-a="chdetail" data-v="'+c.id+'" style="cursor:pointer;padding:14px 16px;margin-bottom:12px;border-radius:20px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow);border:1px solid var(--line);background:var(--surface);transition:transform 0.15s ease;">' +
+    '<div class="row" style="justify-content:space-between;align-items:center;">' +
+      '<div class="row" style="gap:11px;align-items:center;min-width:0;flex:1;">' +
+        '<span style="width:40px;height:40px;border-radius:12px;background:color-mix(in srgb, '+scopeCol+' 18%, var(--surface));color:'+scopeCol+';display:grid;place-items:center;flex:none;">' + svgi(c.ic, 22, 2) + '</span>' +
+        '<div style="min-width:0;flex:1;">' +
+          '<h3 style="font-size:14.5px;font-weight:700;margin:0;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + chTitle(c) + '</h3>' +
+          '<div style="font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:6px;align-items:center;">' +
+            '<span style="font-weight:700;color:'+scopeCol+';">' + scopeName + '</span>' +
+            '<span>·</span>' +
+            '<span>' + feeText + '</span>' +
+            '<span>·</span>' +
+            '<span>👥 ' + joinedUsersCount + ' joined</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="reward" style="font-size:13px;font-weight:800;flex:none;background:var(--coin-soft);padding:4px 10px;border-radius:99px;color:var(--coin-d);margin-left:8px;">' +
+        coin(14) + ' +' + fmt(c.reward) +
+      '</div>' +
+    '</div>' +
+    (c.joined ? 
+      '<div style="display:flex;flex-direction:column;gap:4px;">' +
+        '<div class="bar'+(ready?' gold':'')+'" style="height:6px;border-radius:99px;margin:0;" role="progressbar"><i style="width:'+pct+'%"></i></div>' +
+        '<div class="row" style="justify-content:space-between;font-size:10.5px;color:var(--muted);">' +
+          '<span>' + fmt(Math.min(c.prog, c.target)) + ' / ' + fmt(c.target) + ' ' + t(c.u) + '</span>' +
+          '<span style="font-weight:700;color:var(--text);">' + Math.floor(pct) + '%</span>' +
+        '</div>' +
+      '</div>' : '') +
+    '<div class="row" style="justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid var(--line);">' +
+      '<div style="display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--accent);font-weight:600;">' +
+        '<span>📋 Details & Leaderboard</span>' +
+        '<span>→</span>' +
+      '</div>' +
+      '<div style="flex:none;">' + btn + '</div>' +
+    '</div>' +
+  '</article>';
 }
+
+function chDetailHTML(){
+  var c = findCh(UI.selCh || 'd10') || challenges()[0];
+  if(!c) return subHeader(t('Challenge Details')) + '<p style="padding:20px;">Challenge not found</p>';
+
+  var pct = Math.min(c.prog/c.target, 1) * 100;
+  var ready = c.joined && c.done && !c.claimed && !c.ended;
+  var scopeName = c.scope==='d' ? 'Daily' : c.scope==='w' ? 'Weekly' : c.scope==='m' ? 'Monthly' : 'Special Event';
+  var scopeCol = c.scope==='e' ? '#e2552b' : c.scope==='m' ? '#4da8e8' : c.scope==='w' ? '#e3a008' : '#1e8e4e';
+
+  var now = new Date();
+  var validityText = '';
+  var timeLeftText = '';
+  if(c.scope === 'd'){
+    validityText = 'Valid: Aaj Raat 12:00 Baje Tak (Midnight)';
+    var hrsLeft = 23 - now.getHours();
+    var minsLeft = 59 - now.getMinutes();
+    timeLeftText = hrsLeft + ' ghante ' + minsLeft + ' minute bache hain';
+  } else if(c.scope === 'w'){
+    validityText = 'Valid: Is hafte ke Sunday Raat 12:00 Baje Tak';
+    var daysLeft = 7 - ((now.getDay() + 6) % 7);
+    timeLeftText = daysLeft + ' din bache hain';
+  } else if(c.scope === 'm'){
+    validityText = 'Valid: Is Mahine ke Aakhiri Din Tak';
+    var lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    var mDaysLeft = lastDay - now.getDate();
+    timeLeftText = mDaysLeft + ' din bache hain';
+  } else {
+    validityText = 'Valid: Event End Date Tak (' + (c.end || 'Limited Time') + ')';
+    timeLeftText = c.ended ? 'Event Samapt' : 'Limited Event';
+  }
+
+  var distKm = (c.prog * 0.00075).toFixed(2);
+  var calBurned = Math.round(c.prog * 0.04);
+
+  var baseP = c.scope === 'd' ? 1850 : c.scope === 'w' ? 4320 : c.scope === 'm' ? 12800 : 3100;
+  var totalJoinedUsers = baseP + ((c.target % 97) * 7);
+  var totalCommunitySteps = Math.round(totalJoinedUsers * c.target * 0.74);
+
+  var top1Steps = Math.round(c.target * 1.38);
+  var top2Steps = Math.round(c.target * 1.24);
+  var top3Steps = Math.round(c.target * 1.12);
+  var top4Steps = Math.round(c.target * 0.98);
+  var top5Steps = Math.round(c.target * 0.91);
+
+  var myRank = !c.joined ? '-' : c.prog >= top1Steps ? '#1' : c.prog >= top2Steps ? '#2' : c.prog >= top3Steps ? '#3' : ('#' + Math.max(4, Math.floor(totalJoinedUsers * Math.max(0.04, (1 - (c.prog / (c.target * 1.4)))))));
+
+  var actionBtn = '';
+  if(c.claimed){
+    actionBtn = '<button class="btn block" disabled style="min-height:48px;font-weight:700;border-radius:14px;background:rgba(255,255,255,0.08);color:var(--muted);font-size:15px;">✅ Reward Claimed Ho Chuka Hai</button>';
+  } else if(c.ended){
+    actionBtn = '<button class="btn block" disabled style="min-height:48px;font-weight:700;border-radius:14px;">⛔ Challenge Ended</button>';
+  } else if(!c.joined){
+    actionBtn = c.fee > 0
+      ? '<button class="btn gold block" data-a="askjoin" data-v="'+c.id+'" style="min-height:50px;font-size:15px;font-weight:800;border-radius:14px;box-shadow:0 8px 24px rgba(235,160,0,0.3);">' + t('Join for') + ' ' + coin(18) + ' ' + fmt(c.fee) + '</button>'
+      : '<button class="btn primary block" data-a="join" data-v="'+c.id+'" style="min-height:50px;font-size:15px;font-weight:800;border-radius:14px;box-shadow:0 8px 24px rgba(30,142,78,0.3);">' + t('Join Free Challenge') + '</button>';
+  } else if(c.done){
+    actionBtn = '<button class="btn gold block" data-a="claim" data-v="'+c.id+'" style="min-height:50px;font-size:16px;font-weight:800;border-radius:14px;box-shadow:0 8px 24px rgba(235,160,0,0.4);animation:pulse 1.8s infinite;">🎉 Claim Reward +' + c.reward + ' ' + coin(18) + '</button>';
+  } else {
+    actionBtn = '<div style="display:flex;flex-direction:column;gap:8px;">' +
+      '<button class="btn block" disabled style="min-height:46px;font-weight:700;border-radius:14px;opacity:0.85;background:rgba(255,255,255,0.06);">' +
+        '⚡ In Progress (' + fmt(c.target - c.prog) + ' steps aur bache hain)' +
+      '</button>' +
+      '<button class="btn primary" data-a="walk" data-v="1000" style="min-height:40px;font-size:13px;font-weight:700;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;">' +
+        '🚶 +1,000 Steps Walk Chalein (Simulate)' +
+      '</button>' +
+    '</div>';
+  }
+
+  return subHeader(t('Challenge Details')) +
+  '<div style="display:flex;flex-direction:column;gap:14px;padding-bottom:30px;">' +
+
+    '<section class="card" style="padding:18px;border-radius:24px;background:radial-gradient(circle at 90% 10%, color-mix(in srgb, '+scopeCol+' 24%, var(--surface)) 0, var(--surface) 65%);border:1px solid var(--line);box-shadow:var(--shadow);">' +
+      '<div class="row" style="gap:12px;align-items:center;margin-bottom:12px;">' +
+        '<span style="width:48px;height:48px;border-radius:14px;background:color-mix(in srgb, '+scopeCol+' 20%, var(--surface));color:'+scopeCol+';display:grid;place-items:center;flex:none;box-shadow:0 4px 12px rgba(0,0,0,0.15);">' +
+          svgi(c.ic, 26, 2) +
+        '</span>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">' +
+            '<span style="font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;background:'+scopeCol+';color:#fff;">' + scopeName + '</span>' +
+            (c.joined ? '<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(30,142,78,0.2);color:#22c55e;border:1px solid rgba(34,197,94,0.3);">Active Joined</span>' : '') +
+          '</div>' +
+          '<h2 style="font-size:18px;font-weight:800;line-height:1.2;margin:0;">' + chTitle(c) + '</h2>' +
+        '</div>' +
+      '</div>' +
+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">' +
+        '<div style="background:var(--surface-2);padding:10px 12px;border-radius:14px;border:1px solid var(--line);">' +
+          '<div style="font-size:11px;color:var(--muted);font-weight:600;">🎯 Iska Goal</div>' +
+          '<div style="font-size:15px;font-weight:800;color:var(--text);margin-top:2px;">' + fmt(c.target) + ' ' + t(c.u) + '</div>' +
+        '</div>' +
+        '<div style="background:var(--surface-2);padding:10px 12px;border-radius:14px;border:1px solid var(--line);">' +
+          '<div style="font-size:11px;color:var(--muted);font-weight:600;">🪙 Reward</div>' +
+          '<div style="font-size:15px;font-weight:800;color:var(--coin-d);margin-top:2px;">' + coin(16) + ' +' + fmt(c.reward) + ' Coins</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div style="margin-top:10px;background:rgba(255,255,255,0.03);padding:10px 12px;border-radius:14px;border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
+        '<div style="font-size:11.5px;color:var(--muted);">' +
+          '<div>📅 <b>' + validityText + '</b></div>' +
+          '<div style="font-size:10.5px;color:'+scopeCol+';margin-top:2px;font-weight:600;">⏰ ' + timeLeftText + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</section>' +
+
+    '<section class="card" style="padding:16px;border-radius:24px;border:1px solid var(--line);box-shadow:var(--shadow);">' +
+      '<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+        '<h3 style="font-size:15px;font-weight:800;margin:0;display:flex;align-items:center;gap:6px;">' +
+          '<span>📊</span> <span>Your Progress (Aapki Progress)</span>' +
+        '</h3>' +
+        '<span style="font-size:12px;font-weight:800;color:var(--accent);">' + Math.floor(pct) + '% Completed</span>' +
+      '</div>' +
+
+      (c.joined ? (
+        '<div style="display:flex;flex-direction:column;gap:10px;">' +
+          '<div class="bar gold" style="height:8px;border-radius:99px;margin:0;" role="progressbar"><i style="width:'+pct+'%"></i></div>' +
+          '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px;">' +
+            '<div style="text-align:center;padding:10px 6px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line);">' +
+              '<div style="font-size:10.5px;color:var(--muted);font-weight:600;">🚶 Steps Chale</div>' +
+              '<div style="font-size:14px;font-weight:800;color:var(--text);margin-top:2px;">' + fmt(c.prog) + '</div>' +
+              '<div style="font-size:9.5px;color:var(--muted);">/ ' + fmt(c.target) + '</div>' +
+            '</div>' +
+            '<div style="text-align:center;padding:10px 6px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line);">' +
+              '<div style="font-size:10.5px;color:var(--muted);font-weight:600;">🛣️ Distance</div>' +
+              '<div style="font-size:14px;font-weight:800;color:var(--text);margin-top:2px;">' + distKm + '</div>' +
+              '<div style="font-size:9.5px;color:var(--muted);">Kilometers</div>' +
+            '</div>' +
+            '<div style="text-align:center;padding:10px 6px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line);">' +
+              '<div style="font-size:10.5px;color:var(--muted);font-weight:600;">🔥 Calories</div>' +
+              '<div style="font-size:14px;font-weight:800;color:var(--text);margin-top:2px;">' + calBurned + '</div>' +
+              '<div style="font-size:9.5px;color:var(--muted);">kcal burned</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>'
+      ) : (
+        '<div style="padding:14px;text-align:center;background:var(--surface-2);border-radius:16px;border:1px dashed var(--line);">' +
+          '<div style="font-size:24px;margin-bottom:4px;">🚶‍♂️</div>' +
+          '<p style="font-size:12.5px;font-weight:600;margin:0 0 4px 0;color:var(--text);">Aapne abhi ye challenge join nahi kiya hai</p>' +
+          '<p style="font-size:11px;color:var(--muted);margin:0;">Niche "Join Challenge" par click karein aur apne steps, distance aur calories count karein!</p>' +
+        '</div>'
+      )) +
+    '</section>' +
+
+    '<section class="card" style="padding:16px;border-radius:24px;border:1px solid var(--line);box-shadow:var(--shadow);">' +
+      '<h3 style="font-size:15px;font-weight:800;margin:0 0 12px 0;display:flex;align-items:center;gap:6px;">' +
+        '<span>👥</span> <span>Participants & Community Stats</span>' +
+      '</h3>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+        '<div style="background:var(--surface-2);padding:12px;border-radius:14px;border:1px solid var(--line);">' +
+          '<div style="font-size:11px;color:var(--muted);font-weight:600;">Kitne Logo Ne Join Kiya</div>' +
+          '<div style="font-size:16px;font-weight:800;color:var(--text);margin-top:3px;">' + fmt(totalJoinedUsers) + ' Users</div>' +
+          '<div style="font-size:10px;color:var(--accent);margin-top:2px;font-weight:600;">🔥 Trending Challenge</div>' +
+        '</div>' +
+        '<div style="background:var(--surface-2);padding:12px;border-radius:14px;border:1px solid var(--line);">' +
+          '<div style="font-size:11px;color:var(--muted);font-weight:600;">Joined Users Ke Total Steps</div>' +
+          '<div style="font-size:16px;font-weight:800;color:var(--text);margin-top:3px;">' + fmt(totalCommunitySteps) + '</div>' +
+          '<div style="font-size:10px;color:var(--muted);margin-top:2px;">Steps Completed</div>' +
+        '</div>' +
+      '</div>' +
+    '</section>' +
+
+    '<section class="card" style="padding:16px;border-radius:24px;border:1px solid var(--line);box-shadow:var(--shadow);">' +
+      '<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+        '<h3 style="font-size:15px;font-weight:800;margin:0;display:flex;align-items:center;gap:6px;">' +
+          '<span>🏆</span> <span>Leaderboard (Top Rankers)</span>' +
+        '</h3>' +
+        '<span style="font-size:11px;color:var(--muted);font-weight:600;">Live Rankings</span>' +
+      '</div>' +
+
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;align-items:end;">' +
+        '<div style="text-align:center;background:var(--surface-2);border:1px solid rgba(192,192,192,0.3);border-radius:16px;padding:12px 6px 8px;display:flex;flex-direction:column;align-items:center;">' +
+          '<span style="font-size:20px;margin-bottom:2px;">🥈</span>' +
+          '<b style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;">Diya Patel</b>' +
+          '<span style="font-size:10.5px;color:var(--coin-d);font-weight:700;margin-top:2px;">' + fmt(top2Steps) + '</span>' +
+          '<span style="font-size:9.5px;color:var(--muted);">steps</span>' +
+          '<div style="margin-top:6px;font-size:9.5px;font-weight:800;background:rgba(192,192,192,0.2);color:#cbd5e1;padding:1px 6px;border-radius:99px;">2nd</div>' +
+        '</div>' +
+        '<div style="text-align:center;background:radial-gradient(circle at 50% 0%, rgba(235,160,0,0.18), var(--surface-2));border:1.5px solid rgba(235,160,0,0.5);border-radius:18px;padding:16px 6px 10px;display:flex;flex-direction:column;align-items:center;box-shadow:0 6px 16px rgba(235,160,0,0.15);">' +
+          '<span style="font-size:26px;margin-bottom:2px;">🥇</span>' +
+          '<b style="font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;color:var(--coin-d);">Aarav S.</b>' +
+          '<span style="font-size:11px;color:var(--coin-d);font-weight:800;margin-top:2px;">' + fmt(top1Steps) + '</span>' +
+          '<span style="font-size:9.5px;color:var(--muted);">steps</span>' +
+          '<div style="margin-top:6px;font-size:10px;font-weight:800;background:var(--coin-d);color:#000;padding:2px 8px;border-radius:99px;">1st 👑</div>' +
+        '</div>' +
+        '<div style="text-align:center;background:var(--surface-2);border:1px solid rgba(205,127,50,0.3);border-radius:16px;padding:12px 6px 8px;display:flex;flex-direction:column;align-items:center;">' +
+          '<span style="font-size:20px;margin-bottom:2px;">🥉</span>' +
+          '<b style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;">Kabir M.</b>' +
+          '<span style="font-size:10.5px;color:var(--coin-d);font-weight:700;margin-top:2px;">' + fmt(top3Steps) + '</span>' +
+          '<span style="font-size:9.5px;color:var(--muted);">steps</span>' +
+          '<div style="margin-top:6px;font-size:9.5px;font-weight:800;background:rgba(205,127,50,0.2);color:#f97316;padding:1px 6px;border-radius:99px;">3rd</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:10px;">' +
+        '<div class="row" style="justify-content:space-between;align-items:center;padding:6px 8px;border-radius:10px;background:rgba(255,255,255,0.02);font-size:12px;">' +
+          '<div class="row" style="gap:8px;align-items:center;">' +
+            '<span style="font-weight:700;color:var(--muted);width:20px;">#4</span>' +
+            '<span>Sneha Kapoor</span>' +
+          '</div>' +
+          '<span style="font-weight:700;color:var(--muted);">' + fmt(top4Steps) + ' steps</span>' +
+        '</div>' +
+        '<div class="row" style="justify-content:space-between;align-items:center;padding:6px 8px;border-radius:10px;background:rgba(255,255,255,0.02);font-size:12px;">' +
+          '<div class="row" style="gap:8px;align-items:center;">' +
+            '<span style="font-weight:700;color:var(--muted);width:20px;">#5</span>' +
+            '<span>Rohan Verma</span>' +
+          '</div>' +
+          '<span style="font-weight:700;color:var(--muted);">' + fmt(top5Steps) + ' steps</span>' +
+        '</div>' +
+
+        '<div class="row" style="justify-content:space-between;align-items:center;padding:10px 12px;border-radius:14px;background:color-mix(in srgb, var(--accent) 15%, var(--surface-2));border:1px solid var(--accent);margin-top:4px;">' +
+          '<div class="row" style="gap:8px;align-items:center;">' +
+            '<span style="font-weight:800;color:var(--accent);font-size:13px;">' + myRank + '</span>' +
+            '<div>' +
+              '<b style="font-size:12.5px;color:var(--text);">' + esc(S.name || 'Aap') + ' (Aapki Rank)</b>' +
+              '<div style="font-size:10px;color:var(--muted);">' + (c.joined ? (fmt(c.prog) + ' steps completed') : 'Not joined yet') + '</div>' +
+            '</div>' +
+          '</div>' +
+          (c.joined ? '<span style="font-size:11px;font-weight:700;color:var(--accent);">Active</span>' : '<span style="font-size:10.5px;color:var(--muted);">Join karein</span>') +
+        '</div>' +
+      '</div>' +
+    '</section>' +
+
+    '<div style="margin-top:4px;">' + actionBtn + '</div>' +
+
+  '</div>';
+}
+
 function challengesHTML(){
   var all=challenges();
   var live=all.filter(function(c){return c.joined&&!c.claimed&&!c.ended;}).length;
@@ -1214,35 +1753,179 @@ function matches(it){
   var q=(UI.q||'').trim().toLowerCase();if(!q)return true;
   return it.name.toLowerCase().indexOf(q)>-1||catOf(it.cat).label.toLowerCase().indexOf(q)>-1;
 }
+function prodArt(id, cat) {
+  switch (id) {
+    case 'tumbler':
+      return '<svg width="100%" height="100%" viewBox="0 0 100 100" fill="none"><rect width="100" height="100" rx="16" fill="#e0f2fe"/><path d="M48 12V28" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/><rect x="36" y="28" width="28" height="8" rx="4" fill="#0284c7"/><path d="M38 36L41 84C41 87 44 89 47 89H53C56 89 59 87 59 84L62 36H38Z" fill="#38bdf8"/><rect x="42" y="52" width="16" height="4" rx="2" fill="#0284c7"/><path d="M62 45H72C74.2 45 76 46.8 76 49V65C76 67.2 74.2 69 72 69H62" stroke="#0284c7" stroke-width="4" stroke-linecap="round"/></svg>';
+    case 'scrubber':
+      return '<svg width="100%" height="100%" viewBox="0 0 100 100" fill="none"><rect width="100" height="100" rx="16" fill="#f1f5f9"/><path d="M25 50C25 35 40 32 50 40C60 32 75 35 75 50C75 70 65 78 50 78C35 78 25 70 25 50Z" fill="#94a3b8"/><circle cx="42" cy="52" r="2" fill="#fff"/><circle cx="50" cy="48" r="2" fill="#fff"/><circle cx="58" cy="52" r="2" fill="#fff"/><circle cx="46" cy="62" r="2" fill="#fff"/><circle cx="54" cy="62" r="2" fill="#fff"/><circle cx="50" cy="70" r="2" fill="#fff"/></svg>';
+    case 'candymaker':
+      return '<svg width="100%" height="100%" viewBox="0 0 100 100" fill="none"><rect width="100" height="100" rx="16" fill="#dcfce7"/><rect x="22" y="44" width="56" height="34" rx="12" fill="#22c55e"/><rect x="30" y="24" width="6" height="20" rx="3" fill="#86efac"/><rect x="42" y="24" width="6" height="20" rx="3" fill="#86efac"/><rect x="54" y="24" width="6" height="20" rx="3" fill="#86efac"/><rect x="66" y="24" width="6" height="20" rx="3" fill="#86efac"/><circle cx="33" cy="60" r="3" fill="#15803d"/><circle cx="45" cy="60" r="3" fill="#15803d"/><circle cx="57" cy="60" r="3" fill="#15803d"/><circle cx="69" cy="60" r="3" fill="#15803d"/></svg>';
+    case 'bottle500':
+    case 'bottle400':
+      return '<svg width="100%" height="100%" viewBox="0 0 100 100" fill="none"><rect width="100" height="100" rx="16" fill="#ecfeff"/><rect x="44" y="16" width="12" height="10" rx="3" fill="#94a3b8"/><path d="M46 16C46 12 54 12 54 16" stroke="#06b6d4" stroke-width="3" stroke-linecap="round"/><path d="M40 26H60V82C60 85 57 88 54 88H46C43 88 40 85 40 82V26Z" fill="#a5f3fc"/><rect x="40" y="42" width="20" height="40" rx="4" fill="#06b6d4"/><circle cx="50" cy="62" r="4" fill="#ecfeff"/></svg>';
+    case 'dispenser':
+      return '<svg width="100%" height="100%" viewBox="0 0 100 100" fill="none"><rect width="100" height="100" rx="16" fill="#ffe4e6"/><path d="M48 18H36C34 18 34 22 36 22H52V28H48" stroke="#f43f5e" stroke-width="4" stroke-linecap="round"/><rect x="42" y="28" width="16" height="6" rx="2" fill="#fb7185"/><rect x="34" y="34" width="32" height="52" rx="10" fill="#f43f5e"/><rect x="40" y="46" width="20" height="28" rx="4" fill="#fda4af"/></svg>';
+    case 'iphone17':
+      return '<svg width="100%" height="100%" viewBox="0 0 100 100" fill="none"><rect width="100" height="100" rx="16" fill="#0f172a"/><rect x="32" y="16" width="36" height="68" rx="8" fill="#1e293b" stroke="#475569" stroke-width="2"/><rect x="44" y="20" width="12" height="3" rx="1.5" fill="#000"/><circle cx="42" cy="30" r="5" fill="#0f172a" stroke="#334155" stroke-width="1.5"/><circle cx="42" cy="44" r="5" fill="#0f172a" stroke="#334155" stroke-width="1.5"/><circle cx="54" cy="37" r="3" fill="#38bdf8"/></svg>';
+    case 'spk':
+      return '<svg width="100%" height="100%" viewBox="0 0 100 100" fill="none"><rect width="100" height="100" rx="16" fill="#eff6ff"/><rect x="28" y="24" width="44" height="52" rx="12" fill="#2563eb"/><circle cx="50" cy="42" r="8" fill="#93c5fd"/><circle cx="50" cy="62" r="6" fill="#93c5fd"/></svg>';
+    case 'pb':
+      return '<svg width="100%" height="100%" viewBox="0 0 100 100" fill="none"><rect width="100" height="100" rx="16" fill="#f8fafc"/><rect x="28" y="20" width="44" height="60" rx="10" fill="#334155"/><rect x="36" y="28" width="28" height="10" rx="3" fill="#0f172a"/><text x="40" y="36" font-size="7" fill="#22c55e" font-weight="bold">100%</text></svg>';
+    default:
+      var c = catOf(cat);
+      return '<div style="width:100%;height:100%;display:grid;place-items:center;background:var(--surface-2);color:var(--accent);">' + svgi(c ? c.ic : 'bag', 40, 1.6) + '</div>';
+  }
+}
+
 function prodCard(it){
   var c=catOf(it.cat);
-  return '<button class="pcard" data-a="prod" data-v="'+it.id+'"><span class="pimg tone-'+c.tone+'">'+svgi(c.ic,52,1.3)+'</span>'+
-    '<b class="pname">'+t(it.name)+'</b><span class="pc">'+coin(16)+fmt(it.price)+' '+t('Coins')+'</span>'+
-    '<span class="prs">'+(it.rs?'₹'+fmt(it.rs):'&nbsp;')+'</span>'+(unavailable(it)?'<span class="so">'+t('Out of stock')+'</span>':'')+'</button>';
+  var imgHTML = it.img 
+    ? '<img src="'+it.img+'" alt="'+esc(it.name)+'" style="width:84px;height:84px;object-fit:cover;border-radius:12px;background:#f8fafc;flex:none;">'
+    : ('<div style="width:84px;height:84px;border-radius:12px;overflow:hidden;flex:none;background:#f8fafc;display:grid;place-items:center;">' + prodArt(it.id, it.cat) + '</div>');
+
+  var discountTag = '';
+  var mrpTag = '';
+  var saveTag = '';
+  if(it.mrp && it.mrp > it.rs){
+    var discPct = Math.round(((it.mrp - it.rs) / it.mrp) * 100);
+    mrpTag = '<span style="font-size:12px;color:var(--muted);text-decoration:line-through;">₹' + fmt(it.mrp) + '</span>';
+    discountTag = '<span style="font-size:11.5px;color:#1e8e4e;font-weight:700;">' + discPct + '% OFF</span>';
+    saveTag = '<span style="background:rgba(30,142,78,0.12);color:#1e8e4e;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;">Save ₹' + fmt(it.mrp - it.rs) + '</span>';
+  } else if(it.rs){
+    mrpTag = '<span style="font-size:12px;color:var(--muted);text-decoration:line-through;">₹' + fmt(it.rs) + '</span>';
+  }
+
+  return '<article class="prod-single-card" data-a="prod" data-v="'+it.id+'" style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:18px;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);cursor:pointer;margin-bottom:10px;text-align:left;position:relative;">' +
+    imgHTML +
+    '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;">' +
+      '<h4 style="font-size:13.5px;font-weight:700;color:var(--text);margin:0;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' +
+        esc(it.name) +
+      '</h4>' +
+      '<div style="display:flex;align-items:center;gap:7px;">' +
+        '<span style="font-size:16px;font-weight:800;color:#1e8e4e;">₹' + fmt(it.rs || 0) + '</span>' +
+        mrpTag +
+        discountTag +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px;">' +
+        saveTag +
+        '<span style="background:var(--coin-soft);color:var(--coin-d);font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:3px;">' +
+          coin(12) + ' ' + fmt(it.price) +
+        '</span>' +
+        (unavailable(it) ? '<span style="font-size:10.5px;color:#ef4444;font-weight:700;">' + t('Out of stock') + '</span>' : '') +
+      '</div>' +
+    '</div>' +
+  '</article>';
 }
+
 function productsHTML(){
   var q=(UI.q||'').trim(),list=ITEMS.filter(matches),title;
-  if(UI.cat!=='All'){list=list.filter(function(i){return i.cat===UI.cat;});title=t(catOf(UI.cat).label);}
-  else if(q){title=t('Search results');}
+  if(q){title=t('Search results');}
   else{list=list.filter(function(i){return i.trend;});title=t('Trending Products');}
-  return '<h2 class="trend"><span>'+title+'</span>'+(UI.cat!=='All'?'<button class="link" data-a="cat" data-v="All">'+t('All categories')+'</button>':'')+'</h2>'+
-    (list.length?'<div class="pgrid">'+list.map(prodCard).join('')+'</div>':'<p class="muted">'+t('No products found')+'</p>');
+  return '<div style="margin-top:14px;">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 2px;">' +
+      '<h2 style="font-size:18px;font-weight:800;color:#c07800;margin:0;font-family:var(--display);">' + title + '</h2>' +
+    '</div>' +
+    (list.length
+      ? '<div class="prod-single-list" style="display:flex;flex-direction:column;gap:10px;">' + list.map(prodCard).join('') + '</div>'
+      : '<p class="muted">' + t('No products found') + '</p>'
+    ) +
+  '</div>';
 }
+
 function catsHTML(){
-  return '<div class="cats">'+CATS.map(function(c){
-    return '<button class="cat'+(UI.cat===c.id?' on':'')+'" data-a="cat" data-v="'+c.id+'"><span class="cico tone-'+c.tone+'">'+svgi(c.ic,30,1.6)+'</span><span>'+t(c.label)+'</span></button>';
-  }).join('')+'</div>';
+  return '<div class="cats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:12px 4px;margin-bottom:10px;">' +
+    CATS.map(function(c){
+      return '<button class="cat-circle-btn" data-a="opencat" data-v="'+c.id+'" style="display:flex;flex-direction:column;align-items:center;gap:6px;background:transparent;border:0;cursor:pointer;padding:0;">' +
+        '<span style="width:56px;height:56px;border-radius:99px;background:var(--surface);border:1px solid var(--line);box-shadow:0 3px 10px rgba(0,0,0,0.06);display:grid;place-items:center;color:var(--accent);transition:transform 0.15s ease;">' +
+          svgi(c.ic, 26, 1.8) +
+        '</span>' +
+        '<span style="font-size:11px;font-weight:600;color:var(--text);text-align:center;line-height:1.2;max-width:72px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' +
+          t(c.label) +
+        '</span>' +
+      '</button>';
+    }).join('') +
+  '</div>';
 }
+
 function bannersHTML(){
-  return '<div class="banners">'+
-    '<button class="bn bn1" data-a="cat" data-v="Fitness"><small>'+t('USE YOUR COINS')+'</small><b>'+t('Premium fitness essentials')+'</b><span class="bn-btn">'+t('Shop now')+'</span></button>'+
-    '<div class="bn bn2"><h2>'+t('Your coins.')+' <span>'+t('Your rewards.')+'</span></h2><p class="small">'+t('Turn your Kadam coins into real products')+'</p>'+
-      '<div class="flow"><span>'+svgi('walker',22)+'<i>'+t('Walk')+'</i></span><em>›</em><span>'+coin(22)+'<i>'+t('Get coins')+'</i></span><em>›</em><span>'+svgi('bag',22)+'<i>'+t('Redeem')+'</i></span></div></div></div>';
+  return '<div class="banner-hero" style="position:relative;overflow:hidden;border-radius:24px;background:radial-gradient(circle at 90% 20%, rgba(245,158,11,0.3) 0, transparent 40%), linear-gradient(135deg, #1e293b, #0f172a);padding:18px;color:#fff;margin-bottom:14px;border:1px solid rgba(255,255,255,0.08);box-shadow:var(--shadow);">' +
+    '<div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:#fbbf24;margin-bottom:6px;">' +
+      '<span style="background:rgba(251,191,36,0.2);padding:2px 8px;border-radius:6px;">Walk Wallet</span>' +
+    '</div>' +
+    '<h2 style="font-size:20px;font-weight:900;line-height:1.15;margin:0 0 6px 0;letter-spacing:-0.5px;">YOUR COINS. <span style="color:#fbbf24;">YOUR REWARDS.</span></h2>' +
+    '<p style="font-size:11.5px;color:#cbd5e1;margin:0 0 12px 0;">Turn your Walk Wallet Coins into real products</p>' +
+    '<div style="display:flex;align-items:center;gap:6px;font-size:10.5px;color:#94a3b8;flex-wrap:wrap;">' +
+      '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.06);padding:3px 8px;border-radius:99px;">' + svgi('walker', 13) + ' Walk</span>' +
+      '<span>›</span>' +
+      '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.06);padding:3px 8px;border-radius:99px;">' + coin(13) + ' Get Coins</span>' +
+      '<span>›</span>' +
+      '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.06);padding:3px 8px;border-radius:99px;">' + svgi('bag', 13) + ' Redeem</span>' +
+    '</div>' +
+  '</div>';
 }
+
 function storeHeader(){
   return '<header class="hdr"><h1>'+t('Store')+'</h1><div class="row">'+
     '<button class="ibtn2" data-a="sub" data-v="cart" aria-label="'+t('Cart')+'">'+svgi('cart',24)+(S.cart.length?'<i class="badge">'+S.cart.length+'</i>':'')+'</button>'+
     '<button class="ibtn2" data-a="sub" data-v="orders" aria-label="'+t('My orders')+'">'+svgi('doc',24)+'</button></div></header>';
+}
+
+function catPageHTML(){
+  var catId = UI.selCat || 'Home';
+  var catObj = catOf(catId) || {id:catId, label:'Home & Lifestyle', ic:'sofa'};
+  var catTitle = t(catObj.label);
+
+  var list = ITEMS.filter(function(i){ return i.cat === catId; });
+
+  if(UI.catSearchQuery){
+    var sq = UI.catSearchQuery.toLowerCase();
+    list = list.filter(function(i){ return i.name.toLowerCase().includes(sq); });
+  }
+
+  if(UI.catSort === 'low'){
+    list.sort(function(a,b){ return (a.rs || 0) - (b.rs || 0); });
+  } else if(UI.catSort === 'high'){
+    list.sort(function(a,b){ return (b.rs || 0) - (a.rs || 0); });
+  } else if(UI.catSort === 'coins'){
+    list.sort(function(a,b){ return a.price - b.price; });
+  }
+
+  var sortLabel = UI.catSort === 'low' ? 'Price: Low to High' : UI.catSort === 'high' ? 'Price: High to Low' : UI.catSort === 'coins' ? 'Coins: Low to High' : 'Sort';
+
+  return '<header class="hdr" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:30;">' +
+    '<div class="row" style="gap:10px;align-items:center;">' +
+      '<button class="iconbtn" data-a="back" aria-label="Back" style="font-size:18px;font-weight:700;background:transparent;border:0;color:var(--text);display:flex;align-items:center;">←</button>' +
+      '<h1 style="font-size:17px;font-weight:800;margin:0;color:var(--text);">' + catTitle + '</h1>' +
+    '</div>' +
+    '<div class="row" style="gap:8px;align-items:center;">' +
+      '<button class="iconbtn" data-a="togglecatsearch" aria-label="Search" style="width:36px;height:36px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;color:var(--text);">' + svgi('search', 18) + '</button>' +
+      '<button class="iconbtn" data-a="sub" data-v="cart" aria-label="Cart" style="width:36px;height:36px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;color:var(--text);position:relative;">' +
+        svgi('cart', 18) +
+        (S.cart && S.cart.length ? '<span style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:9.5px;font-weight:800;width:18px;height:18px;border-radius:99px;display:grid;place-items:center;border:2px solid var(--surface);">' + S.cart.length + '</span>' : '') +
+      '</button>' +
+      '<button class="iconbtn" data-a="sub" data-v="orders" aria-label="Orders" style="width:36px;height:36px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;color:var(--text);">' + svgi('doc', 18) + '</button>' +
+    '</div>' +
+  '</header>' +
+
+  (UI.catSearchOpen ? 
+    '<div style="padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--line);">' +
+      '<input id="catq" type="search" placeholder="Search in ' + catTitle + '..." value="' + esc(UI.catSearchQuery || '') + '" oninput="UI.catSearchQuery=this.value;render();" style="width:100%;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font-size:13px;outline:none;">' +
+    '</div>' : '') +
+
+  '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px 6px 14px;">' +
+    '<span style="font-size:13px;color:var(--muted);font-weight:600;">' + catTitle + '</span>' +
+    '<button data-a="catsort" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--text);background:var(--surface);border:1px solid var(--line);padding:5px 12px;border-radius:8px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.04);">' +
+      '<span>⇅</span> <span>' + sortLabel + '</span>' +
+    '</button>' +
+  '</div>' +
+
+  '<div style="padding:10px 14px 40px 14px;display:flex;flex-direction:column;gap:10px;">' +
+    (list.length 
+      ? list.map(prodCard).join('') 
+      : '<div style="text-align:center;padding:40px 20px;color:var(--muted);"><div style="font-size:36px;margin-bottom:8px;">🛍️</div><p style="font-size:14px;font-weight:600;margin:0;">No products in this category yet</p></div>'
+    ) +
+  '</div>';
 }
 function shopHTML(){
   return storeHeader()+
@@ -1327,7 +2010,7 @@ function gameCard(id,name,tag,art,cls,soon){
 function gamesHub(){
   return bellHeader(t('Game Play'))+
     '<p class="small muted gnote">'+coin(14)+' '+t('Play and earn up to 5 coins a day from each game.')+'</p>'+
-    gameCard('2048','2048',t('Swipe. Merge. Reach 2048.'),art2048(),'g-2048',false)+
+    gameCard('2048','2048','Score 10k: 1🪙 | 15k: 2🪙 | 20k: 4🪙 (Unlimited Plays)',art2048(),'g-2048',false)+
     gameCard('ludo','Ludo',t('Roll the dice. Race home.'),artLudo(),'g-ludo',true)+
     gameCard('life','Life',t('Watch cells grow and survive.'),artLife(),'g-life',false);
 }
@@ -1335,14 +2018,16 @@ function gamesHTML(){
   var g=UI.gsel;
   if(g!=='2048'&&g!=='life')return gamesHub();
   var key=g==='2048'?'g2048':'life',used=S.gameCoins[key];
-  var head='<header class="hdr"><button class="btn" data-a="gsel" data-v="">← '+t('Games')+'</button><h1 class="grow" style="text-align:right">'+(g==='2048'?'2048':'Life')+'</h1>'+pillBtn()+'</header>'+
-  '<div class="card flat"><div class="row" style="justify-content:space-between"><span class="small">'+t('Daily limit')+'</span><span class="reward">'+used+' / '+CFG.GAME_DAILY_CAP+' '+coin(14)+'</span></div><div class="bar gold" style="margin-top:6px"><i style="width:'+(used/CFG.GAME_DAILY_CAP*100)+'%"></i></div></div>';
+  var headText = g === '2048'
+    ? '<div class="card flat" style="background:var(--accent-soft);border-color:var(--accent);"><div class="row" style="justify-content:space-between;font-weight:700;"><span class="small" style="color:var(--accent-d);">🎮 Unlimited Play Mode</span><span class="reward">10k=1🪙 | 15k=2🪙 | 20k=4🪙</span></div></div>'
+    : '<div class="card flat"><div class="row" style="justify-content:space-between"><span class="small">'+t('Daily limit')+'</span><span class="reward">'+used+' / '+CFG.GAME_DAILY_CAP+' '+coin(14)+'</span></div><div class="bar gold" style="margin-top:6px"><i style="width:'+(used/CFG.GAME_DAILY_CAP*100)+'%"></i></div></div>';
+  var head='<header class="hdr"><button class="btn" data-a="gsel" data-v="">← '+t('Games')+'</button><h1 class="grow" style="text-align:right">'+(g==='2048'?'2048':'Life')+'</h1>'+pillBtn()+'</header>'+headText;
   if(g==='2048'){
     return head+'<section class="card stack"><div class="sc"><div><span class="label">'+t('Score')+'</span><div class="num" style="font-size:26px">'+fmt(G.score)+'</div></div><div style="text-align:right"><span class="label">'+t('Best')+'</span><div class="num" style="font-size:26px">'+fmt(S.best2048)+'</div></div></div>'+
       '<div class="board" id="board" role="grid" aria-label="2048">'+G.board.map(function(r){return r.map(function(v){return '<div class="tile t'+v+'" role="gridcell">'+(v||'')+'</div>';}).join('');}).join('')+'</div>'+
       (G.over?'<p class="err" style="text-align:center">'+t('Game over')+'</p>':'')+
-      '<div class="dpad"><button class="btn" data-a="mv" data-v="0" aria-label="Left">←</button><button class="btn" data-a="mv" data-v="1" aria-label="Up">↑</button><button class="btn" data-a="mv" data-v="3" aria-label="Down">↓</button><button class="btn" data-a="mv" data-v="2" aria-label="Right">→</button></div>'+
-      '<p class="small muted" style="text-align:center">'+t('Swipe or use the arrows to merge tiles.')+' '+t('Reach 512 for 1 coin, 1024 for 2 coins, 2048 for 5 coins.')+'</p>'+
+      
+      '<p class="small muted" style="text-align:center">'+'Screen touch karke swipe karein. <b>Score 10,000: 1🪙 | 15,000: 2🪙 | 20,000: 4🪙</b> (Unlimited Plays)'+'</p>'+
       '<button class="btn block" data-a="ng">'+t('New game')+'</button></section>';
   }
   var cells='';for(var i=0;i<L.n*L.n;i++){cells+='<button class="cell'+(L.cells[i]?' on':'')+'" data-a="lc" data-v="'+i+'" aria-label="Cell '+(Math.floor(i/L.n)+1)+','+(i%L.n+1)+'" aria-pressed="'+(!!L.cells[i])+'"></button>';}
@@ -1376,7 +2061,7 @@ function profileHTML(isTab){
     '<div class="grow"><label class="label" for="nm">'+t('Name')+'</label><input id="nm" type="text" maxlength="24" value="'+esc(S.name)+'" autocomplete="off"></div></div>'+
     '<div><div class="row" style="justify-content:space-between"><b>'+t('Level')+': '+t(cur.n)+'</b><span class="small muted">'+(next?fmt(S.totalSteps)+' / '+fmt(next.min):fmt(S.totalSteps))+'</span></div><div class="bar" style="margin-top:6px"><i style="width:'+pct+'%"></i></div></div>'+
     '<div class="stats3"><div class="stat"><span class="num">'+fmt(S.totalSteps)+'</span><span class="label">'+t('Total steps')+'</span></div><div class="stat"><span class="num">'+fmt(S.earned)+'</span><span class="label">'+t('Total earned')+'</span></div><div class="stat"><span class="num">'+S.best+'</span><span class="label">'+t('Best streak')+'</span></div></div></section>'+
-  '<section class="card"><div class="card-h"><h2>'+t('Badges')+'</h2></div><div class="badges">'+BADGES.map(function(b){var on=!!S.badges[b.id];
+  '<section class="card" style="cursor:pointer;" data-a="sub" data-v="badges"><div class="card-h" style="display:flex;justify-content:space-between;align-items:center;"><h2>'+t('Badges & Achievements')+' ('+Object.keys(S.badges||{}).length+'/54)</h2><span style="font-size:12px;color:var(--accent);font-weight:700;">'+t('View All 54')+' →</span></div><div class="badges">'+BADGES.map(function(b){var on=!!S.badges[b.id];
     return '<div class="bd'+(on?'':' lock')+'">'+svgi(on?'medal':'lock',26,1.7)+'<div><b>'+t(b.name)+'</b><small>'+(on?'+'+CFG.BADGE_BONUS+' '+coin(12):'')+'</small></div></div>';}).join('')+'</div></section>'+
   '<button class="card" style="text-align:left" data-a="sub" data-v="refer"><h2 style="font-size:17px">'+t('Refer & Earn')+'</h2><span class="small muted">'+t('Invite friends, both get coins')+'</span></button>'+
   '<section class="card"><div class="card-h"><h2>'+t('Settings')+'</h2></div>'+
@@ -1402,6 +2087,7 @@ function accountHTML(){
     '<button class="at r" data-a="sub" data-v="refer"><span class="ai">'+svgi('users',22)+'</span><span><b>'+fmt(refEarn)+'</b><small>'+t('Refer a friend')+'</small></span></button></section>'+
   '<button class="pro" data-a="pro"><span class="ai">'+svgi('crown',24)+'</span><span class="grow"><b>Kadam Plus <span class="premium">'+t('PREMIUM')+'</span></b><small>'+t('Unlock ad-free walks, bonus rewards & more')+'</small></span><span class="chev">'+svgi('chev',18)+'</span></button>'+
   '<section class="panel">'+
+    arow('medal',t('Badges & Achievements'),t('54 Badges · Calories, Steps, Distance, Coins'),'sub','badges')+
     arow('user',t('Profile'),t('Name, level and badges'),'sub','profile')+
     arow('users',t('Friends'),t('Find and follow other walkers'),'sub','friends')+
     arow('board',t('Leaderboard'),t('Stay updated and motivated'),'sub','leaderboard')+
@@ -1499,6 +2185,9 @@ function render(){
   else if(UI.sub==='leaderboard')body=leaderboardHTML();
   else if(UI.sub==='level')body=levelHTML();
   else if(UI.sub==='streak')body=streakHTML();
+  else if(UI.sub==='chdetail')body=chDetailHTML();
+  else if(UI.sub==='badges')body=badgesHTML();
+  else if(UI.sub==='catpage')body=catPageHTML();
   else if(S.tab==='profile')body=accountHTML();
   else body=({home:homeHTML,challenges:challengesHTML,games:gamesHTML,shop:shopHTML,wallet:walletHTML}[S.tab]||homeHTML)();
   root.innerHTML='<main class="screen">'+body+'</main>'+navHTML()+(UI.confirm?sheetHTML():'')+(UI.cj?joinSheetHTML():'')+(UI.prod?prodSheetHTML():'')+(UI.exp?expSheetHTML():'')+(UI.notifOpen?notifSheetHTML():'')+(UI.limit?limitSheetHTML():'')+(UI.ad?adSheetHTML():'');
@@ -1518,6 +2207,22 @@ document.addEventListener('click',function(e){
   if(a==='overlay'){if(e.target===el){UI.confirm=null;UI.cj=null;UI.prod=null;UI.exp=false;UI.notifOpen=false;UI.limit=false;render();}return;}
   if(a!=='del'&&UI.delArm){UI.delArm=false;}
   switch(a){
+    case 'sellvl':UI.selLvl=parseInt(v);render();break;
+    case 'opencat':UI.selCat=v;UI.sub='catpage';UI.catSort='none';UI.catSearchQuery='';UI.catSearchOpen=false;render();window.scrollTo(0,0);break;
+    case 'catsort':if(!UI.catSort||UI.catSort==='none')UI.catSort='low';else if(UI.catSort==='low')UI.catSort='high';else if(UI.catSort==='high')UI.catSort='coins';else UI.catSort='none';render();break;
+    case 'togglecatsearch':UI.catSearchOpen=!UI.catSearchOpen;render();break;
+    case 'bfilter':UI.bFilter=v;render();break;
+    case 'claimbadge':{
+      var b=BADGES.find(function(x){return x.id===v;});
+      if(b&&!S.badges[b.id]&&b.test()){
+        S.badges[b.id]=Date.now();
+        addTx('challenge',b.reward,'Badge: '+b.name);
+        toast('🎉 +'+b.reward+' coins earned!');
+        save();render();
+      }
+      break;
+    }
+    case 'chdetail':UI.sub='chdetail';UI.selCh=v;render();window.scrollTo(0,0);break;
     case 'lang':S.lang=v;save();render();break;
     case 'obnext':if(UI.slide<2)UI.slide++;else{UI.auth='login';askNative();}render();break;
     case 'allow':askNative();break;
@@ -1620,6 +2325,17 @@ document.addEventListener('change',function(e){
 document.addEventListener('input',function(e){
   if(e.target&&e.target.id==='q'){UI.q=e.target.value;var el=document.getElementById('prod');if(el)el.innerHTML=productsHTML();}
 });
+/* mouse drag for 2048 */
+var mx0=null,my0=null;
+document.addEventListener('mousedown',function(e){
+  if(e.target.closest&&e.target.closest('#board')){mx0=e.clientX;my0=e.clientY;}else{mx0=null;}
+});
+document.addEventListener('mouseup',function(e){
+  if(mx0===null)return;
+  var dx=e.clientX-mx0,dy=e.clientY-my0;mx0=null;
+  if(Math.max(Math.abs(dx),Math.abs(dy))<20)return;
+  if(Math.abs(dx)>Math.abs(dy))move(dx<0?0:2);else move(dy<0?1:3);
+});
 /* swipe + keyboard for 2048 */
 var tx0=null,ty0=null;
 document.addEventListener('touchstart',function(e){
@@ -1653,6 +2369,7 @@ window.kadamAuth=function(r){
   else if(S.stage==='app'){S.stage='out';UI.auth='login';save();}
   }catch(e){}})();
 render();
+window.S=S;window.UI=UI;window.render=render;window.addSteps=addSteps;window.checkBadges=checkBadges;
 function syncNative(){
   if(!NATIVE||S.stage!=='app')return;
   var before=JSON.stringify(NAT);
