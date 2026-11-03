@@ -210,7 +210,7 @@ input[type=text],input[type=tel],input[type=number]{width:100%;border:1.5px soli
 /* home redesign */
 button.pill{border:0;min-height:40px}
 .brand{display:flex;align-items:center;gap:8px;min-width:0}
-.logo{width:38px;height:38px;border-radius:11px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
+.logo{width:38px;height:38px;border-radius:11px;overflow:hidden;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
 .brandname{font-family:var(--display);font-weight:800;font-size:21px;overflow:hidden;text-overflow:ellipsis}
 .iconbtn{position:relative;width:40px;height:40px;border-radius:50%;border:0;background:var(--accent-soft);color:var(--accent-d);display:grid;place-items:center;flex:none;padding:0}
 .iconbtn i{position:absolute;top:8px;right:9px;width:9px;height:9px;border-radius:50%;background:var(--fire);border:2px solid var(--accent-soft)}
@@ -1253,6 +1253,7 @@ function svgi(name,sz,sw){sz=sz||24;return '<svg width="'+sz+'" height="'+sz+'" 
 function initial(){return esc((S.name||'W').trim().charAt(0).toUpperCase()||'W');}
 function avatarBtn(){return '<button class="avatar'+(S.frame?' gold':'')+'" data-a="sub" data-v="profile" aria-label="'+t('Profile')+'">'+initial()+'</button>';}
 function pillBtn(){return '<button class="pill" data-a="tab" data-v="wallet" aria-label="'+t('Wallet')+'">'+coin(18)+'<span class="num">'+fmt(S.balance)+'</span></button>';}
+var LOGO_SVG='<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2fb768"/><stop offset="1" stop-color="#0f6b3a"/></linearGradient><linearGradient id="gold" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#ffd966"/><stop offset="0.55" stop-color="#f5b324"/><stop offset="1" stop-color="#d98c0a"/></linearGradient><linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0b8"/><stop offset="1" stop-color="#c77a05"/></linearGradient></defs><clipPath id="mk"><rect width="512" height="512" rx="112"/></clipPath><g clip-path="url(#mk)"><rect width="512" height="512" fill="url(#bg)"/><circle cx="256" cy="256" r="228" fill="#fff" opacity=".07"/><circle cx="256" cy="256" r="170" fill="#fff" opacity=".06"/><circle cx="256" cy="250" r="170" fill="url(#rim)"/><circle cx="256" cy="250" r="153.0" fill="url(#gold)"/><circle cx="256" cy="250" r="125.8" fill="none" stroke="#b86e04" stroke-opacity=".55" stroke-width="5.95"/><g transform="translate(149.9,143.9) scale(8.840)"><g fill="#0f5a30"><ellipse cx="8" cy="15.5" rx="3.2" ry="4.6" transform="rotate(-12 8 15.5)"/><circle cx="5.4" cy="9.8" r="1.1"/><circle cx="7.8" cy="8.9" r="1.1"/><circle cx="10.2" cy="9.5" r="1"/><ellipse cx="16" cy="9.5" rx="3.2" ry="4.6" transform="rotate(12 16 9.5)"/><circle cx="13.6" cy="3.7" r="1.1"/><circle cx="16" cy="2.9" r="1.1"/><circle cx="18.4" cy="3.6" r="1"/></g></g></g></svg>';
 function footSVG(sz){
   return '<svg viewBox="0 0 24 24" width="'+sz+'" height="'+sz+'" fill="currentColor" aria-hidden="true">'+
     '<ellipse cx="8" cy="15.5" rx="3.2" ry="4.6" transform="rotate(-12 8 15.5)"/><circle cx="5.4" cy="9.8" r="1.1"/><circle cx="7.8" cy="8.9" r="1.1"/><circle cx="10.2" cy="9.5" r="1"/>'+
@@ -1263,7 +1264,7 @@ function headerHTML(title){
 }
 function homeHeader(){
   var fresh24=S.tx.some(function(x){return Date.now()-x.ts<864e5;});
-  return '<header class="hdr"><div class="brand"><span class="logo">'+footSVG(24)+'</span><span class="brandname">StepMudra</span></div><div class="grow"></div>'+
+  return '<header class="hdr"><div class="brand"><span class="logo" style="background:none;border-radius:0">'+LOGO_SVG+'</span><span class="brandname">StepMudra</span></div><div class="grow"></div>'+
     '<button class="iconbtn" data-a="bell" aria-label="'+t('Notifications')+'">'+svgi('bell',22)+(fresh24?'<i></i>':'')+'</button>'+pillBtn()+'</header>';
 }
 function subHeader(title){
@@ -2331,7 +2332,7 @@ function authHTML(){
       '<div class="row">'+(UI.slide>0?'<button class="btn" data-a="obback">←</button>':'')+'<button class="btn primary grow" data-a="obnext">'+(last?t('Allow activity access and continue'):t('Next'))+'</button></div></div>';
   }
   if(UI.auth==='login'){
-    return '<div class="auth">'+langToggle()+'<div style="text-align:center"><div class="art" style="max-width:200px;margin:0 auto 12px">'+SLIDES[1].art+'</div><h1>StepMudra</h1><p class="muted" style="margin-top:6px">Chalo, Kamao, Fit Raho</p></div>'+
+    return '<div class="auth">'+langToggle()+'<img src="stepmudra-banner.jpg" alt="StepMudra: Chalo, Kamao, Fit Raho" style="width:100%;height:auto;border-radius:20px;display:block">'+
       '<div class="stack"><label class="label" for="rf">'+t('Referral code (optional)')+'</label><input id="rf" type="text" maxlength="8" placeholder="STM12345" value="'+esc(UI.ref)+'" autocomplete="off">'+
       (UI.err?'<p class="err">'+UI.err+'</p>':'')+
       '<button class="btn primary block" data-a="google"'+(UI.busy?' disabled':'')+'>'+(UI.busy?t('Signing in...'):t('Continue with Google'))+'</button>'+
