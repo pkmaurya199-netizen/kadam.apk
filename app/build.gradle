@@ -11,8 +11,8 @@ android {
         applicationId 'kadam.walkearn'
         minSdk 24
         targetSdk 34
-        versionCode 7
-        versionName '1.6'
+        versionCode 8
+        versionName '1.7'
     }
 
     signingConfigs {
@@ -50,4 +50,5 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:33.5.1')
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.android.gms:play-services-auth:21.2.0'
+    implementation 'com.google.android.gms:play-services-ads:23.0.0'
 }
