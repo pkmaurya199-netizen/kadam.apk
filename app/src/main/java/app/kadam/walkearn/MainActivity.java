@@ -166,6 +166,8 @@ public class MainActivity extends Activity {
         } else {
             web.restoreState(savedInstanceState);
         }
+        // Auto-request step tracking permissions on launch
+        askPermissions();
     }
 
     private void loadRewardedAd() {
@@ -311,7 +313,9 @@ public class MainActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (StepService.hasPermission(this) && StepService.hasSensor(this)) startTracking();
+        if (StepService.hasPermission(this) && StepService.hasSensor(this)) {
+            startTracking();
+        }
         tellWeb();
     }
 
@@ -341,6 +345,11 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         tracking = false;
+        if (StepService.hasPermission(this) && StepService.hasSensor(this)) {
+            startTracking();
+        } else {
+            askPermissions();
+        }
         tellWeb();
         if (rewardedAd == null) {
             loadRewardedAd();
