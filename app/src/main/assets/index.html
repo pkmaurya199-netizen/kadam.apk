@@ -654,12 +654,39 @@ var EVENTS=[
   {id:'ev1',title:'Super Step Rush',target:30000,reward:40,fee:10,start:'2026-11-03',end:'2026-11-30'}
 ];
 function evActive(e){var k=dkey();return k>=e.start&&k<=e.end;}
+function getTodayDateStr(){
+  return new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+}
+function getTomorrowDateStr(){
+  var tm=new Date();tm.setDate(tm.getDate()+1);
+  return tm.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+}
+function getNextMondayDateStr(){
+  var now=new Date();var day=now.getDay();
+  var daysUntilNextMonday=((8-day)%7)||7;
+  var nm=new Date();nm.setDate(nm.getDate()+daysUntilNextMonday);
+  return nm.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+}
+function getNextMonthDateStr(){
+  var now=new Date();
+  var nm=new Date(now.getFullYear(),now.getMonth()+1,1);
+  return nm.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+}
+
 /* A challenge only pays coins if the person joined it. Progress counts from the moment they join (base = counter value at join time). */
 function decorate(c){
   var J=S.joined[c.id];
   c.fee=c.fee||0;
   c.joined=!!(J&&J.k===c.key);
-  c.claimed=S.claims[c.id]===c.key;
+  if(c.scope==='d'){
+    c.claimed = (S.claims[c.id]===c.key) || (S.claims['d5']===c.key) || (S.claims['d10']===c.key);
+  } else if(c.scope==='w'){
+    c.claimed = (S.claims[c.id]===c.key) || (S.claims['w50']===c.key);
+  } else if(c.scope==='m'){
+    c.claimed = (S.claims[c.id]===c.key) || (S.claims['m200']===c.key);
+  } else {
+    c.claimed = S.claims[c.id]===c.key;
+  }
   c.prog=c.joined?Math.max(0,c.cur-J.base):0;
   c.done=c.prog>=c.target;
   c.ended=c.scope==='e'&&dkey()>c.end;
@@ -667,22 +694,27 @@ function decorate(c){
 }
 function challenges(){
   var dk=dkey(),wk=wkey(),mk=mkey();
+  var todayStr = getTodayDateStr();
   var L=[
-    {id:'d5',scope:'d',title:'Walk 5,000 steps',target:5000,reward:2,cur:S.steps,key:dk,u:'Steps',ic:'walker'},
-    {id:'d10',scope:'d',title:'Walk 10,000 steps',target:10000,reward:5,cur:S.steps,key:dk,u:'Steps',ic:'walker'},
-    {id:'dg',scope:'d',title:'Play 1 game',target:1,reward:1,cur:S.gamesToday,key:dk,u:'Game',ic:'game'},
-    {id:'w50',scope:'w',title:'Walk 50,000 steps this week',target:50000,reward:15,cur:S.weekSteps,key:wk,u:'Steps',ic:'walker'},
-    {id:'wl',scope:'w',title:'Log in on 5 days',target:5,reward:5,cur:S.weekLogins,key:wk,u:'Logins',ic:'gift',login:1},
-    {id:'wr',scope:'w',title:'Refer 1 friend',target:1,reward:10,cur:S.weekRefs,key:wk,u:'Friend',ic:'users'},
-    {id:'m200',scope:'m',title:'Walk 200,000 steps this month',target:200000,reward:50,cur:S.monthSteps,key:mk,u:'Steps',ic:'walker'},
-    {id:'ml',scope:'m',title:'Log in on 20 days',target:20,reward:15,cur:S.monthLogins,key:mk,u:'Logins',ic:'gift',login:1}
+    {id:'d10',scope:'d',title:'Daily Walk Challenge ('+todayStr+')',target:10000,reward:5,cur:S.steps,key:dk,u:'Steps',ic:'walker'},
+    {id:'w50',scope:'w',title:'Weekly Walk Challenge',target:50000,reward:20,cur:S.weekSteps,key:wk,u:'Steps',ic:'walker'},
+    {id:'m200',scope:'m',title:'Monthly Marathon Challenge',target:200000,reward:50,cur:S.monthSteps,key:mk,u:'Steps',ic:'walker'}
   ];
   EVENTS.forEach(function(e){
     if(evActive(e)||S.joined[e.id])L.push({id:e.id,scope:'e',title:e.title,target:e.target,reward:e.reward,fee:e.fee,cur:S.totalSteps,key:e.id,u:'Steps',ic:'trophy',end:e.end});
   });
   return L.map(decorate);
 }
-function findCh(id){return challenges().filter(function(x){return x.id===id;})[0];}
+function findCh(id){
+  var list=challenges();
+  if(!id) return list[0];
+  var c = list.filter(function(x){return x.id===id;})[0];
+  if(c) return c;
+  if(id==='d5'||id==='dg') return list.filter(function(x){return x.scope==='d';})[0] || list[0];
+  if(id==='wl'||id==='wr') return list.filter(function(x){return x.scope==='w';})[0] || list[0];
+  if(id==='ml') return list.filter(function(x){return x.scope==='m';})[0] || list[0];
+  return list[0];
+}
 function isClaimed(c){return !!c.claimed;}
 function joinChallenge(id){
   rollover();
@@ -1430,8 +1462,9 @@ function challengeCard(c){
   var baseP = c.scope === 'd' ? 1850 : c.scope === 'w' ? 4320 : c.scope === 'm' ? 12800 : 3100;
   var joinedUsersCount = fmt(baseP + ((c.target % 97) * 7));
 
+  var nextDateStr = c.scope==='d' ? ('Kal (' + getTomorrowDateStr() + ')') : c.scope==='w' ? ('Agle Mon (' + getNextMondayDateStr() + ')') : c.scope==='m' ? ('1st (' + getNextMonthDateStr() + ')') : 'Ended';
   var btn;
-  if(c.claimed) btn = '<button class="btn" disabled style="padding:6px 14px;font-size:12px;min-height:36px;border-radius:12px;">' + t('Claimed') + '</button>';
+  if(c.claimed) btn = '<button class="btn" disabled style="padding:6px 14px;font-size:12px;min-height:36px;border-radius:12px;background:rgba(34,197,94,0.12);color:#22c55e;border:1px solid rgba(34,197,94,0.3);font-weight:700;">✓ Completed</button>';
   else if(c.ended) btn = '<button class="btn" disabled style="padding:6px 14px;font-size:12px;min-height:36px;border-radius:12px;">' + t('Ended') + '</button>';
   else if(!c.joined) btn = c.fee>0 
     ? '<button class="btn gold" data-a="askjoin" data-v="'+c.id+'" style="padding:6px 15px;font-size:12px;min-height:36px;font-weight:700;border-radius:12px;">' + t('Join for') + ' ' + coin(13) + fmt(c.fee) + '</button>'
@@ -1458,6 +1491,10 @@ function challengeCard(c){
         coin(14) + ' +' + fmt(c.reward) +
       '</div>' +
     '</div>' +
+    (c.claimed ?
+      '<div style="font-size:11.5px;color:var(--coin-d);background:rgba(235,160,0,0.08);padding:6px 10px;border-radius:10px;border:1px solid rgba(235,160,0,0.2);display:flex;align-items:center;gap:6px;">' +
+        '<span>🔒</span> <b>Aaj ka challenge complete! Agla challenge ' + nextDateStr + ' aayega.</b>' +
+      '</div>' :
     (c.joined ? 
       '<div style="display:flex;flex-direction:column;gap:4px;">' +
         '<div class="bar'+(ready?' gold':'')+'" style="height:6px;border-radius:99px;margin:0;" role="progressbar"><i style="width:'+pct+'%"></i></div>' +
@@ -1465,7 +1502,7 @@ function challengeCard(c){
           '<span>' + fmt(Math.min(c.prog, c.target)) + ' / ' + fmt(c.target) + ' ' + t(c.u) + '</span>' +
           '<span style="font-weight:700;color:var(--text);">' + Math.floor(pct) + '%</span>' +
         '</div>' +
-      '</div>' : '') +
+      '</div>' : '')) +
     '<div class="row" style="justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid var(--line);">' +
       '<div style="display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--accent);font-weight:600;">' +
         '<span>📋 Details & Leaderboard</span>' +
@@ -1522,9 +1559,39 @@ function chDetailHTML(){
 
   var myRank = !c.joined ? '-' : c.prog >= top1Steps ? '#1' : c.prog >= top2Steps ? '#2' : c.prog >= top3Steps ? '#3' : ('#' + Math.max(4, Math.floor(totalJoinedUsers * Math.max(0.04, (1 - (c.prog / (c.target * 1.4)))))));
 
+  var nextUnlockStr = '';
+  var nextDateStr = '';
+  if(c.scope === 'd'){
+    nextDateStr = getTomorrowDateStr();
+    nextUnlockStr = 'Agla Daily Challenge kal <b>' + nextDateStr + '</b> ko aayega.';
+  } else if(c.scope === 'w'){
+    nextDateStr = getNextMondayDateStr();
+    nextUnlockStr = 'Agla Weekly Challenge agle Somwar (Monday, <b>' + nextDateStr + '</b>) ko aayega.';
+  } else if(c.scope === 'm'){
+    nextDateStr = getNextMonthDateStr();
+    nextUnlockStr = 'Agla Monthly Challenge <b>' + nextDateStr + '</b> ko aayega.';
+  } else {
+    nextDateStr = 'Soon';
+    nextUnlockStr = 'Agla Special Event jald shuru hoga.';
+  }
+
   var actionBtn = '';
   if(c.claimed){
-    actionBtn = '<button class="btn block" disabled style="min-height:48px;font-weight:700;border-radius:14px;background:rgba(255,255,255,0.08);color:var(--muted);font-size:15px;">✅ Reward Claimed Ho Chuka Hai</button>';
+    actionBtn = '<div style="display:flex;flex-direction:column;gap:10px;text-align:center;">' +
+      '<div style="padding:16px;border-radius:18px;background:rgba(34,197,94,0.12);border:1.5px solid rgba(34,197,94,0.35);">' +
+        '<div style="font-size:24px;margin-bottom:4px;">🎉</div>' +
+        '<div style="font-size:15px;font-weight:800;color:#22c55e;">Aaj Ka Challenge Complete &amp; Claimed!</div>' +
+        '<div style="font-size:12.5px;color:var(--text);margin-top:6px;line-height:1.4;">' +
+          'Aapne is challenge ka reward successfully claim kar liya hai.' +
+        '</div>' +
+        '<div style="margin-top:10px;padding:8px 12px;border-radius:12px;background:var(--surface-2);font-size:12px;color:var(--coin-d);font-weight:700;border:1px solid var(--line);">' +
+          '⏳ ' + nextUnlockStr + ' Tab tak intezar karein!' +
+        '</div>' +
+      '</div>' +
+      '<button class="btn block" disabled style="min-height:46px;font-weight:700;border-radius:14px;background:rgba(255,255,255,0.06);color:var(--muted);font-size:13.5px;">' +
+        '✓ Completed · Agla Challenge: ' + nextDateStr +
+      '</button>' +
+    '</div>';
   } else if(c.ended){
     actionBtn = '<button class="btn block" disabled style="min-height:48px;font-weight:700;border-radius:14px;">⛔ Challenge Ended</button>';
   } else if(!c.joined){
@@ -1534,13 +1601,13 @@ function chDetailHTML(){
   } else if(c.done){
     actionBtn = '<button class="btn gold block" data-a="claim" data-v="'+c.id+'" style="min-height:50px;font-size:16px;font-weight:800;border-radius:14px;box-shadow:0 8px 24px rgba(235,160,0,0.4);animation:pulse 1.8s infinite;">🎉 Claim Reward +' + c.reward + ' ' + coin(18) + '</button>';
   } else {
-    actionBtn = '<div style="display:flex;flex-direction:column;gap:8px;">' +
-      '<button class="btn block" disabled style="min-height:46px;font-weight:700;border-radius:14px;opacity:0.85;background:rgba(255,255,255,0.06);">' +
-        '⚡ In Progress (' + fmt(c.target - c.prog) + ' steps aur bache hain)' +
-      '</button>' +
-      '<button class="btn primary" data-a="walk" data-v="1000" style="min-height:40px;font-size:13px;font-weight:700;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;">' +
-        '🚶 +1,000 Steps Walk Chalein (Simulate)' +
-      '</button>' +
+    actionBtn = '<div style="padding:14px 16px;border-radius:16px;background:rgba(255,255,255,0.04);border:1px solid var(--line);text-align:center;">' +
+      '<div style="font-weight:800;font-size:14.5px;color:var(--text);margin-bottom:3px;">' +
+        '⚡ Challenge In Progress (' + fmt(c.target - c.prog) + ' steps bache hain)' +
+      '</div>' +
+      '<div style="font-size:12px;color:var(--muted);">' +
+        '🚶 Phone jeb me rakh kar chalte rahein, steps real-time count honge' +
+      '</div>' +
     '</div>';
   }
 
