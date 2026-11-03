@@ -2257,7 +2257,12 @@ function accountHTML(){
     '<div class="stack" style="margin-top:8px"><button class="btn-wide b-blue" data-a="exportsteps">'+t('Export steps data')+'</button>'+
     '<button class="btn-wide b-red" data-a="logout">'+t('Log out')+'</button>'+
     '<button class="btn-wide b-dred" data-a="del">'+(UI.delArm?t('Tap again to confirm delete'):t('Delete account'))+'</button></div>'+
-    '<p class="small muted" style="text-align:center;margin-top:6px">Kadam · '+t('Preview build')+'</p></section>';
+    '<div style="text-align:center;margin-top:10px;font-size:11px;display:flex;justify-content:center;gap:12px;">' +
+      '<a href="https://pkmaurya199-netizen.github.io/kadam.apk/privacy-policy.html" target="_blank" style="color:var(--muted);text-decoration:underline;">Privacy Policy</a>' +
+      '<span>&bull;</span>' +
+      '<a href="https://pkmaurya199-netizen.github.io/kadam.apk/delete-account.html" target="_blank" style="color:var(--muted);text-decoration:underline;">Delete Account</a>' +
+    '</div>' +
+    '<p class="small muted" style="text-align:center;margin-top:6px">Kadam v1.6 &bull; Verified Build</p></section>';
 }
 function friendsHTML(){
   var n=Object.keys(S.following).filter(function(k){return S.following[k];}).length;
@@ -2273,13 +2278,19 @@ function helpHTML(){
   var faq=[
     ['How do I earn coins?','Walk: every 1,000 steps gives 1 coin, up to '+CFG.DAILY_STEP_COIN_CAP+' coins a day. You also earn from the daily login bonus, challenges, games, the water goal and friends.'],
     ['How does referral work?','Share your code. When your friend walks 5,000 steps, you both get '+CFG.REF_REWARD+' coins.'],
-    ['My steps are not counting','This preview has no phone step sensor. Use the demo buttons on Home. The real app reads steps from your phone.'],
-    ['How long do orders take?','In this preview, orders complete in a few seconds. The real app will show real delivery times.']
+    ['My steps are not counting','Keep the phone in your pocket while walking. Kadam counts steps via hardware sensor even when screen is locked.'],
+    ['How long do orders take?','Physical reward products are delivered within 4-7 business days across India.']
   ];
-  return subHeader(t('Help'))+
-  '<section class="card">'+faq.map(function(q){return '<details><summary>'+t(q[0])+'</summary><p>'+t(q[1])+'</p></details>';}).join('')+
-    '<details><summary>'+t('Privacy policy')+'</summary><p>We read only your step count to give you coins. We never sell personal data. This preview stores data on this device only.</p></details></section>'+
-  '<section class="card stack"><b>'+t('Contact us')+'</b><div class="row" style="justify-content:space-between"><code class="v">help@kadam.example</code><button class="btn" data-a="copymail">'+t('Copy')+'</button></div><p class="small muted">'+t('Example address for this preview.')+'</p></section>';
+  return subHeader(t('Help & Support'))+
+  '<section class="card">'+faq.map(function(q){return '<details><summary>'+t(q[0])+'</summary><p>'+t(q[1])+'</p></details>';}).join('')+'</section>'+
+  '<section class="card stack">'+
+    '<h3 style="font-size:15px;font-weight:700;margin:0 0 8px 0;">Legal & Policies (Play Store)</h3>'+
+    '<div style="display:flex;flex-direction:column;gap:8px;">'+
+      '<a href="https://pkmaurya199-netizen.github.io/kadam.apk/privacy-policy.html" target="_blank" class="arow" style="text-decoration:none;color:inherit;"><span class="ai">'+svgi('help',20,1.8)+'</span><span class="grow"><b>Privacy Policy</b><small>Read our data & privacy policy</small></span><span class="chev">'+svgi('chev',16)+'</span></a>'+
+      '<a href="https://pkmaurya199-netizen.github.io/kadam.apk/delete-account.html" target="_blank" class="arow" style="text-decoration:none;color:inherit;"><span class="ai">'+svgi('users',20,1.8)+'</span><span class="grow"><b>Account & Data Deletion</b><small>Request permanent account removal</small></span><span class="chev">'+svgi('chev',16)+'</span></a>'+
+    '</div>'+
+  '</section>'+
+  '<section class="card stack"><b>'+t('Contact Us')+'</b><div class="row" style="justify-content:space-between"><code class="v">support@kadamapp.in</code><button class="btn" data-a="copymail">'+t('Copy')+'</button></div><p class="small muted">Official support team response within 24 hours.</p></section>';
 }
 function csvText(){
   var rows=['day,steps'];
