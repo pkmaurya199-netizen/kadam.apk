@@ -54,7 +54,7 @@ button{cursor:pointer}
 h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.01em}
 p{margin:0}
 .app{max-width:480px;margin:0 auto}
-.screen{display:flex;flex-direction:column;gap:14px;padding-block:14px calc(96px + env(safe-area-inset-bottom,0px))}
+.screen{display:flex;flex-direction:column;gap:14px;padding-block:14px calc(150px + env(safe-area-inset-bottom,0px))}
 .num{font-family:var(--display);font-variant-numeric:tabular-nums;font-weight:800}
 .muted{color:var(--muted)}
 .small{font-size:12.5px}
@@ -465,6 +465,296 @@ button.pill{min-height:34px;padding:4px 10px;font-size:14px;gap:5px}
 .chc.unj .chb{filter:saturate(.85)}
 .chb-unit{margin-top:6px}
 .chhint{display:flex;align-items:center;gap:6px;color:var(--muted)}
+
+/* ==================== ADS STYLES (MATCHING SCREENSHOTS) ==================== */
+/* 1. Persistent Bottom Install Banner (Kubiz Ad) */
+.ad-bottom-fixed {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(58px + env(safe-area-inset-bottom, 0px));
+  z-index: 18;
+  padding: 0 10px 4px 10px;
+  pointer-events: none;
+}
+.ad-bottom-card {
+  pointer-events: auto;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  gap: 10px;
+}
+.ad-info-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+}
+.ad-info-i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  color: #0284c7;
+  font-size: 11px;
+  font-weight: 700;
+}
+.ad-info-dots {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 0.8;
+}
+.ad-icon-box {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f172a;
+}
+.ad-text-box {
+  flex: 1;
+  min-width: 0;
+}
+.ad-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+.ad-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 1px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.ad-rating {
+  font-weight: 700;
+  color: var(--text);
+}
+.ad-badge-free {
+  font-size: 11px;
+  color: #64748b;
+}
+.ad-open-pill {
+  flex: none;
+  background: #1a73e8;
+  color: #ffffff;
+  border: none;
+  border-radius: 99px;
+  padding: 7px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.35);
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+.ad-open-pill:active {
+  transform: scale(0.96);
+  background: #1557b0;
+}
+
+/* 2. In-feed Product Deals Carousel (Home & Leaderboard) */
+.ad-product-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.ad-product-left {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 76px;
+  padding-right: 6px;
+  border-right: 1px solid var(--line);
+}
+.ad-play-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.ad-product-scroll {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 0;
+}
+.ad-product-scroll::-webkit-scrollbar {
+  display: none;
+}
+.ad-deal-item {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  padding: 4px;
+}
+.ad-deal-img {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ad-drop-badge {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  border-radius: 4px;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 1px 4px;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+.ad-price-tag {
+  margin-top: 4px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 3. Account Sponsor Promo Card */
+.ad-acc-promo-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+.ad-promo-badge {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #a855f7, #6b21a8);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.35);
+  border: 2px solid #f3e8ff;
+}
+.ad-promo-info {
+  flex: 1;
+  min-width: 0;
+}
+.ad-promo-btn {
+  flex: none;
+  background: linear-gradient(135deg, #9333ea, #6366f1);
+  color: #ffffff;
+  border: none;
+  border-radius: 99px;
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+  cursor: pointer;
+}
+.ad-promo-btn:active {
+  transform: scale(0.96);
+}
+
+/* 4. Store Rate Us Banner */
+.ad-rate-banner {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #fff7ed 0%, #ecfdf5 50%, #f0f9ff 100%);
+  border: 1px solid rgba(251, 146, 60, 0.25);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+}
+.ad-rate-left {
+  flex: 1;
+  min-width: 0;
+}
+.ad-rate-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #ea580c;
+  margin-bottom: 2px;
+}
+.ad-rate-stores {
+  font-size: 14px;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1.2;
+}
+.ad-rate-stars {
+  font-size: 16px;
+  color: #f59e0b;
+  letter-spacing: 2px;
+  margin: 4px 0 2px 0;
+}
+.ad-rate-sub {
+  font-size: 10px;
+  color: #64748b;
+  line-height: 1.3;
+}
+.ad-rate-phone {
+  flex: none;
+}
+
 </style>
 <style>html,body{margin:0}:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
 </head>
@@ -1339,6 +1629,7 @@ function homeHTML(){
     '<div class="mt peach"><span class="ic">'+coin(24)+'</span><span class="l">'+t('Coins')+'</span><span class="v">'+Math.min(S.steps/CFG.STEPS_PER_COIN,stepCap()).toFixed(2)+'</span></div>'+
     '<div class="mt sky"><span class="ic">'+svgi('flame',22,1.8)+'</span><span class="l">'+t('Calories')+'</span><span class="v">'+kcal+' kcal</span></div>'+
     '<div class="mt mint"><span class="ic">'+svgi('walker',22,1.8)+'</span><span class="l">'+t('Distance')+'</span><span class="v">'+km+' km</span></div></section>'+
+  adProductCarouselHTML()+
   '<section class="card"><div class="sec-h"><span style="display:flex;align-items:center;gap:8px;min-width:0"><h2 style="font-size:16px">'+t('Daily Water Intake')+'</h2>'+waterWaitHTML()+'</span><span class="muted small">'+(S.water*250)+'ml / 2.0L</span></div>'+
     '<div class="water">'+glasses+'</div><p class="goal">'+(S.waterDone?svgi('check',18,2.6):'')+t('Drink 8 glasses, get 1 coin')+'</p></section>'+
   '<button class="rowcard" data-a="sub" data-v="daily"><span class="rc-ic peach">'+svgi('gift',24)+'</span><span class="rc-t"><b>'+t('Daily Reward')+'</b><small>'+done+'/5 '+t('rewards claimed today')+'</small></span><span class="rc-go">'+(ready?'<span class="tag">'+ready+' '+t('to claim')+'</span>':'')+svgi('chev',20)+'</span></button>'+
@@ -1514,7 +1805,8 @@ function leaderboardHTML(){
   rows.push({n:S.name+' ('+t('You')+')',s:S.weekSteps,me:true});
   rows.sort(function(a,b){return b.s-a.s;});
   return subHeader(t('Leaderboard'))+
-  '<p class="small muted">'+t('This week')+' · '+t('Sample players for preview')+'</p>'+
+  '<div style="display:flex;gap:8px;margin-bottom:8px;"><button class="pill active" style="background:#0f172a;color:#fff;border-radius:20px;padding:6px 16px;border:none;font-weight:700;font-size:13px;">'+t('Week')+'</button><button class="pill" style="background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:6px 16px;font-weight:600;font-size:13px;color:var(--muted);">'+t('Month')+'</button><button class="pill" style="background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:6px 16px;font-weight:600;font-size:13px;color:var(--muted);">'+t('Friends')+'</button></div>'+
+  adProductCarouselHTML()+
   '<section class="card"><ul class="list">'+rows.map(function(r,i){
     return '<li class="tx'+(r.me?' you':'')+'"><span class="rank">'+(i+1)+'</span><div class="tx-m"><b>'+esc(r.n)+'</b></div><span class="amt">'+fmt(r.s)+'</span></li>';
   }).join('')+'</ul></section>';
@@ -2094,7 +2386,7 @@ function catPageHTML(){
 function shopHTML(){
   return storeHeader()+
   '<label class="search" for="q">'+svgi('search',22)+'<input id="q" type="search" autocomplete="off" placeholder="'+t('Search products & categories')+'" value="'+esc(UI.q||'')+'"></label>'+
-  bannersHTML()+catsHTML()+'<section id="prod">'+productsHTML()+'</section>'+
+  adStoreRateBannerHTML()+catsHTML()+'<section id="prod">'+productsHTML()+'</section>'+
   (NATIVE?'':'<section class="card demo"><div class="row" style="justify-content:space-between"><span class="small muted">'+t('Demo: add coins to try redeeming')+'</span><button class="btn" data-a="democoins">+5,000</button></div></section>');
 }
 function ordersHTML(){
@@ -2250,6 +2542,7 @@ function accountHTML(){
     '<button class="at e" data-a="tab" data-v="wallet"><span class="ai">'+coin(24)+'</span><span><b>'+fmt(S.earned)+'</b><small>'+t('Earned')+'</small></span></button>'+
     '<button class="at r" data-a="sub" data-v="refer"><span class="ai">'+svgi('users',22)+'</span><span><b>'+fmt(refEarn)+'</b><small>'+t('Refer a friend')+'</small></span></button></section>'+
   '<button class="pro" data-a="pro"><span class="ai">'+svgi('crown',24)+'</span><span class="grow"><b>StepMudra Plus <span class="premium">'+t('PREMIUM')+'</span></b><small>'+t('Unlock ad-free walks, bonus rewards & more')+'</small></span><span class="chev">'+svgi('chev',18)+'</span></button>'+
+  adAccountPromoHTML()+
   '<section class="panel">'+
     arow('medal',t('Badges & Achievements'),t(BADGES.length + ' Badges · 4 Difficulty Tiers, 1-30 Coins'),'sub','badges')+
     arow('user',t('Profile'),t('Name, level and badges'),'sub','profile')+
@@ -2310,6 +2603,138 @@ function expSheetHTML(){
     '<div class="two"><button class="btn primary" data-a="copycsv">'+t('Copy')+'</button><button class="btn" data-a="closeexp">'+t('Close')+'</button></div></div></div>';
 }
 
+
+/* ---------- Ad components (Screenshots placement) ---------- */
+function adBottomBarHTML(){
+  return '<div class="ad-bottom-fixed">' +
+    '<div class="ad-bottom-card">' +
+      '<div class="ad-info-col">' +
+        '<span class="ad-info-i" title="Google Ad Info">ⓘ</span>' +
+        '<span class="ad-info-dots">⋮</span>' +
+      '</div>' +
+      '<div class="ad-icon-box">' +
+        '<svg width="38" height="38" viewBox="0 0 38 38" fill="none">' +
+          '<rect width="38" height="38" rx="10" fill="#0b1329"/>' +
+          '<path d="M11 9H16V29H11V9Z" fill="#38bdf8"/>' +
+          '<path d="M16 20L25 9H31L20 22L31 29H25L16 22V20Z" fill="#0284c7"/>' +
+          '<path d="M18 18L26 9H30L21 20L18 18Z" fill="#7dd3fc"/>' +
+        '</svg>' +
+      '</div>' +
+      '<div class="ad-text-box">' +
+        '<div class="ad-title">Kubiz</div>' +
+        '<div class="ad-meta-row">' +
+          '<span class="ad-rating">4.1 ★</span>' +
+          '<span class="ad-badge-free">Free</span>' +
+        '</div>' +
+      '</div>' +
+      '<button class="ad-open-pill" data-a="openad" data-v="kubiz">OPEN</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function adProductCarouselHTML(){
+  return '<section class="ad-product-card">' +
+    '<div class="ad-product-left">' +
+      '<div class="ad-info-col" style="margin-bottom:auto;">' +
+        '<span class="ad-info-i" title="Google Ad Info">ⓘ</span>' +
+        '<span class="ad-info-dots">⋮</span>' +
+      '</div>' +
+      '<div class="ad-play-badge">' +
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#0284c7;"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>' +
+        '<span style="font-size:8.5px;font-weight:700;color:#64748b;margin-top:2px;">Google Play</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="ad-product-scroll">' +
+      '<div class="ad-deal-item" data-a="openad" data-v="iphone">' +
+        '<div class="ad-deal-img">' +
+          '<svg width="46" height="54" viewBox="0 0 46 66" fill="none">' +
+            '<rect x="2" y="2" width="42" height="62" rx="7" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>' +
+            '<rect x="4" y="4" width="38" height="58" rx="5" fill="#e0f2fe"/>' +
+            '<rect x="15" y="7" width="16" height="4" rx="2" fill="#0f172a"/>' +
+            '<circle cx="23" cy="33" r="10" fill="#38bdf8" opacity="0.4"/>' +
+          '</svg>' +
+        '</div>' +
+        '<div class="ad-price-tag">₹59,900</div>' +
+      '</div>' +
+      '<div class="ad-deal-item" data-a="openad" data-v="boat">' +
+        '<span class="ad-drop-badge">PRICE DROP</span>' +
+        '<div class="ad-deal-img">' +
+          '<svg width="48" height="48" viewBox="0 0 50 50" fill="none">' +
+            '<rect width="50" height="50" rx="12" fill="#064e3b"/>' +
+            '<circle cx="25" cy="25" r="14" fill="#047857"/>' +
+            '<rect x="22" y="14" width="6" height="22" rx="3" fill="#a7f3d0"/>' +
+            '<circle cx="25" cy="20" r="5" fill="#34d399"/>' +
+          '</svg>' +
+        '</div>' +
+        '<div class="ad-price-tag">₹339</div>' +
+      '</div>' +
+      '<div class="ad-deal-item" data-a="openad" data-v="boat75">' +
+        '<span class="ad-drop-badge" style="color:#eab308;border-color:rgba(234,179,8,0.3);background:rgba(234,179,8,0.08);">-75%</span>' +
+        '<div class="ad-deal-img">' +
+          '<svg width="48" height="48" viewBox="0 0 50 50" fill="none">' +
+            '<rect width="50" height="50" rx="12" fill="#3f3f46"/>' +
+            '<circle cx="25" cy="25" r="15" fill="#d4d4d8"/>' +
+            '<rect x="22" y="16" width="6" height="18" rx="3" fill="#facc15"/>' +
+          '</svg>' +
+        '</div>' +
+        '<div class="ad-price-tag">₹999</div>' +
+      '</div>' +
+      '<div class="ad-deal-item" data-a="openad" data-v="cooler">' +
+        '<div class="ad-deal-img">' +
+          '<svg width="48" height="48" viewBox="0 0 50 50" fill="none">' +
+            '<rect width="50" height="50" rx="12" fill="#18181b"/>' +
+            '<circle cx="25" cy="25" r="16" stroke="#06b6d4" stroke-width="2.5"/>' +
+            '<path d="M25 15L27 25L25 35M15 25L25 27L35 25" stroke="#38bdf8" stroke-width="2"/>' +
+          '</svg>' +
+        '</div>' +
+        '<div class="ad-price-tag">₹499</div>' +
+      '</div>' +
+      '<div class="ad-deal-item" data-a="openad" data-v="pixel">' +
+        '<div class="ad-deal-img">' +
+          '<svg width="48" height="48" viewBox="0 0 50 50" fill="none">' +
+            '<rect width="50" height="50" rx="10" fill="#1e293b"/>' +
+            '<circle cx="25" cy="22" r="11" fill="#3b82f6" opacity="0.6"/>' +
+            '<rect x="18" y="32" width="14" height="4" rx="2" fill="#60a5fa"/>' +
+          '</svg>' +
+        '</div>' +
+        '<div class="ad-price-tag">₹12,499</div>' +
+      '</div>' +
+    '</div>' +
+  '</section>';
+}
+
+function adAccountPromoHTML(){
+  return '<div class="ad-acc-promo-card" data-a="openad" data-v="promo50">' +
+    '<div class="ad-promo-badge">₹50</div>' +
+    '<div class="ad-promo-info">' +
+      '<div style="font-size:13.5px;font-weight:700;color:var(--text);">' + t('Bonus ₹50 Instant Voucher') + '</div>' +
+      '<div style="font-size:11px;color:var(--muted);">' + t('Limited time sponsor reward') + '</div>' +
+    '</div>' +
+    '<button class="ad-promo-btn">' + t('Claim Now!') + '</button>' +
+  '</div>';
+}
+
+function adStoreRateBannerHTML(){
+  return '<div class="ad-rate-banner" data-a="openad" data-v="rate">' +
+    '<div class="ad-rate-left">' +
+      '<div class="ad-rate-tag">RATE US ON</div>' +
+      '<div class="ad-rate-stores">App Store &amp; Play Store</div>' +
+      '<div class="ad-rate-stars">★★★★★</div>' +
+      '<div class="ad-rate-sub">' + t('Your feedback helps us improve and serve you better! Thank you for supporting StepMudra!') + ' ❤️</div>' +
+    '</div>' +
+    '<div class="ad-rate-phone">' +
+      '<svg width="72" height="90" viewBox="0 0 72 90" fill="none">' +
+        '<rect x="4" y="4" width="64" height="82" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>' +
+        '<rect x="8" y="10" width="56" height="70" rx="6" fill="#f0fdf4"/>' +
+        '<circle cx="36" cy="38" r="12" fill="#22c55e" opacity="0.2"/>' +
+        '<path d="M30 38L34 42L42 34" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<rect x="18" y="60" width="36" height="12" rx="6" fill="#0284c7"/>' +
+        '<text x="36" y="69" font-size="7" fill="#ffffff" font-weight="bold" text-anchor="middle">RATE 5★</text>' +
+      '</svg>' +
+    '</div>' +
+  '</div>';
+}
+
 function navHTML(){
   var tabs=[['home','Home','home'],['games','Game Play','game'],['shop','Store','bag'],['challenges','Challenges','flag'],['profile','Account','user']];
   return '<nav class="nav" aria-label="Main"><div class="nav-in">'+tabs.map(function(x){
@@ -2365,7 +2790,7 @@ function render(){
   else if(UI.sub==='catpage')body=catPageHTML();
   else if(S.tab==='profile')body=accountHTML();
   else body=({home:homeHTML,challenges:challengesHTML,games:gamesHTML,shop:shopHTML,wallet:walletHTML}[S.tab]||homeHTML)();
-  root.innerHTML='<main class="screen">'+body+'</main>'+navHTML()+(UI.confirm?sheetHTML():'')+(UI.cj?joinSheetHTML():'')+(UI.prod?prodSheetHTML():'')+(UI.exp?expSheetHTML():'')+(UI.notifOpen?notifSheetHTML():'')+(UI.limit?limitSheetHTML():'')+(UI.ad?adSheetHTML():'');
+  root.innerHTML='<main class="screen">'+body+'</main>'+adBottomBarHTML()+navHTML()+(UI.confirm?sheetHTML():'')+(UI.cj?joinSheetHTML():'')+(UI.prod?prodSheetHTML():'')+(UI.exp?expSheetHTML():'')+(UI.notifOpen?notifSheetHTML():'')+(UI.limit?limitSheetHTML():'')+(UI.ad?adSheetHTML():'');
 }
 
 /* ---------- actions ---------- */
@@ -2382,6 +2807,13 @@ document.addEventListener('click',function(e){
   if(a==='overlay'){if(e.target===el){UI.confirm=null;UI.cj=null;UI.prod=null;UI.exp=false;UI.notifOpen=false;UI.limit=false;render();}return;}
   if(a!=='del'&&UI.delArm){UI.delArm=false;}
   switch(a){
+    case 'openad':
+      if(window.Android && typeof window.Android.showRewardedAd === 'function'){
+        window.Android.showRewardedAd();
+      } else {
+        toast(t('Opening sponsor partner offer...'));
+      }
+      break;
     case 'sellvl':UI.selLvl=parseInt(v);render();break;
     case 'opencat':UI.selCat=v;UI.sub='catpage';UI.catSort='none';UI.catSearchQuery='';UI.catSearchOpen=false;render();window.scrollTo(0,0);break;
     case 'catsort':if(!UI.catSort||UI.catSort==='none')UI.catSort='low';else if(UI.catSort==='low')UI.catSort='high';else if(UI.catSort==='high')UI.catSort='coins';else UI.catSort='none';render();break;
