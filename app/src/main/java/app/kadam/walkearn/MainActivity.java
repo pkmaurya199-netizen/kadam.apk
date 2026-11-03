@@ -11,6 +11,17 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
+
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.OnUserEarnedRewardListener;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+import com.google.android.gms.ads.rewarded.RewardItem;
+import com.google.android.gms.ads.rewarded.RewardedAd;
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -32,8 +43,14 @@ import java.util.ArrayList;
 public class MainActivity extends Activity {
     private static final int REQ_PERMS = 7;
     private static final int REQ_SIGNIN = 9;
+    
+    // Official Google AdMob Test Rewarded Video Ad Unit ID
+    private static final String TEST_REWARDED_AD_ID = "ca-app-pub-3940256099942544/5224354917";
+    
     private WebView web;
     private boolean tracking = false;
+    private RewardedAd rewardedAd = null;
+    private boolean isAdLoading = false;
 
     /** Functions the web app can call as window.KadamNative.* */
     public class Bridge {
@@ -85,11 +102,48 @@ public class MainActivity extends Activity {
                 }
             });
         }
+
+        /** Show AdMob Rewarded Video Ad */
+        @JavascriptInterface
+        public void showRewardedAd(final String kind) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (rewardedAd != null) {
+                        rewardedAd.show(MainActivity.this, new OnUserEarnedRewardListener() {
+                            @Override
+                            public void onUserEarnedReward(RewardItem rewardItem) {
+                                // User earned reward! Notify WebView
+                                notifyAdReward(kind);
+                            }
+                        });
+                        rewardedAd = null;
+                        loadRewardedAd();
+                    } else {
+                        Toast.makeText(MainActivity.this, "Ad loading... Opening preview timer", Toast.LENGTH_SHORT).show();
+                        loadRewardedAd();
+                        notifyAdFallback(kind);
+                    }
+                }
+            });
+        }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Initialize Google Mobile Ads SDK
+        try {
+            MobileAds.initialize(this, new OnInitializationCompleteListener() {
+                @Override
+                public void onInitializationComplete(InitializationStatus status) {
+                    loadRewardedAd();
+                }
+            });
+        } catch (Exception ignored) {
+        }
+
         web = new WebView(this);
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
@@ -111,6 +165,43 @@ public class MainActivity extends Activity {
         } else {
             web.restoreState(savedInstanceState);
         }
+    }
+
+    private void loadRewardedAd() {
+        if (isAdLoading || rewardedAd != null) return;
+        isAdLoading = true;
+        AdRequest adRequest = new AdRequest.Builder().build();
+        RewardedAd.load(this, TEST_REWARDED_AD_ID, adRequest, new RewardedAdLoadCallback() {
+            @Override
+            public void onAdLoaded(RewardedAd ad) {
+                rewardedAd = ad;
+                isAdLoading = false;
+            }
+
+            @Override
+            public void onAdFailedToLoad(LoadAdError error) {
+                rewardedAd = null;
+                isAdLoading = false;
+            }
+        });
+    }
+
+    private void notifyAdReward(final String kind) {
+        web.post(new Runnable() {
+            @Override
+            public void run() {
+                web.evaluateJavascript("window.kadamOnAdRewarded && window.kadamOnAdRewarded('" + kind + "');", null);
+            }
+        });
+    }
+
+    private void notifyAdFallback(final String kind) {
+        web.post(new Runnable() {
+            @Override
+            public void run() {
+                web.evaluateJavascript("window.kadamOnAdFallback && window.kadamOnAdFallback('" + kind + "');", null);
+            }
+        });
     }
 
     private GoogleSignInClient googleClient() {
@@ -237,6 +328,9 @@ public class MainActivity extends Activity {
         super.onResume();
         tracking = false;
         tellWeb();
+        if (rewardedAd == null) {
+            loadRewardedAd();
+        }
     }
 
     @Override
