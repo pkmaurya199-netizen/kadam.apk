@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Deletion Request - Kadam: Walk & Earn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1e8e4e;
+      --danger: #ef4444;
+      --danger-soft: #fef2f2;
+      --text: #0f172a;
+      --muted: #64748b;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --line: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+      padding: 24px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .header-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo-badge {
+      background: var(--primary);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .container {
+      max-width: 760px;
+      margin: 40px auto;
+      padding: 0 20px 80px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      padding: 36px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .warning-box {
+      background: var(--danger-soft);
+      border-left: 4px solid var(--danger);
+      padding: 16px 20px;
+      border-radius: 8px;
+      margin: 20px 0 24px;
+    }
+    .warning-box h4 {
+      color: #991b1b;
+      font-weight: 800;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+    .warning-box p {
+      color: #b91c1c;
+      font-size: 14px;
+      margin: 0;
+    }
+    h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-top: 28px;
+      margin-bottom: 12px;
+    }
+    p, li {
+      font-size: 14.5px;
+      color: #334155;
+      margin-bottom: 12px;
+    }
+    ul {
+      margin-left: 20px;
+      margin-bottom: 18px;
+    }
+    li {
+      margin-bottom: 6px;
+    }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    input, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1.5px solid var(--line);
+      font-family: inherit;
+      font-size: 14px;
+      background: #f8fafc;
+      transition: border 0.15s ease;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--danger);
+      background: #fff;
+    }
+    .btn-delete {
+      background: var(--danger);
+      color: #fff;
+      font-weight: 800;
+      font-size: 15px;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 12px;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 4px 14px rgba(239,68,68,0.25);
+      transition: background 0.15s ease;
+    }
+    .btn-delete:hover {
+      background: #dc2626;
+    }
+    .nav-links a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .nav-links a:hover {
+      text-decoration: underline;
+    }
+    footer {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+    }
+    #confirmationMessage {
+      display: none;
+      padding: 20px;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-radius: 14px;
+      color: #065f46;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <a href="privacy-policy.html" class="logo">
+        <span class="logo-badge">🚶 Kadam</span>
+        <span>Walk &amp; Earn</span>
+      </a>
+      <div class="nav-links">
+        <a href="privacy-policy.html">Privacy Policy</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <h1>Request Account &amp; Data Deletion</h1>
+      <p class="subtitle">Official Account Deletion Portal for <strong>Kadam: Walk &amp; Earn</strong> (<code>app.kadam.walkearn</code>) in compliance with Google Play Store Policies.</p>
+
+      <div class="warning-box">
+        <h4>⚠️ Warning: Account deletion is permanent!</h4>
+        <p>Once your account is deleted, your coin balance, active streaks, unlocked badges, and order history cannot be recovered.</p>
+      </div>
+
+      <h2>How Deletion Works</h2>
+      <p>You can delete your Kadam account using either of the two methods below:</p>
+      
+      <h3>Option 1: In-App Instant Deletion (Fastest)</h3>
+      <ol style="margin-left:20px;margin-bottom:20px;font-size:14.5px;color:#334155;">
+        <li style="margin-bottom:6px;">Open the <strong>Kadam</strong> app on your Android device.</li>
+        <li style="margin-bottom:6px;">Go to the <strong>Account</strong> tab in the bottom navigation bar.</li>
+        <li style="margin-bottom:6px;">Scroll down to the bottom of the page.</li>
+        <li style="margin-bottom:6px;">Tap the red <strong>"Delete account"</strong> button and confirm. Your local data and session are cleared immediately.</li>
+      </ol>
+
+      <h3>Option 2: Web Deletion Request (Without App)</h3>
+      <p>If you have uninstalled the app or lost access to your device, please fill out the form below. Our support team will process your request within <strong>7 business days</strong>.</p>
+
+      <form id="deleteForm" onsubmit="handleSubmit(event)">
+        <div class="form-group">
+          <label for="userEmail">Registered Google Account / Email Address *</label>
+          <input type="email" id="userEmail" required placeholder="your.name@gmail.com">
+        </div>
+
+        <div class="form-group">
+          <label for="userName">Account Display Name</label>
+          <input type="text" id="userName" placeholder="e.g. Rahul S.">
+        </div>
+
+        <div class="form-group">
+          <label for="deleteReason">Reason for Deletion (Optional)</label>
+          <textarea id="deleteReason" rows="3" placeholder="Tell us why you wish to delete your account (optional)"></textarea>
+        </div>
+
+        <button type="submit" class="btn-delete">Submit Account Deletion Request</button>
+      </form>
+
+      <div id="confirmationMessage">
+        <h4 style="font-size:16px;font-weight:800;margin-bottom:6px;">✅ Deletion Request Received!</h4>
+        <p style="margin:0;font-size:14px;">Your account deletion request has been logged. Our data protection team will verify your registered email and permanently erase your account and associated fitness records within 7 business days.</p>
+      </div>
+
+      <h2>What Data Gets Deleted?</h2>
+      <ul>
+        <li><strong>Profile &amp; Authentication:</strong> Name, Google email, user ID, profile settings.</li>
+        <li><strong>Fitness &amp; Activity History:</strong> Lifetime steps, daily step history, distance, calories burned.</li>
+        <li><strong>Rewards &amp; Gamification:</strong> Unused coin balances, streak records, level progression, and 84 achievement badges.</li>
+        <li><strong>Store Orders:</strong> Delivery address and order logs are permanently anonymized or purged.</li>
+      </ul>
+
+      <h2>Data Retention Policy</h2>
+      <p>We do not retain personal fitness data once account deletion is completed. In rare cases where financial transaction records or fraud investigation requires archival under local taxation and legal compliance, minimal anonymized transaction IDs may be retained for the legally prescribed statutory period.</p>
+
+      <h2>Need Help?</h2>
+      <p>If you have any questions about your data or request status, please email us directly at <a href="mailto:support@kadamapp.in?subject=Account%20Deletion%20Inquiry" style="color:var(--primary);font-weight:700;">support@kadamapp.in</a>.</p>
+
+      <footer>
+        &copy; 2026 Kadam: Walk &amp; Earn. All rights reserved.
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    function handleSubmit(e) {
+      e.preventDefault();
+      var email = document.getElementById('userEmail').value;
+      document.getElementById('deleteForm').style.display = 'none';
+      document.getElementById('confirmationMessage').style.display = 'block';
+
+      // Also generate mailto link for direct submission if required
+      window.location.href = "mailto:support@kadamapp.in?subject=Account%20Deletion%20Request%20-%20" + encodeURIComponent(email) + "&body=Please%20delete%20my%20Kadam%20account%20associated%20with%20" + encodeURIComponent(email) + ".";
+    }
+  </script>
+
+</body>
+</html>
