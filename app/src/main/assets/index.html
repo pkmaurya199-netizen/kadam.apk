@@ -429,6 +429,42 @@ button.pill{min-height:34px;padding:4px 10px;font-size:14px;gap:5px}
 .soc{padding:12px;border-radius:16px;gap:6px}
 .nav button{font-size:10.5px;padding:5px 2px;gap:1px}
 .nav svg{width:22px;height:22px}
+/* game play hub */
+.gnote{display:flex;align-items:center;gap:6px;padding-inline:2px}
+.gcard{position:relative;display:block;width:100%;text-align:left;border:0;border-radius:26px;min-height:176px;padding:18px;overflow:hidden;color:#fff;box-shadow:var(--shadow);isolation:isolate;font-family:var(--body)}
+.gcard:active{transform:scale(.985)}
+.gc-art{position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:50%;max-width:200px;z-index:-1}
+.gc-art svg{display:block;width:100%;height:auto;filter:drop-shadow(0 8px 14px rgba(0,0,0,.3))}
+.gc-t{display:grid;gap:6px;align-content:end;min-height:140px;max-width:54%}
+.gc-name{font-family:var(--display);font-weight:800;font-size:clamp(34px,11vw,46px);line-height:.95;letter-spacing:-.02em}
+.gc-tag{font-weight:600;font-size:13px;opacity:.92;line-height:1.3}
+.gc-play{justify-self:start;display:inline-flex;align-items:center;gap:6px;background:#fff;color:#10261A;font-weight:700;border-radius:99px;padding:8px 16px;font-size:14px;margin-top:4px}
+.gc-soon{position:absolute;top:14px;left:18px;background:rgba(0,0,0,.5);color:#fff;font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:6px 12px}
+.g-2048{background:radial-gradient(circle at 80% 15%,rgba(255,214,102,.35),transparent 45%),linear-gradient(135deg,#0B2E1B,#1E8E4E)}
+.g-ludo{background:radial-gradient(circle at 80% 12%,rgba(255,255,255,.25),transparent 42%),linear-gradient(135deg,#5B1A8B,#E2552B)}
+.g-life{background:radial-gradient(circle at 85% 15%,rgba(124,224,166,.25),transparent 45%),linear-gradient(135deg,#0D2540,#176A9A)}
+.gcard.soon .gc-art{opacity:.92}
+/* challenges: scope chips, summary, themed cards */
+.chsum{display:grid;gap:10px;border-radius:22px;padding:14px;color:#fff;background:radial-gradient(circle at 90% 0,rgba(255,214,102,.4),transparent 45%),linear-gradient(135deg,#14683A,#1E8E4E);box-shadow:var(--shadow)}
+.chsum-t{display:grid;gap:2px}
+.chsum-t b{font-family:var(--display);font-size:20px;font-weight:800;line-height:1.1}
+.chsum-t small{opacity:.9;font-size:13px}
+.chsum-s{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.chsum-s>div{background:rgba(255,255,255,.16);border-radius:14px;padding:6px;text-align:center;display:grid}
+.chsum-s b{font-family:var(--display);font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.chsum-s small{font-size:12px;opacity:.92}
+.cscope{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.cscope button{display:inline-flex;align-items:center;justify-content:center;gap:3px;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:8px 2px;font-weight:700;font-size:12.5px;color:var(--muted);min-height:38px;white-space:nowrap}
+.cscope button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.chb.t-w{background:radial-gradient(circle at 85% 20%,rgba(255,255,255,.22) 0,transparent 42%),linear-gradient(135deg,#0B5C7A,#1C9CC9)}
+.chb.t-m{background:radial-gradient(circle at 85% 20%,rgba(255,255,255,.22) 0,transparent 42%),linear-gradient(135deg,#4A1D96,#8B5CF6)}
+.chb.t-e{background:radial-gradient(circle at 85% 20%,rgba(255,236,170,.4) 0,transparent 42%),linear-gradient(135deg,#9A2C0B,#F59E0B)}
+.chb.t-w .chb-art,.chb.t-m .chb-art,.chb.t-e .chb-art{color:#FFD76A}
+.chip2.paid{background:var(--coin-soft);color:var(--coin-d)}
+.chip2.dim{color:var(--muted)}
+.chc.unj .chb{filter:saturate(.85)}
+.chb-unit{margin-top:6px}
+.chhint{display:flex;align-items:center;gap:6px;color:var(--muted)}
 </style>
 <style>html,body{margin:0}:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
 </head>
@@ -497,6 +533,14 @@ var HI={
 'Cart':'कार्ट','Your cart is empty':'आपका कार्ट खाली है','Browse products':'प्रोडक्ट देखें','Remove':'हटाएँ','Remove from cart':'कार्ट से हटाएँ','Add to cart':'कार्ट में डालें','Added to cart':'कार्ट में डाला','Removed from cart':'कार्ट से हटाया','Checkout':'चेकआउट','Total':'कुल','Your balance':'आपका बैलेंस','Owned':'पहले से है','Some items are unavailable':'कुछ आइटम उपलब्ध नहीं हैं',
 'Delivery details are collected at checkout in the real app.':'असली ऐप में चेकआउट पर डिलीवरी की जानकारी ली जाएगी।','Demo: add coins to try redeeming':'डेमो: रिडीम आज़माने के लिए सिक्के जोड़ें'
 };
+Object.assign(HI,{
+'Play':'खेलें','Coming Soon':'जल्द आ रहा है','Ludo is coming soon':'लूडो जल्द आ रहा है','Swipe. Merge. Reach 2048.':'स्वाइप करें, जोड़ें, 2048 तक पहुँचें।','Roll the dice. Race home.':'पासा फेंकें, घर पहुँचें।','Watch cells grow and survive.':'कोशिकाओं को बढ़ते और बचते देखें।','Play and earn up to 5 coins a day from each game.':'हर गेम से रोज़ 5 सिक्के तक कमाएँ।',
+'Join free':'फ्री जुड़ें','Join for':'जुड़ें','Joined!':'जुड़ गए!','Joined':'जुड़े हुए','Not joined':'जुड़े नहीं','Entry':'एंट्री','Entry fee':'एंट्री फ़ीस','Ended':'खत्म','Ready':'तैयार',
+'Daily':'रोज़','Weekly':'साप्ताहिक','Monthly':'मासिक','Special':'स्पेशल','Special Event':'स्पेशल इवेंट','Special event':'स्पेशल इवेंट','Monthly Challenge':'मासिक चैलेंज','This month':'इस महीने',
+'Join. Walk. Earn.':'जुड़ें, चलें, कमाएँ।','Only joined challenges pay coins.':'सिक्के सिर्फ़ उन्हीं चैलेंज में मिलते हैं जिनमें आप जुड़े हैं।','Join to earn coins. Only progress after you join counts.':'सिक्के पाने के लिए जुड़ें। जुड़ने के बाद की प्रगति ही गिनी जाएगी।',
+'Join challenge':'चैलेंज में जुड़ें','Prize':'इनाम','Pay & join':'फ़ीस दें और जुड़ें','The fee is not refunded. Only steps after you join count.':'फ़ीस वापस नहीं होगी। जुड़ने के बाद के कदम ही गिने जाएँगे।',
+'Resets on the 1st of every month':'हर महीने की 1 तारीख को रीसेट','Ends on':'खत्म होगा','Walk 200,000 steps this month':'इस महीने 2,00,000 कदम चलें','Log in on 20 days':'20 दिन लॉगिन करें','Super Step Rush':'सुपर स्टेप रश'
+});
 var I18N={hi:HI};
 
 /* ---------- state ---------- */
@@ -504,18 +548,19 @@ function pad(n){return String(n).padStart(2,'0');}
 function dkey(d){d=d||new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
 function addDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x;}
 function wkey(d){var x=new Date(d||new Date());x.setDate(x.getDate()-((x.getDay()+6)%7));return dkey(x);}
+function mkey(d){var x=d?new Date(d):new Date();return x.getFullYear()+'-'+pad(x.getMonth()+1);}
 function newCode(){var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='KDM';for(var i=0;i<5;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
 function fresh(){return{stage:'out',seen:false,lang:'en',notif:true,name:'Walker',code:newCode(),referredBy:'',refBonusPending:0,
   day:dkey(),week:wkey(),steps:0,stepCoins:0,weekSteps:0,totalSteps:0,
   balance:0,earned:0,spent:0,tx:[],
   streak:0,best:0,lastLogin:'',weekLogins:0,
-  claimedD:{},claimedW:{},gamesToday:0,everGame:false,gameCoins:{g2048:0,life:0},
+  claimedD:{},claimedW:{},joined:{},claims:{},month:mkey(),monthSteps:0,monthLogins:0,gamesToday:0,everGame:false,gameCoins:{g2048:0,life:0},
   orders:[],stock:{},frame:false,friends:[],weekRefs:0,badges:{},best2048:0,tab:'home',water:0,waterDone:false,waterAt:0,adsD:0,limitAds:0,cart:[],phone:'',following:{},weekDays:[0,0,0,0,0,0,0],social:{ig:false,fb:false}};}
 var S=fresh();
 try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);for(var k in o){S[k]=o[k];}}}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 
-var UI={chF:'all',exp:false,q:'',prod:null,notifOpen:false,auth:'login',slide:0,phone:'',ref:'',err:'',sub:null,chTab:'d',cat:'All',shopView:'items',confirm:null,wFilter:'All',gsel:'2048',delArm:false,ad:null,limit:false,busy:false};
+var UI={chF:'all',exp:false,q:'',prod:null,notifOpen:false,auth:'login',slide:0,phone:'',ref:'',err:'',sub:null,chTab:'d',cat:'All',shopView:'items',confirm:null,wFilter:'All',gsel:'',chS:'all',cj:null,delArm:false,ad:null,limit:false,busy:false};
 
 function t(k){var d=I18N[S.lang];return (d&&d[k])||k;}
 function fmt(n){return Number(n).toLocaleString('en-IN');}
@@ -526,6 +571,7 @@ function rollover(){
   var d=dkey(),w=wkey(),changed=false;
   if(S.day!==d){if(S.day){S.hist=S.hist||[];S.hist.unshift({d:S.day,s:S.steps,l:level()});if(S.hist.length>60)S.hist.length=60;}S.day=d;S.steps=0;S.stepCoins=0;S.claimedD={};S.gameCoins={g2048:0,life:0};S.gamesToday=0;S.water=0;S.waterDone=false;S.adsD=0;S.limitAds=0;changed=true;}
   if(S.week!==w){S.week=w;S.weekSteps=0;S.weekLogins=0;S.claimedW={};S.weekRefs=0;S.weekDays=[0,0,0,0,0,0,0];changed=true;}
+  var mk=mkey();if(S.month!==mk){S.month=mk;S.monthSteps=0;S.monthLogins=0;changed=true;}
   var ti=(new Date().getDay()+6)%7;if((S.weekDays[ti]||0)<S.steps){S.weekDays[ti]=S.steps;}
   return changed;
 }
@@ -552,7 +598,7 @@ function creditSteps(){
   if(S.refBonusPending>0&&S.steps>=5000){addTx('referral',S.refBonusPending,'Welcome bonus, invited by '+S.referredBy);S.refBonusPending=0;}
 }
 function addSteps(n){
-  rollover();S.steps+=n;S.weekSteps+=n;S.totalSteps+=n;S.weekDays[(new Date().getDay()+6)%7]=S.steps;
+  rollover();S.steps+=n;S.weekSteps+=n;S.monthSteps+=n;S.totalSteps+=n;S.weekDays[(new Date().getDay()+6)%7]=S.steps;
   creditSteps();checkBadges();save();render();
 }
 function liveStreak(){var tdy=dkey(),y=dkey(addDays(new Date(),-1));return(S.lastLogin===tdy||S.lastLogin===y)?S.streak:0;}
@@ -564,27 +610,62 @@ function claimLogin(){
   S.streak=(S.lastLogin===y)?S.streak+1:1;
   S.best=Math.max(S.best,S.streak);
   var r=CFG.LOGIN[(S.streak-1)%7];
-  S.lastLogin=dkey();S.weekLogins+=1;
+  S.lastLogin=dkey();S.weekLogins+=1;S.monthLogins+=1;
   addTx('login',r,'Day '+S.streak+' streak bonus');
   toast('+'+r+' coin'+(r>1?'s':''));
   checkBadges();save();render();
 }
-function challenges(){
-  return [
-    {id:'d5',scope:'d',title:'Walk 5,000 steps',target:5000,reward:2,prog:S.steps},
-    {id:'d10',scope:'d',title:'Walk 10,000 steps',target:10000,reward:5,prog:S.steps},
-    {id:'dg',scope:'d',title:'Play 1 game',target:1,reward:1,prog:S.gamesToday},
-    {id:'w50',scope:'w',title:'Walk 50,000 steps this week',target:50000,reward:15,prog:S.weekSteps},
-    {id:'wl',scope:'w',title:'Log in on 5 days',target:5,reward:5,prog:S.weekLogins},
-    {id:'wr',scope:'w',title:'Refer 1 friend',target:1,reward:10,prog:S.weekRefs}
-  ];
+/* Special events: add a row here to run a new paid event. fee is in coins (0 = free). In the real app these come from the server. */
+var EVENTS=[
+  {id:'ev1',title:'Super Step Rush',target:30000,reward:40,fee:10,start:'2026-11-03',end:'2026-11-30'}
+];
+function evActive(e){var k=dkey();return k>=e.start&&k<=e.end;}
+/* A challenge only pays coins if the person joined it. Progress counts from the moment they join (base = counter value at join time). */
+function decorate(c){
+  var J=S.joined[c.id];
+  c.fee=c.fee||0;
+  c.joined=!!(J&&J.k===c.key);
+  c.claimed=S.claims[c.id]===c.key;
+  c.prog=c.joined?Math.max(0,c.cur-J.base):0;
+  c.done=c.prog>=c.target;
+  c.ended=c.scope==='e'&&dkey()>c.end;
+  return c;
 }
-function isClaimed(c){return !!(c.scope==='d'?S.claimedD:S.claimedW)[c.id];}
+function challenges(){
+  var dk=dkey(),wk=wkey(),mk=mkey();
+  var L=[
+    {id:'d5',scope:'d',title:'Walk 5,000 steps',target:5000,reward:2,cur:S.steps,key:dk,u:'Steps',ic:'walker'},
+    {id:'d10',scope:'d',title:'Walk 10,000 steps',target:10000,reward:5,cur:S.steps,key:dk,u:'Steps',ic:'walker'},
+    {id:'dg',scope:'d',title:'Play 1 game',target:1,reward:1,cur:S.gamesToday,key:dk,u:'Game',ic:'game'},
+    {id:'w50',scope:'w',title:'Walk 50,000 steps this week',target:50000,reward:15,cur:S.weekSteps,key:wk,u:'Steps',ic:'walker'},
+    {id:'wl',scope:'w',title:'Log in on 5 days',target:5,reward:5,cur:S.weekLogins,key:wk,u:'Logins',ic:'gift',login:1},
+    {id:'wr',scope:'w',title:'Refer 1 friend',target:1,reward:10,cur:S.weekRefs,key:wk,u:'Friend',ic:'users'},
+    {id:'m200',scope:'m',title:'Walk 200,000 steps this month',target:200000,reward:50,cur:S.monthSteps,key:mk,u:'Steps',ic:'walker'},
+    {id:'ml',scope:'m',title:'Log in on 20 days',target:20,reward:15,cur:S.monthLogins,key:mk,u:'Logins',ic:'gift',login:1}
+  ];
+  EVENTS.forEach(function(e){
+    if(evActive(e)||S.joined[e.id])L.push({id:e.id,scope:'e',title:e.title,target:e.target,reward:e.reward,fee:e.fee,cur:S.totalSteps,key:e.id,u:'Steps',ic:'trophy',end:e.end});
+  });
+  return L.map(decorate);
+}
+function findCh(id){return challenges().filter(function(x){return x.id===id;})[0];}
+function isClaimed(c){return !!c.claimed;}
+function joinChallenge(id){
+  rollover();
+  var c=findCh(id);
+  if(!c||c.joined||c.claimed||c.ended)return;
+  if(c.fee>0){
+    if(S.balance<c.fee){toast(t('Not enough coins'));UI.cj=null;render();return;}
+    addTx('challenge',-c.fee,'Entry fee: '+c.title);
+  }
+  S.joined[c.id]={k:c.key,base:Math.max(0,c.cur-(c.login&&S.lastLogin===dkey()?1:0))};
+  UI.cj=null;toast(t('Joined!'));save();render();
+}
 function claimChallenge(id){
   rollover();
-  var c=challenges().filter(function(x){return x.id===id;})[0];
-  if(!c||isClaimed(c)||c.prog<c.target)return;
-  (c.scope==='d'?S.claimedD:S.claimedW)[c.id]=1;
+  var c=findCh(id);
+  if(!c||!c.joined||c.claimed||c.ended||!c.done)return;
+  S.claims[c.id]=c.key;
   addTx('challenge',c.reward,c.title);toast('+'+c.reward+' coins');
   checkBadges();save();render();
 }
@@ -851,15 +932,15 @@ function subHeader(title){
   return '<header class="hdr"><button class="btn" data-a="back">← '+t('Back')+'</button><h1 class="grow" style="text-align:right">'+title+'</h1></header>';
 }
 function chRow(c,compact){
-  var claimed=isClaimed(c),pct=Math.min(c.prog/c.target,1)*100,done=c.prog>=c.target;
-  var btn=claimed?'<button class="btn" disabled>'+t('Claimed')+'</button>':done?'<button class="btn primary" data-a="claim" data-v="'+c.id+'">'+t('Claim')+'</button>':'<button class="btn" disabled>'+t('In progress')+'</button>';
+  var claimed=c.claimed,pct=Math.min(c.prog/c.target,1)*100,done=c.joined&&c.done;
+  var btn=claimed?'<button class="btn" disabled>'+t('Claimed')+'</button>':!c.joined?'<button class="btn primary" data-a="join" data-v="'+c.id+'">'+t('Join free')+'</button>':done?'<button class="btn primary" data-a="claim" data-v="'+c.id+'">'+t('Claim')+'</button>':'<button class="btn" disabled>'+t('In progress')+'</button>';
   return '<div class="ch"><div class="ch-top"><b>'+t(c.title)+'</b><span class="reward">+'+c.reward+' '+coin(16)+'</span></div>'+
     '<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+c.target+'" aria-valuenow="'+Math.min(c.prog,c.target)+'"><i style="width:'+pct+'%"></i></div>'+
     '<div class="row" style="justify-content:space-between"><span class="small muted">'+fmt(Math.min(c.prog,c.target))+' / '+fmt(c.target)+'</span>'+(compact&&!done?'':btn)+'</div></div>';
 }
 
-function dailyDone(){var n=S.lastLogin===dkey()?1:0;['d5','d10','dg'].forEach(function(id){if(S.claimedD[id])n++;});if(S.waterDone)n++;return n;}
-function readyCount(){var n=S.lastLogin===dkey()?0:1;challenges().forEach(function(c){if(c.scope==='d'&&!isClaimed(c)&&c.prog>=c.target)n++;});return n;}
+function dailyDone(){var n=S.lastLogin===dkey()?1:0;['d5','d10','dg'].forEach(function(id){if(S.claims[id]===dkey())n++;});if(S.waterDone)n++;return n;}
+function readyCount(){var n=S.lastLogin===dkey()?0:1;challenges().forEach(function(c){if(c.scope==='d'&&c.joined&&!c.claimed&&c.done)n++;});return n;}
 function gaugeSVG(pct){
   var R=84,C=2*Math.PI*R,arc=C*0.75,ang=(135+270*pct)*Math.PI/180,hx=(100+R*Math.cos(ang)).toFixed(1),hy=(100+R*Math.sin(ang)).toFixed(1);
   return '<svg viewBox="0 0 200 200" role="img" aria-label="'+fmt(S.steps)+' '+t('steps')+'"><defs><linearGradient id="kg" gradientUnits="userSpaceOnUse" gradientTransform="rotate(-135 100 100)" x1="30" y1="170" x2="170" y2="30"><stop offset="0" stop-color="#f59e0b"/><stop offset="1" stop-color="#2f9e44"/></linearGradient></defs>'+
@@ -1037,45 +1118,82 @@ function notifSheetHTML(){
     '<button class="btn block" data-a="closen">'+t('Close')+'</button></div></div>';
 }
 
-var CHMETA={
-  d5:{n:'5,000',u:'Steps',ic:'walker',every:'Every day'},
-  d10:{n:'10,000',u:'Steps',ic:'walker',every:'Every day'},
-  dg:{n:'1',u:'Game',ic:'game',every:'Every day'},
-  w50:{n:'50,000',u:'Steps',ic:'walker',every:'This week'},
-  wl:{n:'5',u:'Logins',ic:'gift',every:'This week'},
-  wr:{n:'1',u:'Friend',ic:'users',every:'This week'}
-};
 var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 function ordinalDay(d){var n=d.getDate(),s=(n%10===1&&n!==11)?'st':(n%10===2&&n!==12)?'nd':(n%10===3&&n!==13)?'rd':'th';return n+s+' '+MONTHS[d.getMonth()];}
 function bellHeader(title){
   return '<header class="hdr"><h1>'+title+'</h1><button class="iconbtn" data-a="bell" aria-label="'+t('Notifications')+'">'+svgi('bell',22)+'</button>'+pillBtn()+'</header>';
 }
-function challengeCard(c){
-  var m=CHMETA[c.id],claimed=isClaimed(c),done=c.prog>=c.target,pct=Math.min(c.prog/c.target,1)*100;
+var SCOPE_NAME={d:'Daily',w:'Weekly',m:'Monthly',e:'Special'};
+var SCOPE_EVERY={d:'Every day',w:'This week',m:'This month',e:'Special event'};
+function chTitle(c){
   var now=new Date(),mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
-  var title=c.scope==='d'?t('Daily Challenge')+' – '+ordinalDay(now):t('Weekly Challenge')+' – '+t('week of')+' '+ordinalDay(mon);
-  var chip=claimed?'<span class="chip2 ok">'+svgi('check',14,2.8)+t('Completed')+'</span>':'<span class="chip2 act">'+svgi('flame',14,2)+t('Active')+'</span>';
-  var btn=claimed?'<button class="btn block" disabled>'+t('Claimed')+'</button>':done?'<button class="btn gold block" data-a="claim" data-v="'+c.id+'">'+t('Claim')+' +'+c.reward+'</button>':'<button class="btn block" disabled>'+t('In progress')+'</button>';
-  return '<article class="chc">'+
-    '<div class="chb"><div class="chb-chips"><span class="chip2 free">'+t('Free')+'</span>'+chip+'</div>'+
-      '<span class="chb-art" aria-hidden="true">'+svgi('trophy',92,1.2)+'</span>'+
-      '<div class="chb-t"><span class="chb-ic">'+svgi(m.ic,22,2)+'</span><b class="chb-num">'+m.n+'</b><span class="chb-unit">'+t(m.u)+'</span><span class="chb-sub">'+t(m.every)+'</span></div>'+
-      '<span class="chb-badge">'+coin(18)+'+'+c.reward+'</span></div>'+
-    '<h3 class="cht">'+title+'</h3>'+
+  if(c.scope==='d')return t('Daily Challenge')+' – '+ordinalDay(now);
+  if(c.scope==='w')return t('Weekly Challenge')+' – '+t('week of')+' '+ordinalDay(mon);
+  if(c.scope==='m')return t('Monthly Challenge')+' – '+MONTHS[now.getMonth()];
+  return t(c.title);
+}
+function chNote(c){
+  if(c.scope==='d')return t('Resets every midnight');
+  if(c.scope==='w')return t('Resets every Monday midnight');
+  if(c.scope==='m')return t('Resets on the 1st of every month');
+  var p=c.end.split('-');return t('Ends on')+' '+ordinalDay(new Date(+p[0],+p[1]-1,+p[2]));
+}
+function challengeCard(c){
+  var pct=Math.min(c.prog/c.target,1)*100,ready=c.joined&&c.done&&!c.claimed&&!c.ended;
+  var feeChip=c.fee>0?'<span class="chip2 paid">'+coin(14)+t('Entry')+' '+fmt(c.fee)+'</span>':'<span class="chip2 free">'+t('Free')+'</span>';
+  var stChip=c.claimed?'<span class="chip2 ok">'+svgi('check',14,2.8)+t('Completed')+'</span>':c.ended?'<span class="chip2 dim">'+t('Ended')+'</span>':c.joined?'<span class="chip2 act">'+svgi('flame',14,2)+t('Active')+'</span>':'<span class="chip2 dim">'+t('Not joined')+'</span>';
+  var btn;
+  if(c.claimed)btn='<button class="btn block" disabled>'+t('Claimed')+'</button>';
+  else if(c.ended)btn='<button class="btn block" disabled>'+t('Ended')+'</button>';
+  else if(!c.joined)btn=c.fee>0?'<button class="btn gold block" data-a="askjoin" data-v="'+c.id+'">'+t('Join for')+' '+coin(16)+' '+fmt(c.fee)+'</button>':'<button class="btn primary block" data-a="join" data-v="'+c.id+'">'+t('Join free')+'</button>';
+  else if(c.done)btn='<button class="btn gold block" data-a="claim" data-v="'+c.id+'">'+t('Claim')+' +'+c.reward+'</button>';
+  else btn='<button class="btn block" disabled>'+t('In progress')+'</button>';
+  return '<article class="chc'+(c.joined?'':' unj')+'">'+
+    '<div class="chb t-'+c.scope+'"><div class="chb-chips">'+feeChip+stChip+'</div>'+
+      '<span class="chb-art" aria-hidden="true">'+svgi(c.scope==='e'?'flame':c.scope==='m'?'star':'trophy',92,1.2)+'</span>'+
+      '<div class="chb-t"><span class="chb-ic">'+svgi(c.ic,22,2)+'</span><b class="chb-num">'+fmt(c.target)+'</b><span class="chb-unit">'+t(c.u)+'</span><span class="chb-sub">'+t(SCOPE_EVERY[c.scope])+'</span></div>'+
+      '<span class="chb-badge">'+coin(18)+'+'+fmt(c.reward)+'</span></div>'+
+    '<h3 class="cht">'+chTitle(c)+'</h3>'+
     '<div class="chtiles">'+
-      '<div class="ctile tone-peach"><span class="ct-i">'+svgi('gift',24,1.8)+'</span><small>'+t('Reward')+'</small><b>'+c.reward+' '+(c.reward>1?t('Coins'):t('Coin'))+'</b></div>'+
-      '<div class="ctile tone-mint"><span class="ct-i">'+svgi('flag',24,1.8)+'</span><small>'+t('Goal')+'</small><b>'+m.n+' '+t(m.u)+'</b></div>'+
+      '<div class="ctile tone-peach"><span class="ct-i">'+svgi('gift',24,1.8)+'</span><small>'+t('Reward')+'</small><b>'+fmt(c.reward)+' '+(c.reward>1?t('Coins'):t('Coin'))+'</b></div>'+
+      '<div class="ctile tone-mint"><span class="ct-i">'+svgi('flag',24,1.8)+'</span><small>'+t('Goal')+'</small><b>'+fmt(c.target)+' '+t(c.u)+'</b></div>'+
       '<div class="ctile tone-sky"><span class="ct-i">'+svgi('walker',24,1.8)+'</span><small>'+t('Progress')+'</small><b>'+Math.floor(pct)+'%</b></div></div>'+
-    '<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+c.target+'" aria-valuenow="'+Math.min(c.prog,c.target)+'"><i style="width:'+pct+'%"></i></div>'+
-    '<div class="row" style="justify-content:space-between"><span class="small muted">'+fmt(Math.min(c.prog,c.target))+' / '+fmt(c.target)+'</span><span class="small muted">'+(c.scope==='d'?t('Resets every midnight'):t('Resets every Monday midnight'))+'</span></div>'+btn+'</article>';
+    '<div class="bar'+(ready?' gold':'')+'" role="progressbar" aria-valuemin="0" aria-valuemax="'+c.target+'" aria-valuenow="'+Math.min(c.prog,c.target)+'"><i style="width:'+pct+'%"></i></div>'+
+    '<div class="row" style="justify-content:space-between"><span class="small muted">'+fmt(Math.min(c.prog,c.target))+' / '+fmt(c.target)+'</span><span class="small muted">'+chNote(c)+'</span></div>'+
+    (c.joined||c.ended||c.claimed?'':'<p class="small chhint">'+svgi('lock',14,2)+' '+t('Join to earn coins. Only progress after you join counts.')+'</p>')+
+    btn+'</article>';
 }
 function challengesHTML(){
-  var all=challenges(),nAct=all.filter(function(c){return !isClaimed(c);}).length,nDone=all.length-nAct;
-  var list=all.filter(function(c){return UI.chF==='all'||(UI.chF==='active'&&!isClaimed(c))||(UI.chF==='completed'&&isClaimed(c));});
+  var all=challenges();
+  var live=all.filter(function(c){return c.joined&&!c.claimed&&!c.ended;}).length;
+  var ready=all.filter(function(c){return c.joined&&c.done&&!c.claimed&&!c.ended;}).length;
+  var won=all.filter(function(c){return c.claimed;}).length;
+  var scoped=all.filter(function(c){return UI.chS==='all'||c.scope===UI.chS;});
+  var nAct=scoped.filter(function(c){return !c.claimed&&!c.ended;}).length,nDone=scoped.filter(function(c){return c.claimed;}).length;
+  var list=scoped.filter(function(c){return UI.chF==='all'||(UI.chF==='active'&&!c.claimed&&!c.ended)||(UI.chF==='completed'&&c.claimed);});
+  function rank(c){return c.claimed?4:c.ended?3:(c.joined&&c.done)?0:c.joined?1:2;}
+  list=list.map(function(c,i){return {c:c,i:i};}).sort(function(a,b){return rank(a.c)-rank(b.c)||a.i-b.i;}).map(function(x){return x.c;});
   var tabs=[['all',t('All'),''],['active',t('Active'),nAct],['completed',t('Completed'),nDone]];
+  var scopes=[['all',t('All')],['d',t('Daily')],['w',t('Weekly')],['m',t('Monthly')],['e',t('Special')]];
   return bellHeader(t('Challenges'))+
+  '<section class="chsum"><div class="chsum-t"><b>'+t('Join. Walk. Earn.')+'</b><small>'+t('Only joined challenges pay coins.')+'</small></div>'+
+    '<div class="chsum-s"><div><b>'+live+'</b><small>'+t('Joined')+'</small></div><div><b>'+ready+'</b><small>'+t('Ready')+'</small></div><div><b>'+won+'</b><small>'+t('Completed')+'</small></div></div></section>'+
+  '<div class="cscope" role="group">'+scopes.map(function(x){return '<button data-a="chscope" data-v="'+x[0]+'" aria-pressed="'+(UI.chS===x[0])+'">'+(x[0]==='e'?svgi('flame',15,2):'')+x[1]+'</button>';}).join('')+'</div>'+
   '<div class="ctabs" role="group">'+tabs.map(function(x){return '<button data-a="chtab" data-v="'+x[0]+'" aria-pressed="'+(UI.chF===x[0])+'">'+x[1]+(x[2]!==''?' <i>'+x[2]+'</i>':'')+'</button>';}).join('')+'</div>'+
   (list.length?list.map(challengeCard).join(''):'<p class="muted" style="padding:14px 0;text-align:center">'+(UI.chF==='completed'?t('No completed challenges yet'):t('No active challenges'))+'</p>');
+}
+function joinSheetHTML(){
+  var c=findCh(UI.cj);if(!c)return '';
+  var after=S.balance-c.fee,ok=after>=0;
+  return '<div class="overlay" data-a="overlay"><div class="sheet" role="dialog" aria-modal="true" aria-label="'+t('Join challenge')+'">'+
+    '<h2 style="font-size:20px">'+t('Join challenge')+'</h2>'+
+    '<div><b>'+esc(t(c.title))+'</b><div class="small muted" style="margin-top:2px">'+t('Goal')+': '+fmt(c.target)+' '+t(c.u)+'</div></div>'+
+    '<div class="row" style="justify-content:space-between"><span class="muted">'+t('Entry fee')+'</span><span class="reward">'+coin(18)+fmt(c.fee)+'</span></div>'+
+    '<div class="row" style="justify-content:space-between"><span class="muted">'+t('Prize')+'</span><span class="reward">+'+fmt(c.reward)+' '+coin(16)+'</span></div>'+
+    '<div class="row" style="justify-content:space-between"><span class="muted">'+t('Balance after')+'</span><span class="num" style="font-size:20px;color:'+(ok?'inherit':'var(--danger)')+'">'+fmt(after)+'</span></div>'+
+    (ok?'':'<p class="err">'+t('Not enough coins')+': '+fmt(-after)+' '+t('more coins needed')+'</p>')+
+    '<p class="small muted">'+t('The fee is not refunded. Only steps after you join count.')+'</p>'+
+    '<div class="two"><button class="btn" data-a="canceljoin">'+t('Cancel')+'</button><button class="btn primary" data-a="join" data-v="'+c.id+'" '+(ok?'':'disabled')+'>'+t('Pay & join')+'</button></div></div></div>';
 }
 
 function walletHTML(){
@@ -1173,10 +1291,51 @@ function sheetHTML(){
     '<div class="two"><button class="btn" data-a="cancel">'+t('Cancel')+'</button><button class="btn primary" data-a="buy" data-v="'+it.id+'" '+(ok?'':'disabled')+'>'+t('Confirm')+'</button></div></div></div>';
 }
 
+/* original card artwork for the Game Play hub */
+function art2048(){
+  var vals=[[2,4,8],[16,32,64],[128,256,2048]],cols={2:'#EEE4DA',4:'#EDE0C8',8:'#F2B179',16:'#F59563',32:'#F67C5F',64:'#F65E3B',128:'#EDCF72',256:'#EDCC61',2048:'#7BD66B'};
+  var s='<svg viewBox="0 0 200 200"><g transform="rotate(-8 100 100)"><rect x="14" y="14" width="172" height="172" rx="18" fill="rgba(255,255,255,.16)"/>';
+  vals.forEach(function(row,r){row.forEach(function(v,c){
+    var x=24+c*54,y=24+r*54;
+    s+='<rect x="'+x+'" y="'+y+'" width="48" height="48" rx="9" fill="'+cols[v]+'"/><text x="'+(x+24)+'" y="'+(y+31)+'" text-anchor="middle" font-family="Bricolage Grotesque,system-ui,sans-serif" font-weight="800" font-size="'+(v>=1000?15:v>=100?18:22)+'" fill="'+(v<=4?'#776E65':'#fff')+'">'+v+'</text>';
+  });});
+  return s+'</g></svg>';
+}
+function artLudo(){
+  var s='<svg viewBox="0 0 200 200"><g transform="rotate(6 100 100)"><rect x="12" y="12" width="176" height="176" rx="20" fill="#fff"/>';
+  [[18,18,'#E5484D'],[112,18,'#2FA84F'],[18,112,'#2F7DE1'],[112,112,'#F5B301']].forEach(function(q){
+    s+='<rect x="'+q[0]+'" y="'+q[1]+'" width="70" height="70" rx="12" fill="'+q[2]+'"/><rect x="'+(q[0]+12)+'" y="'+(q[1]+12)+'" width="46" height="46" rx="9" fill="#fff"/>';
+    [24,46].forEach(function(dx){[24,46].forEach(function(dy){s+='<circle cx="'+(q[0]+dx)+'" cy="'+(q[1]+dy)+'" r="6" fill="'+q[2]+'"/>';});});
+  });
+  s+='<rect x="88" y="12" width="24" height="176" fill="#EEF2F6"/><rect x="12" y="88" width="176" height="24" fill="#EEF2F6"/>'+
+    '<polygon points="88,88 112,88 100,100" fill="#2FA84F"/><polygon points="112,88 112,112 100,100" fill="#F5B301"/><polygon points="112,112 88,112 100,100" fill="#2F7DE1"/><polygon points="88,112 88,88 100,100" fill="#E5484D"/>'+
+    '<g transform="translate(126 124) rotate(-12 26 26)"><rect width="52" height="52" rx="11" fill="#fff" stroke="#10261A" stroke-width="3"/>'+
+    [[14,14],[38,14],[26,26],[14,38],[38,38]].map(function(p){return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4.5" fill="#10261A"/>';}).join('')+'</g>';
+  return s+'</g></svg>';
+}
+function artLife(){
+  var on={2:1,6:1,7:1,8:1,12:1,13:1,17:1,18:1,19:1,23:1},s='<svg viewBox="0 0 200 200">';
+  for(var i=0;i<25;i++){s+='<circle cx="'+(26+(i%5)*37)+'" cy="'+(26+Math.floor(i/5)*37)+'" r="12" fill="'+(on[i]?'#7CE0A6':'rgba(255,255,255,.2)')+'"/>';}
+  return s+'</svg>';
+}
+function gameCard(id,name,tag,art,cls,soon){
+  return '<button class="gcard '+cls+(soon?' soon':'')+'" data-a="'+(soon?'soon':'gsel')+'" data-v="'+id+'" aria-label="'+name+(soon?' - '+t('Coming Soon'):'')+'">'+
+    '<span class="gc-art" aria-hidden="true">'+art+'</span>'+
+    (soon?'<span class="gc-soon">'+t('Coming Soon')+'</span>':'')+
+    '<span class="gc-t"><span class="gc-name">'+name+'</span><span class="gc-tag">'+tag+'</span>'+(soon?'':'<span class="gc-play">▶ '+t('Play')+'</span>')+'</span></button>';
+}
+function gamesHub(){
+  return bellHeader(t('Game Play'))+
+    '<p class="small muted gnote">'+coin(14)+' '+t('Play and earn up to 5 coins a day from each game.')+'</p>'+
+    gameCard('2048','2048',t('Swipe. Merge. Reach 2048.'),art2048(),'g-2048',false)+
+    gameCard('ludo','Ludo',t('Roll the dice. Race home.'),artLudo(),'g-ludo',true)+
+    gameCard('life','Life',t('Watch cells grow and survive.'),artLife(),'g-life',false);
+}
 function gamesHTML(){
-  var g=UI.gsel,key=g==='2048'?'g2048':'life',used=S.gameCoins[key];
-  var head=headerHTML(t('Games'))+
-  '<div class="seg" role="group"><button data-a="gsel" data-v="2048" aria-pressed="'+(g==='2048')+'">2048</button><button data-a="gsel" data-v="life" aria-pressed="'+(g==='life')+'">Life</button></div>'+
+  var g=UI.gsel;
+  if(g!=='2048'&&g!=='life')return gamesHub();
+  var key=g==='2048'?'g2048':'life',used=S.gameCoins[key];
+  var head='<header class="hdr"><button class="btn" data-a="gsel" data-v="">← '+t('Games')+'</button><h1 class="grow" style="text-align:right">'+(g==='2048'?'2048':'Life')+'</h1>'+pillBtn()+'</header>'+
   '<div class="card flat"><div class="row" style="justify-content:space-between"><span class="small">'+t('Daily limit')+'</span><span class="reward">'+used+' / '+CFG.GAME_DAILY_CAP+' '+coin(14)+'</span></div><div class="bar gold" style="margin-top:6px"><i style="width:'+(used/CFG.GAME_DAILY_CAP*100)+'%"></i></div></div>';
   if(g==='2048'){
     return head+'<section class="card stack"><div class="sc"><div><span class="label">'+t('Score')+'</span><div class="num" style="font-size:26px">'+fmt(G.score)+'</div></div><div style="text-align:right"><span class="label">'+t('Best')+'</span><div class="num" style="font-size:26px">'+fmt(S.best2048)+'</div></div></div>'+
@@ -1342,7 +1501,7 @@ function render(){
   else if(UI.sub==='streak')body=streakHTML();
   else if(S.tab==='profile')body=accountHTML();
   else body=({home:homeHTML,challenges:challengesHTML,games:gamesHTML,shop:shopHTML,wallet:walletHTML}[S.tab]||homeHTML)();
-  root.innerHTML='<main class="screen">'+body+'</main>'+navHTML()+(UI.confirm?sheetHTML():'')+(UI.prod?prodSheetHTML():'')+(UI.exp?expSheetHTML():'')+(UI.notifOpen?notifSheetHTML():'')+(UI.limit?limitSheetHTML():'')+(UI.ad?adSheetHTML():'');
+  root.innerHTML='<main class="screen">'+body+'</main>'+navHTML()+(UI.confirm?sheetHTML():'')+(UI.cj?joinSheetHTML():'')+(UI.prod?prodSheetHTML():'')+(UI.exp?expSheetHTML():'')+(UI.notifOpen?notifSheetHTML():'')+(UI.limit?limitSheetHTML():'')+(UI.ad?adSheetHTML():'');
 }
 
 /* ---------- actions ---------- */
@@ -1356,7 +1515,7 @@ function wipe(stage){var lang=S.lang;S=fresh();S.lang=lang;S.seen=true;S.stage=s
 document.addEventListener('click',function(e){
   var el=e.target.closest('[data-a]');if(!el)return;
   var a=el.dataset.a,v=el.dataset.v;
-  if(a==='overlay'){if(e.target===el){UI.confirm=null;UI.prod=null;UI.exp=false;UI.notifOpen=false;UI.limit=false;render();}return;}
+  if(a==='overlay'){if(e.target===el){UI.confirm=null;UI.cj=null;UI.prod=null;UI.exp=false;UI.notifOpen=false;UI.limit=false;render();}return;}
   if(a!=='del'&&UI.delArm){UI.delArm=false;}
   switch(a){
     case 'lang':S.lang=v;save();render();break;
@@ -1379,7 +1538,7 @@ document.addEventListener('click',function(e){
       S.phone='';
       if(NATIVE&&NATIVE.signIn){UI.busy=true;UI.err='';render();try{NATIVE.signIn();}catch(e){UI.busy=false;UI.err=t('Google sign-in error');render();}break;}
       enterApp(gr);break;}
-    case 'tab':S.tab=v;UI.sub=null;if(L.run){lstop();L.msg='';}save();render();window.scrollTo(0,0);break;
+    case 'tab':S.tab=v;UI.sub=null;if(v==='games')UI.gsel='';if(L.run){lstop();L.msg='';}save();render();window.scrollTo(0,0);break;
     case 'sub':UI.sub=v;if(L.run)lstop();render();window.scrollTo(0,0);break;
     case 'back':UI.sub=null;render();window.scrollTo(0,0);break;
     case 'walk':addSteps(Number(v));break;
@@ -1405,6 +1564,11 @@ document.addEventListener('click',function(e){
     case 'closen':UI.notifOpen=false;render();break;
     case 'claim':claimChallenge(v);break;
     case 'chtab':UI.chF=v;render();break;
+    case 'chscope':UI.chS=v;render();break;
+    case 'join':joinChallenge(v);break;
+    case 'askjoin':UI.cj=v;render();break;
+    case 'canceljoin':UI.cj=null;render();break;
+    case 'soon':toast(t('Ludo is coming soon'));break;
     case 'wf':UI.wFilter=v;render();break;
     case 'cat':UI.cat=(v!=='All'&&UI.cat===v)?'All':v;render();break;
     case 'prod':UI.prod=v;render();break;
