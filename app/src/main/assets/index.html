@@ -3454,8 +3454,10 @@ document.addEventListener('click',function(e){
       toast('Opening WhatsApp...');
       break;}
     case 'openad':
-      if(window.Android && typeof window.Android.showRewardedAd === 'function'){
-        window.Android.showRewardedAd();
+      if(window.KadamNative && typeof window.KadamNative.showRewardedAd === 'function'){
+        window.KadamNative.showRewardedAd('reward');
+      } else if(window.Android && typeof window.Android.showRewardedAd === 'function'){
+        window.Android.showRewardedAd('reward');
       } else {
         toast(t('Opening sponsor partner offer...'));
       }
