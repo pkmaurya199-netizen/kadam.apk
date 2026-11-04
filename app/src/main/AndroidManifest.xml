@@ -25,7 +25,7 @@
         android:label="StepMudra"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
 
-        <!-- Official Google AdMob Sample App ID for safe testing -->
+        <!-- Official Google AdMob Production App ID -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-1680367915210629~8203579528"/>
