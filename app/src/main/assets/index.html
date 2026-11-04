@@ -973,7 +973,7 @@ try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);for(var k in
 if(S.code&&S.code.indexOf('KDM')===0){S.code='STM'+S.code.slice(3);}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 
-var UI={chF:'all',exp:false,q:'',prod:null,notifOpen:false,auth:'login',slide:0,phone:'',ref:'',err:'',sub:null,chTab:'d',cat:'All',shopView:'items',confirm:null,wFilter:'All',gsel:'',chS:'all',cj:null,delArm:false,ad:null,limit:false,busy:false};
+var UI={chF:'all',exp:false,q:'',prod:null,notifOpen:false,auth:'login',slide:0,phone:'',ref:'',err:'',sub:null,chTab:'d',cat:'All',shopView:'items',confirm:null,wFilter:'All',gsel:'',chS:'all',cj:null,delArm:false,delWarn:false,refCamp:'weekly',ad:null,limit:false,busy:false};
 
 function t(k){var d=I18N[S.lang];return (d&&d[k])||k;}
 function fmt(n){return Number(n).toLocaleString('en-IN');}
@@ -2616,19 +2616,180 @@ function gamesHTML(){
     '<p class="small muted" style="text-align:center">'+t('Place up to 8 cells, then run. Survive 20, 40 and 60 generations for 1 coin each.')+'</p></section>';
 }
 
+
+var REF_WEEKLY_BOTS = [
+  { name: 'Aarav Sharma', city: 'Delhi', invites: 46, prize: '500 🪙' },
+  { name: 'Neha Patel', city: 'Ahmedabad', invites: 39, prize: '400 🪙' },
+  { name: 'Vikramaditya Rao', city: 'Bengaluru', invites: 34, prize: '300 🪙' },
+  { name: 'Rohit Verma', city: 'Jaipur', invites: 28, prize: null },
+  { name: 'Pooja Choudhary', city: 'Pune', invites: 22, prize: null },
+  { name: 'Amit Kumar', city: 'Lucknow', invites: 17, prize: null },
+  { name: 'Deepak Joshi', city: 'Indore', invites: 14, prize: null },
+  { name: 'Kavita Mehra', city: 'Chandigarh', invites: 11, prize: null },
+  { name: 'Rohan Gupta', city: 'Kolkata', invites: 8, prize: null },
+  { name: 'Simran Kaur', city: 'Ludhiana', invites: 6, prize: null }
+];
+
+var REF_MONTHLY_BOTS = [
+  { name: 'Kabir Malhotra', city: 'Mumbai', invites: 182, prize: '1,000 🪙' },
+  { name: 'Ananya Deshmukh', city: 'Nagpur', invites: 154, prize: '800 🪙' },
+  { name: 'Mohit Singhania', city: 'Kanpur', invites: 131, prize: '700 🪙' },
+  { name: 'Priya Sundaram', city: 'Chennai', invites: 112, prize: '600 🪙' },
+  { name: 'Yashvardhan Rathore', city: 'Udaipur', invites: 98, prize: '500 🪙' },
+  { name: 'Sneha Mukherjee', city: 'Kolkata', invites: 84, prize: null },
+  { name: 'Kunal Kashyap', city: 'Patna', invites: 72, prize: null },
+  { name: 'Divya Bansal', city: 'Bhopal', invites: 63, prize: null },
+  { name: 'Manish Rawat', city: 'Dehradun', invites: 55, prize: null },
+  { name: 'Tanvi Shinde', city: 'Nashik', invites: 47, prize: null }
+];
+
+var REF_LIVE_FEED = [
+  { text: 'Pooja C. just invited Kunal M.', time: '1m ago', icon: '🎁' },
+  { text: 'Aarav S. earned +5 bonus coins', time: '3m ago', icon: '🪙' },
+  { text: 'Vikramaditya reached 34 invites!', time: '7m ago', icon: '🔥' },
+  { text: 'Rahul D. joined via Rohit\'s link', time: '12m ago', icon: '🚶‍♂️' },
+  { text: 'Neha P. climbed to Rank #2 in Weekly!', time: '16m ago', icon: '⚡' },
+  { text: 'Deepak J. invited 2 gym friends', time: '22m ago', icon: '👥' }
+];
+
 function referHTML(){
-  var done=S.friends.filter(function(f){return f.status==='done';}).length,earned=done*CFG.REF_REWARD;
-  return subHeader(t('Refer & Earn'))+
-  '<section class="card stack"><span class="label">'+t('Your referral code')+'</span><div class="code-box">'+S.code+'</div>'+
-    '<button class="btn primary block" data-a="copy">'+t('Copy code')+'</button>'+
-    '<p class="small muted">'+t('Reward is released after your friend walks 5,000 steps. One level only, up to 50 friends.')+' '+t('You and your friend get 5 coins each.')+'</p></section>'+
-  '<div class="two"><div class="card"><span class="num" style="font-size:28px">'+S.friends.length+'</span><div class="label">'+t('Joined')+'</div></div><div class="card"><span class="num" style="font-size:28px">'+coin(22)+' '+earned+'</span><div class="label">'+t('Coins earned')+'</div></div></div>'+
-  '<section class="card"><div class="card-h"><h2>'+t('Friends')+'</h2></div>'+
-    (S.friends.length?'<ul class="list">'+S.friends.map(function(f){
-      return '<li class="tx"><span class="avatar" style="width:36px;height:36px;font-size:15px">'+esc(f.name.charAt(0))+'</span><div class="tx-m"><b>'+esc(f.name)+'</b><small class="muted">'+(f.status==='done'?t('Done'):t('Waiting for 5,000 steps'))+'</small></div>'+
-        (f.status==='done'?'<span class="amt pos">+'+CFG.REF_REWARD+'</span>':'<button class="btn" style="padding:6px 10px;min-height:36px" data-a="fdone" data-v="'+f.id+'">'+t('Demo: friend walked 5,000 steps').replace(/^Demo: |^डेमो: /,'')+'</button>')+'</li>';
-    }).join('')+'</ul>':'<p class="muted">'+t('No friends yet. Share your code to start.')+'</p>')+
-    '<button class="btn block" style="margin-top:10px" data-a="addf" '+(S.friends.length>=CFG.REF_CAP?'disabled':'')+'>'+t('Demo: add a friend')+'</button></section>';
+  var done = S.friends.filter(function(f){ return f.status === 'done'; }).length;
+  var earned = done * CFG.REF_REWARD;
+  var camp = UI.refCamp || 'weekly';
+  var isWeekly = camp === 'weekly';
+  var bots = isWeekly ? REF_WEEKLY_BOTS : REF_MONTHLY_BOTS;
+  var myInvites = S.friends.length;
+  var myRank = isWeekly ? (myInvites >= 47 ? 1 : (myInvites >= 40 ? 2 : (myInvites >= 35 ? 3 : 11))) : (myInvites >= 183 ? 1 : 24);
+
+  var podiumHTML = isWeekly ? (
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;text-align:center;">' +
+      '<div style="background:linear-gradient(180deg,rgba(250,204,21,0.18),rgba(250,204,21,0.04));border:1.5px solid #facc15;border-radius:14px;padding:10px 4px;">' +
+        '<div style="font-size:24px;">🥇</div>' +
+        '<b style="font-size:12px;display:block;margin-top:2px;">1st Prize</b>' +
+        '<span style="font-size:14px;font-weight:800;color:#eab308;">500 🪙</span>' +
+      '</div>' +
+      '<div style="background:linear-gradient(180deg,rgba(148,163,184,0.18),rgba(148,163,184,0.04));border:1.5px solid #94a3b8;border-radius:14px;padding:10px 4px;">' +
+        '<div style="font-size:24px;">🥈</div>' +
+        '<b style="font-size:12px;display:block;margin-top:2px;">2nd Prize</b>' +
+        '<span style="font-size:14px;font-weight:800;color:#64748b;">400 🪙</span>' +
+      '</div>' +
+      '<div style="background:linear-gradient(180deg,rgba(180,83,9,0.18),rgba(180,83,9,0.04));border:1.5px solid #b45309;border-radius:14px;padding:10px 4px;">' +
+        '<div style="font-size:24px;">🥉</div>' +
+        '<b style="font-size:12px;display:block;margin-top:2px;">3rd Prize</b>' +
+        '<span style="font-size:14px;font-weight:800;color:#b45309;">300 🪙</span>' +
+      '</div>' +
+    '</div>'
+  ) : (
+    '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:14px;text-align:center;">' +
+      '<div style="background:rgba(250,204,21,0.12);border:1px solid #facc15;border-radius:10px;padding:6px 2px;">' +
+        '<div style="font-size:16px;">🥇</div><small style="font-size:9px;font-weight:700;">1st</small><div style="font-size:11px;font-weight:800;color:#eab308;">1,000🪙</div>' +
+      '</div>' +
+      '<div style="background:rgba(148,163,184,0.12);border:1px solid #94a3b8;border-radius:10px;padding:6px 2px;">' +
+        '<div style="font-size:16px;">🥈</div><small style="font-size:9px;font-weight:700;">2nd</small><div style="font-size:11px;font-weight:800;color:#64748b;">800🪙</div>' +
+      '</div>' +
+      '<div style="background:rgba(180,83,9,0.12);border:1px solid #b45309;border-radius:10px;padding:6px 2px;">' +
+        '<div style="font-size:16px;">🥉</div><small style="font-size:9px;font-weight:700;">3rd</small><div style="font-size:11px;font-weight:800;color:#b45309;">700🪙</div>' +
+      '</div>' +
+      '<div style="background:rgba(16,185,129,0.12);border:1px solid #10b981;border-radius:10px;padding:6px 2px;">' +
+        '<div style="font-size:16px;">🎖️</div><small style="font-size:9px;font-weight:700;">4th</small><div style="font-size:11px;font-weight:800;color:#10b981;">600🪙</div>' +
+      '</div>' +
+      '<div style="background:rgba(56,189,248,0.12);border:1px solid #38bdf8;border-radius:10px;padding:6px 2px;">' +
+        '<div style="font-size:16px;">🎖️</div><small style="font-size:9px;font-weight:700;">5th</small><div style="font-size:11px;font-weight:800;color:#38bdf8;">500🪙</div>' +
+      '</div>' +
+    '</div>'
+  );
+
+  return subHeader(t('Invite Friends & Win')) +
+  // User referral code box
+  '<section class="card stack">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+      '<span class="label">' + t('Your Referral Code') + '</span>' +
+      '<span style="font-size:11px;background:var(--accent-soft);color:var(--accent);font-weight:700;padding:2px 8px;border-radius:99px;">Both get 5 Coins</span>' +
+    '</div>' +
+    '<div class="code-box" style="font-size:24px;letter-spacing:3px;">' + S.code + '</div>' +
+    '<div class="two" style="gap:8px;">' +
+      '<button class="btn primary" style="background:#25D366;border-color:#25D366;color:#ffffff;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;" data-a="sharewa">' +
+        '<span>💬</span> Invite on WhatsApp' +
+      '</button>' +
+      '<button class="btn" style="font-weight:700;" data-a="copy">' + t('Copy Code') + '</button>' +
+    '</div>' +
+    '<p class="small muted" style="margin-top:2px;">When your friend joins & walks 5,000 steps, you both earn 5 coins instantly!</p>' +
+  '</section>' +
+
+  // Two stat tiles + User contest rank
+  '<div class="two">' +
+    '<div class="card"><span class="num" style="font-size:26px;">' + myInvites + '</span><div class="label">' + t('Friends Joined') + '</div></div>' +
+    '<div class="card"><span class="num" style="font-size:26px;">' + coin(20) + ' ' + earned + '</span><div class="label">' + t('Referral Coins') + '</div></div>' +
+  '</div>' +
+
+  // 2 CAMPAIGNS SWITCHER
+  '<section class="card stack" style="margin-top:2px;">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+      '<h2 style="font-size:17px;font-weight:800;">' + t('Referral Contests') + ' 🏆</h2>' +
+      '<span style="font-size:11px;color:#eab308;font-weight:700;">' + (isWeekly ? '⏳ Ends Sunday 11:59 PM' : '⏳ Ends in 18 Days') + '</span>' +
+    '</div>' +
+    '<div class="seg" style="margin-bottom:12px;">' +
+      '<button data-a="refcamp" data-v="weekly" aria-pressed="' + isWeekly + '">⚡ Weekly Sprint (Top 3)</button>' +
+      '<button data-a="refcamp" data-v="monthly" aria-pressed="' + (!isWeekly) + '">👑 Monthly Mega (Top 5)</button>' +
+    '</div>' +
+
+    // Top Prizes Podium
+    podiumHTML +
+
+    // Your Rank Banner
+    '<div style="background:var(--accent-soft);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
+      '<div style="display:flex;align-items:center;gap:8px;">' +
+        '<span style="font-size:20px;">🏃</span>' +
+        '<div>' +
+          '<b style="font-size:13px;color:var(--ink);">Your Standing: Rank #' + myRank + '</b>' +
+          '<div style="font-size:11px;color:var(--muted);">' + myInvites + ' friends invited this ' + (isWeekly ? 'week' : 'month') + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<button class="btn primary" style="min-height:30px;padding:4px 10px;font-size:11px;" data-a="sharewa">Boost Rank 🚀</button>' +
+    '</div>' +
+
+    // Leaderboard list
+    '<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Live Leaderboard Standings</div>' +
+    '<ul class="list" style="margin-bottom:4px;">' + bots.map(function(b, idx){
+      var rIcon = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : '#' + (idx + 1)));
+      return '<li class="tx" style="grid-template-columns:32px 1fr auto;padding:8px 0;align-items:center;">' +
+        '<span style="font-size:' + (idx < 3 ? '18px' : '13px') + ';font-weight:800;text-align:center;">' + rIcon + '</span>' +
+        '<div class="tx-m">' +
+          '<b style="font-size:13.5px;">' + esc(b.name) + ' <small class="muted" style="font-weight:400;">(' + esc(b.city) + ')</small></b>' +
+          '<small class="muted" style="display:block;">' + b.invites + ' active invites</small>' +
+        '</div>' +
+        (b.prize ? '<span class="amt pos" style="font-size:12px;font-weight:800;background:rgba(234,179,8,0.12);padding:3px 8px;border-radius:99px;border:1px solid rgba(234,179,8,0.3);">' + b.prize + '</span>' : '<span style="font-size:11px;color:var(--muted);">' + b.invites + ' inv</span>') +
+      '</li>';
+    }).join('') + '</ul>' +
+  '</section>' +
+
+  // LIVE REFERRAL ACTIVITY FEED (BOTS IN ACTION)
+  '<section class="card stack">' +
+    '<div class="card-h" style="display:flex;justify-content:space-between;align-items:center;">' +
+      '<h2 style="font-size:15px;display:flex;align-items:center;gap:6px;"><span>⚡</span> Live Referral Activity</h2>' +
+      '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#10b981;font-weight:700;"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981;"></span> Live</span>' +
+    '</div>' +
+    '<div style="display:flex;flex-direction:column;gap:8px;">' +
+      REF_LIVE_FEED.map(function(item){
+        return '<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.03);padding:6px 10px;border-radius:10px;font-size:12px;">' +
+          '<div style="display:flex;align-items:center;gap:8px;">' +
+            '<span>' + item.icon + '</span>' +
+            '<span style="font-weight:600;color:var(--ink);">' + esc(item.text) + '</span>' +
+          '</div>' +
+          '<small style="color:var(--muted);font-size:10px;">' + item.time + '</small>' +
+        '</div>';
+      }).join('') +
+    '</div>' +
+  '</section>' +
+
+  // User Friends
+  '<section class="card"><div class="card-h"><h2>' + t('Your Friends List') + '</h2></div>' +
+    (S.friends.length ? '<ul class="list">' + S.friends.map(function(f){
+      return '<li class="tx"><span class="avatar" style="width:36px;height:36px;font-size:15px;">' + esc(f.name.charAt(0)) + '</span><div class="tx-m"><b>' + esc(f.name) + '</b><small class="muted">' + (f.status === 'done' ? t('Done') : t('Waiting for 5,000 steps')) + '</small></div>' +
+        (f.status === 'done' ? '<span class="amt pos">+' + CFG.REF_REWARD + '</span>' : '<button class="btn" style="padding:6px 10px;min-height:36px;" data-a="fdone" data-v="' + f.id + '">Friend reached 5,000 steps</button>') + '</li>';
+    }).join('') + '</ul>' : '<p class="muted">' + t('No friends yet. Share your code on WhatsApp to start!') + '</p>') +
+    '<button class="btn block" style="margin-top:10px;" data-a="addf" ' + (S.friends.length >= CFG.REF_CAP ? 'disabled' : '') + '>Add Test Friend</button>' +
+  '</section>';
 }
 
 function profileHTML(isTab){
@@ -2682,7 +2843,7 @@ function accountHTML(){
       '<span>&bull;</span>' +
       '<a href="https://pkmaurya199-netizen.github.io/kadam.apk/delete-account.html" target="_blank" style="color:var(--muted);text-decoration:underline;">Delete Account</a>' +
     '</div>' +
-    '<p class="small muted" style="text-align:center;margin-top:6px">StepMudra v1.6 &bull; Verified Build</p></section>';
+    '<p class="small muted" style="text-align:center;margin-top:6px">StepMudra v2.4 &bull; Official Build</p></section>';
 }
 function friendsHTML(){
   var n=Object.keys(S.following).filter(function(k){return S.following[k];}).length;
@@ -2710,7 +2871,7 @@ function helpHTML(){
       '<a href="https://pkmaurya199-netizen.github.io/kadam.apk/delete-account.html" target="_blank" class="arow" style="text-decoration:none;color:inherit;"><span class="ai">'+svgi('users',20,1.8)+'</span><span class="grow"><b>Account & Data Deletion</b><small>Request permanent account removal</small></span><span class="chev">'+svgi('chev',16)+'</span></a>'+
     '</div>'+
   '</section>'+
-  '<section class="card stack"><b>'+t('Contact Us')+'</b><div class="row" style="justify-content:space-between"><code class="v">support@kadamapp.in</code><button class="btn" data-a="copymail">'+t('Copy')+'</button></div><p class="small muted">Official support team response within 24 hours.</p></section>';
+  '<section class="card stack"><b>'+t('Contact Us')+'</b><div class="row" style="justify-content:space-between;align-items:center;background:var(--accent-soft);padding:10px 12px;border-radius:12px;"><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:18px;">✉️</span><code class="v" style="font-size:13.5px;font-weight:700;color:var(--ink);">walkmudra@gmail.com</code></div><div style="display:flex;gap:6px;"><a href="mailto:walkmudra@gmail.com?subject=StepMudra%20Support" class="btn primary" style="min-height:34px;padding:6px 12px;text-decoration:none;display:inline-flex;align-items:center;font-size:12px;">Email</a><button class="btn" style="min-height:34px;padding:6px 10px;font-size:12px;" data-a="copymail" data-v="walkmudra@gmail.com">'+t('Copy')+'</button></div></div><p class="small muted">Official support team response within 24 hours.</p></section>';
 }
 function csvText(){
   var rows=['day,steps'];
@@ -3131,6 +3292,26 @@ function reportsHTML(){
     '</div>';
 }
 
+
+function delWarnSheetHTML(){
+  return '<div class="overlay" data-a="overlay"><div class="sheet" role="dialog" aria-modal="true" style="text-align:center;padding:24px 20px;">' +
+    '<div style="width:64px;height:64px;border-radius:50%;background:rgba(239,68,68,0.12);color:#ef4444;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:32px;">⚠️</div>' +
+    '<h2 style="font-size:21px;color:var(--ink);margin-bottom:8px;font-weight:800;">' + t('Delete Account Permanently?') + '</h2>' +
+    '<div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:14px;padding:12px 14px;margin-bottom:18px;text-align:left;">' +
+      '<p style="font-size:13px;color:#ef4444;font-weight:700;margin-bottom:6px;">⚠️ ' + t('Warning: This action cannot be undone!') + '</p>' +
+      '<ul style="font-size:12px;color:var(--muted);margin-left:18px;line-height:1.5;">' +
+        '<li>' + t('All your earned StepMudra coins will be permanently wiped.') + '</li>' +
+        '<li>' + t('Your walking history, 10k badges, & streaks will be deleted.') + '</li>' +
+        '<li>' + t('Any pending store reward redemptions will be cancelled.') + '</li>' +
+      '</ul>' +
+    '</div>' +
+    '<div class="two" style="gap:10px;">' +
+      '<button class="btn primary" style="background:#ef4444;border-color:#ef4444;color:#ffffff;font-weight:800;" data-a="confirmdel">' + t('Yes, Delete Account') + '</button>' +
+      '<button class="btn" data-a="closedelwarn">' + t('Cancel / Keep') + '</button>' +
+    '</div>' +
+  '</div></div>';
+}
+
 function render(){
   var root=document.getElementById('app');
   document.documentElement.lang=S.lang==='hi'?'hi':'en';
@@ -3154,7 +3335,7 @@ function render(){
   else if(UI.sub==='catpage')body=catPageHTML();
   else if(S.tab==='profile')body=accountHTML();
   else body=({home:homeHTML,challenges:challengesHTML,games:gamesHTML,shop:shopHTML,wallet:coinsHTML}[S.tab]||homeHTML)();
-  root.innerHTML='<main class="screen '+(UI.sub?'is-sub':'is-tab')+'">'+body+'</main>'+adBottomBarHTML()+navHTML()+(UI.confirm?sheetHTML():'')+(UI.cj?joinSheetHTML():'')+(UI.prod?prodSheetHTML():'')+(UI.exp?expSheetHTML():'')+(UI.notifOpen?notifSheetHTML():'')+(UI.limit?limitSheetHTML():'')+(UI.ad?adSheetHTML():'');
+  root.innerHTML='<main class="screen '+(UI.sub?'is-sub':'is-tab')+'">'+body+'</main>'+adBottomBarHTML()+navHTML()+(UI.confirm?sheetHTML():'')+(UI.cj?joinSheetHTML():'')+(UI.prod?prodSheetHTML():'')+(UI.exp?expSheetHTML():'')+(UI.notifOpen?notifSheetHTML():'')+(UI.limit?limitSheetHTML():'')+(UI.ad?adSheetHTML():'')+(UI.delWarn?delWarnSheetHTML():'');
 }
 
 /* ---------- actions ---------- */
@@ -3168,9 +3349,26 @@ function wipe(stage){var lang=S.lang;S=fresh();S.lang=lang;S.seen=true;S.stage=s
 document.addEventListener('click',function(e){
   var el=e.target.closest('[data-a]');if(!el)return;
   var a=el.dataset.a,v=el.dataset.v;
-  if(a==='overlay'){if(e.target===el){UI.confirm=null;UI.cj=null;UI.prod=null;UI.exp=false;UI.notifOpen=false;UI.limit=false;render();}return;}
+  if(a==='overlay'){if(e.target===el){UI.confirm=null;UI.cj=null;UI.prod=null;UI.exp=false;UI.notifOpen=false;UI.limit=false;UI.delWarn=false;render();}return;}
   if(a!=='del'&&UI.delArm){UI.delArm=false;}
   switch(a){
+    
+    case 'delwarn':UI.delWarn=true;render();break;
+    case 'closedelwarn':UI.delWarn=false;render();break;
+    case 'confirmdel':
+      UI.delWarn=false;
+      wipe('out');
+      toast('🗑️ ' + t('Account and all data permanently deleted.'));
+      break;
+    case 'refcamp':
+      UI.refCamp=v;
+      render();
+      break;
+    case 'sharewa':{
+      var shareMsg = encodeURIComponent("Hey! I am earning real coins and free rewards just by walking with StepMudra 🚶‍♂️🪙\n\nUse my Invite Code: " + S.code + " to get 5 FREE bonus coins!\n\nDownload StepMudra APK here: https://pkmaurya199-netizen.github.io/kadam.apk");
+      window.open('https://api.whatsapp.com/send?text=' + shareMsg, '_blank');
+      toast('Opening WhatsApp...');
+      break;}
     case 'openad':
       if(window.Android && typeof window.Android.showRewardedAd === 'function'){
         window.Android.showRewardedAd();
@@ -3265,7 +3463,7 @@ document.addEventListener('click',function(e){
     case 'exportsteps':UI.exp=true;render();break;
     case 'closeexp':UI.exp=false;render();break;
     case 'copycsv':copyText(csvText());break;
-    case 'copymail':copyText('help@kadam.example');break;
+    case 'copymail':copyText('walkmudra@gmail.com');toast('Copied: walkmudra@gmail.com');break;
     case 'democoins':addTx('challenge',5000,'Demo coins');save();render();toast('+5,000 coins (demo)');break;
     case 'ask':UI.prod=null;UI.confirm=v;render();break;
     case 'cancel':UI.confirm=null;render();break;
