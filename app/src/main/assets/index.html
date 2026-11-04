@@ -973,7 +973,7 @@ try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);for(var k in
 if(S.code&&S.code.indexOf('KDM')===0){S.code='STM'+S.code.slice(3);}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 
-var UI={chF:'all',exp:false,q:'',prod:null,notifOpen:false,auth:'login',slide:0,phone:'',ref:'',err:'',sub:null,chTab:'d',cat:'All',shopView:'items',confirm:null,wFilter:'All',gsel:'',chS:'all',cj:null,delArm:false,delWarn:false,refCamp:'weekly',ad:null,limit:false,busy:false};
+var UI={chF:'all',exp:false,q:'',prod:null,notifOpen:false,auth:'login',slide:0,phone:'',ref:'',err:'',sub:null,chTab:'d',cat:'All',shopView:'items',confirm:null,wFilter:'All',gsel:'',chS:'all',cj:null,delArm:false,delWarn:false,refCamp:'weekly',invitePopup:true,ad:null,limit:false,busy:false};
 
 function t(k){var d=I18N[S.lang];return (d&&d[k])||k;}
 function fmt(n){return Number(n).toLocaleString('en-IN');}
@@ -1745,6 +1745,16 @@ function homeHTML(){
       '<span class="rc-ic '+x[2]+'">'+svgi('link',22)+'</span><span><b>'+x[1]+'</b><small class="muted" style="display:block">'+t('Follow us')+'</small></span><span class="reward">'+coin(16)+' 1</span></button>';
   }).join('');
   return homeHeader()+
+  '<section class="card" style="background:linear-gradient(135deg,rgba(250,204,21,0.18),rgba(16,185,129,0.18));border:1.5px solid #facc15;cursor:pointer;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-radius:18px;margin-bottom:12px;box-shadow:0 4px 16px rgba(234,179,8,0.15);" data-a="openinvitepopup">' +
+    '<div style="display:flex;align-items:center;gap:10px;">' +
+      '<div style="width:42px;height:42px;border-radius:50%;background:#fef08a;display:grid;place-items:center;font-size:22px;box-shadow:0 2px 8px rgba(234,179,8,0.3);flex:none;">🏆</div>' +
+      '<div>' +
+        '<div style="display:flex;align-items:center;gap:6px;"><b style="font-size:14px;color:var(--ink);">Invite & Win Contests! 🎁</b><span style="font-size:9.5px;background:#eab308;color:#000;font-weight:800;padding:2px 6px;border-radius:99px;">LIVE</span></div>' +
+        '<small style="font-size:11.5px;color:var(--muted);display:block;margin-top:1px;">Win up to <b>1,000 Coins</b> · Tap for details</small>' +
+      '</div>' +
+    '</div>' +
+    '<span style="font-size:12px;font-weight:800;color:var(--accent);display:flex;align-items:center;gap:2px;">View ➔</span>' +
+  '</section>'+
   '<section class="hero"><div class="gauge">'+gaugeSVG(pct)+'<div class="gauge-c"><span class="foot">'+footSVG(30)+'</span><span class="num">'+fmt(S.steps)+'</span><span class="small muted">'+t('of 10,000 steps')+'</span></div></div>'+
     stepStatusHTML()+'</section>'+
   '<section class="tiles">'+
@@ -3293,6 +3303,76 @@ function reportsHTML(){
 }
 
 
+
+function invitePopupHTML(){
+  return '<div class="overlay" data-a="overlay">' +
+    '<div class="sheet" role="dialog" aria-modal="true" style="max-height:90vh;overflow-y:auto;padding:22px 18px;text-align:center;border-radius:28px;position:relative;">' +
+      '<button data-a="closeinvitepopup" style="position:absolute;right:16px;top:16px;width:32px;height:32px;border-radius:50%;background:rgba(128,128,128,0.15);border:none;font-size:16px;color:var(--muted);cursor:pointer;display:grid;place-items:center;font-weight:700;">✕</button>' +
+      '<div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(250,204,21,0.25),rgba(16,185,129,0.25));border:2px solid #facc15;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:36px;box-shadow:0 8px 24px rgba(250,204,21,0.3);">' +
+        '🏆' +
+      '</div>' +
+      '<h2 style="font-size:22px;color:var(--ink);font-weight:900;letter-spacing:-0.5px;margin-bottom:4px;">' +
+        'Invite & Win Mega Contests! 🎁' +
+      '</h2>' +
+      '<p style="font-size:13px;color:var(--muted);margin-bottom:16px;">' +
+        'Invite friends to StepMudra and win massive coin rewards every week & month!' +
+      '</p>' +
+      '<div style="background:linear-gradient(135deg,rgba(250,204,21,0.14),rgba(250,204,21,0.04));border:1.5px solid #facc15;border-radius:16px;padding:12px;margin-bottom:10px;text-align:left;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+          '<b style="font-size:14px;color:#ca8a04;display:flex;align-items:center;gap:6px;">⚡ Weekly Contest (Top 3)</b>' +
+          '<span style="font-size:10px;background:#fef08a;color:#854d0e;font-weight:800;padding:2px 8px;border-radius:99px;">Resets Sunday</span>' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center;margin-top:6px;">' +
+          '<div style="background:var(--surface);border-radius:10px;padding:6px 2px;border:1px solid rgba(250,204,21,0.4);">' +
+            '<div style="font-size:14px;">🥇 1st</div><b style="font-size:13px;color:#eab308;">500 🪙</b>' +
+          '</div>' +
+          '<div style="background:var(--surface);border-radius:10px;padding:6px 2px;border:1px solid rgba(148,163,184,0.4);">' +
+            '<div style="font-size:14px;">🥈 2nd</div><b style="font-size:13px;color:#64748b;">400 🪙</b>' +
+          '</div>' +
+          '<div style="background:var(--surface);border-radius:10px;padding:6px 2px;border:1px solid rgba(180,83,9,0.4);">' +
+            '<div style="font-size:14px;">🥉 3rd</div><b style="font-size:13px;color:#b45309;">300 🪙</b>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="background:linear-gradient(135deg,rgba(16,185,129,0.14),rgba(56,189,248,0.08));border:1.5px solid #10b981;border-radius:16px;padding:12px;margin-bottom:14px;text-align:left;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+          '<b style="font-size:14px;color:#059669;display:flex;align-items:center;gap:6px;">👑 Monthly Mega (Top 5)</b>' +
+          '<span style="font-size:10px;background:#d1fae5;color:#065f46;font-weight:800;padding:2px 8px;border-radius:99px;">Month-End Payout</span>' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;text-align:center;margin-top:6px;">' +
+          '<div style="background:var(--surface);border-radius:8px;padding:5px 1px;border:1px solid rgba(16,185,129,0.3);"><small style="font-size:10px;">1st</small><div style="font-size:11px;font-weight:800;color:#eab308;">1,000🪙</div></div>' +
+          '<div style="background:var(--surface);border-radius:8px;padding:5px 1px;border:1px solid rgba(16,185,129,0.3);"><small style="font-size:10px;">2nd</small><div style="font-size:11px;font-weight:800;color:#64748b;">800🪙</div></div>' +
+          '<div style="background:var(--surface);border-radius:8px;padding:5px 1px;border:1px solid rgba(16,185,129,0.3);"><small style="font-size:10px;">3rd</small><div style="font-size:11px;font-weight:800;color:#b45309;">700🪙</div></div>' +
+          '<div style="background:var(--surface);border-radius:8px;padding:5px 1px;border:1px solid rgba(16,185,129,0.3);"><small style="font-size:10px;">4th</small><div style="font-size:11px;font-weight:800;color:#10b981;">600🪙</div></div>' +
+          '<div style="background:var(--surface);border-radius:8px;padding:5px 1px;border:1px solid rgba(16,185,129,0.3);"><small style="font-size:10px;">5th</small><div style="font-size:11px;font-weight:800;color:#38bdf8;">500🪙</div></div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="background:rgba(0,0,0,0.03);border-radius:12px;padding:8px 12px;margin-bottom:14px;font-size:12px;color:var(--ink);display:flex;align-items:center;gap:8px;">' +
+        '<span style="font-size:18px;">🎁</span>' +
+        '<span style="text-align:left;"><b>Guaranteed Bonus:</b> You & your friend both get <b>5 Coins</b> when they walk 5,000 steps!</span>' +
+      '</div>' +
+      '<div style="background:var(--accent-soft);border-radius:14px;padding:10px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">' +
+        '<div style="text-align:left;">' +
+          '<small style="font-size:10.5px;color:var(--muted);text-transform:uppercase;font-weight:700;">Your Referral Code</small>' +
+          '<div style="font-size:18px;font-weight:900;letter-spacing:2px;color:var(--ink);">' + S.code + '</div>' +
+        '</div>' +
+        '<button class="btn" style="min-height:34px;padding:4px 12px;font-size:12px;font-weight:700;" data-a="copy">' + t('Copy Code') + '</button>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:8px;">' +
+        '<button class="btn primary" style="background:#25D366;border-color:#25D366;color:#ffffff;font-weight:800;font-size:15px;min-height:46px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:99px;" data-a="sharewa">' +
+          '<span>💬</span> Invite Friends on WhatsApp' +
+        '</button>' +
+        '<button class="btn" style="font-weight:700;font-size:13px;min-height:42px;border-radius:99px;" data-a="gotoinvitecontest">' +
+          '🏆 View Contest Leaderboard & Bots' +
+        '</button>' +
+        '<button data-a="closeinvitepopup" style="background:none;border:none;color:var(--muted);font-size:12px;font-weight:600;padding:6px 0;cursor:pointer;">' +
+          'Maybe Later' +
+        '</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
 function delWarnSheetHTML(){
   return '<div class="overlay" data-a="overlay"><div class="sheet" role="dialog" aria-modal="true" style="text-align:center;padding:24px 20px;">' +
     '<div style="width:64px;height:64px;border-radius:50%;background:rgba(239,68,68,0.12);color:#ef4444;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:32px;">⚠️</div>' +
@@ -3335,7 +3415,7 @@ function render(){
   else if(UI.sub==='catpage')body=catPageHTML();
   else if(S.tab==='profile')body=accountHTML();
   else body=({home:homeHTML,challenges:challengesHTML,games:gamesHTML,shop:shopHTML,wallet:coinsHTML}[S.tab]||homeHTML)();
-  root.innerHTML='<main class="screen '+(UI.sub?'is-sub':'is-tab')+'">'+body+'</main>'+adBottomBarHTML()+navHTML()+(UI.confirm?sheetHTML():'')+(UI.cj?joinSheetHTML():'')+(UI.prod?prodSheetHTML():'')+(UI.exp?expSheetHTML():'')+(UI.notifOpen?notifSheetHTML():'')+(UI.limit?limitSheetHTML():'')+(UI.ad?adSheetHTML():'')+(UI.delWarn?delWarnSheetHTML():'');
+  root.innerHTML='<main class="screen '+(UI.sub?'is-sub':'is-tab')+'">'+body+'</main>'+adBottomBarHTML()+navHTML()+(UI.confirm?sheetHTML():'')+(UI.cj?joinSheetHTML():'')+(UI.prod?prodSheetHTML():'')+(UI.exp?expSheetHTML():'')+(UI.notifOpen?notifSheetHTML():'')+(UI.limit?limitSheetHTML():'')+(UI.ad?adSheetHTML():'')+(UI.delWarn?delWarnSheetHTML():'')+(UI.invitePopup?invitePopupHTML():'');
 }
 
 /* ---------- actions ---------- */
@@ -3349,10 +3429,14 @@ function wipe(stage){var lang=S.lang;S=fresh();S.lang=lang;S.seen=true;S.stage=s
 document.addEventListener('click',function(e){
   var el=e.target.closest('[data-a]');if(!el)return;
   var a=el.dataset.a,v=el.dataset.v;
-  if(a==='overlay'){if(e.target===el){UI.confirm=null;UI.cj=null;UI.prod=null;UI.exp=false;UI.notifOpen=false;UI.limit=false;UI.delWarn=false;render();}return;}
+  if(a==='overlay'){if(e.target===el){UI.confirm=null;UI.cj=null;UI.prod=null;UI.exp=false;UI.notifOpen=false;UI.limit=false;UI.delWarn=false;UI.invitePopup=false;render();}return;}
   if(a!=='del'&&UI.delArm){UI.delArm=false;}
   switch(a){
     
+    
+    case 'openinvitepopup':UI.invitePopup=true;render();break;
+    case 'closeinvitepopup':UI.invitePopup=false;render();break;
+    case 'gotoinvitecontest':UI.invitePopup=false;UI.sub='refer';render();break;
     case 'delwarn':UI.delWarn=true;render();break;
     case 'closedelwarn':UI.delWarn=false;render();break;
     case 'confirmdel':
