@@ -175,14 +175,6 @@ public class MainActivity extends Activity {
         askPermissions();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (rewardedAd == null && !isAdLoading) {
-            loadRewardedAd();
-        }
-    }
-
     private void loadRewardedAd() {
         if (isAdLoading || rewardedAd != null) return;
         isAdLoading = true;
