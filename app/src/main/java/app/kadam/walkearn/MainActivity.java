@@ -45,15 +45,15 @@ public class MainActivity extends Activity {
     private static final int REQ_PERMS = 7;
     private static final int REQ_SIGNIN = 9;
     
-    // Official Google AdMob Test Rewarded Video Ad Unit ID
-    private static final String TEST_REWARDED_AD_ID = "ca-app-pub-1680367915210629/8430598203";
+    // Official Google AdMob Production Rewarded Video Ad Unit ID
+    private static final String REAL_REWARDED_AD_ID = "ca-app-pub-1680367915210629/8430598203";
     
     private WebView web;
     private boolean tracking = false;
     private RewardedAd rewardedAd = null;
     private boolean isAdLoading = false;
 
-    /** Functions the web app can call as window.KadamNative.* */
+    /** Functions the web app can call as window.KadamNative.* or window.Android.* */
     public class Bridge {
         @JavascriptInterface
         public String status() {
@@ -121,12 +121,16 @@ public class MainActivity extends Activity {
                         rewardedAd = null;
                         loadRewardedAd();
                     } else {
-                        Toast.makeText(MainActivity.this, "Ad loading... Opening preview timer", Toast.LENGTH_SHORT).show();
-                        loadRewardedAd();
-                        notifyAdFallback(kind);
+                        Toast.makeText(MainActivity.this, "Loading Google Ad...", Toast.LENGTH_SHORT).show();
+                        loadRewardedAdAndShow(kind);
                     }
                 }
             });
+        }
+
+        @JavascriptInterface
+        public void showRewardedAd() {
+            showRewardedAd("reward");
         }
     }
 
@@ -151,6 +155,7 @@ public class MainActivity extends Activity {
         s.setDomStorageEnabled(true);
         s.setAllowFileAccess(true);
         web.addJavascriptInterface(new Bridge(), "KadamNative");
+        web.addJavascriptInterface(new Bridge(), "Android");
         web.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -170,11 +175,19 @@ public class MainActivity extends Activity {
         askPermissions();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (rewardedAd == null && !isAdLoading) {
+            loadRewardedAd();
+        }
+    }
+
     private void loadRewardedAd() {
         if (isAdLoading || rewardedAd != null) return;
         isAdLoading = true;
         AdRequest adRequest = new AdRequest.Builder().build();
-        RewardedAd.load(this, TEST_REWARDED_AD_ID, adRequest, new RewardedAdLoadCallback() {
+        RewardedAd.load(this, REAL_REWARDED_AD_ID, adRequest, new RewardedAdLoadCallback() {
             @Override
             public void onAdLoaded(RewardedAd ad) {
                 rewardedAd = ad;
@@ -185,6 +198,67 @@ public class MainActivity extends Activity {
             public void onAdFailedToLoad(LoadAdError error) {
                 rewardedAd = null;
                 isAdLoading = false;
+            }
+        });
+    }
+
+    private void loadRewardedAdAndShow(final String kind) {
+        if (isAdLoading) {
+            // Already loading, wait briefly then check
+            web.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (rewardedAd != null) {
+                        rewardedAd.show(MainActivity.this, new OnUserEarnedRewardListener() {
+                            @Override
+                            public void onUserEarnedReward(RewardItem rewardItem) {
+                                notifyAdReward(kind);
+                            }
+                        });
+                        rewardedAd = null;
+                        loadRewardedAd();
+                    } else {
+                        notifyAdFallback(kind);
+                    }
+                }
+            }, 2500);
+            return;
+        }
+
+        isAdLoading = true;
+        AdRequest adRequest = new AdRequest.Builder().build();
+        RewardedAd.load(this, REAL_REWARDED_AD_ID, adRequest, new RewardedAdLoadCallback() {
+            @Override
+            public void onAdLoaded(final RewardedAd ad) {
+                rewardedAd = ad;
+                isAdLoading = false;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (rewardedAd != null) {
+                            rewardedAd.show(MainActivity.this, new OnUserEarnedRewardListener() {
+                                @Override
+                                public void onUserEarnedReward(RewardItem rewardItem) {
+                                    notifyAdReward(kind);
+                                }
+                            });
+                            rewardedAd = null;
+                            loadRewardedAd();
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onAdFailedToLoad(LoadAdError error) {
+                rewardedAd = null;
+                isAdLoading = false;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        notifyAdFallback(kind);
+                    }
+                });
             }
         });
     }
