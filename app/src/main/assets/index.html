@@ -381,7 +381,7 @@ body.acct{background:linear-gradient(180deg,var(--accent-soft) 0,var(--bg) 340px
 .hw>div:first-child{border-top:0!important}
 /* compact sizing, closer to the reference home */
 body{font-size:14px}
-.screen{gap:12px;padding-block:10px calc(135px + env(safe-area-inset-bottom,0px))}
+.screen{gap:12px;padding-block:10px calc(88px + env(safe-area-inset-bottom,0px))}
 .hdr h1{font-size:19px}
 .logo{width:32px;height:32px;border-radius:10px}
 .logo svg{width:20px;height:20px}
@@ -1875,12 +1875,10 @@ function homeHTML(){
     '<button class="mt peach" data-a="sub" data-v="coins" aria-label="Coins Details"><span class="ic">'+coin(24)+'</span><span class="l">'+t('Coins')+'</span><span class="v">'+Math.min(S.steps/CFG.STEPS_PER_COIN,stepCap()).toFixed(2)+'</span></button>'+
     '<button class="mt sky" data-a="sub" data-v="reports" data-p="calories" aria-label="Calories Report"><span class="ic">'+svgi('flame',22,1.8)+'</span><span class="l">'+t('Calories')+'</span><span class="v">'+kcal+' kcal</span></button>'+
     '<button class="mt mint" data-a="sub" data-v="reports" data-p="distance" aria-label="Distance Report"><span class="ic">'+svgi('walker',22,1.8)+'</span><span class="l">'+t('Distance')+'</span><span class="v">'+km+' km</span></button></section>'+
-  adProductCarouselHTML()+
-  '<section class="card"><div class="sec-h"><span style="display:flex;align-items:center;gap:8px;min-width:0"><h2 style="font-size:16px">'+t('Daily Water Intake')+'</h2>'+waterWaitHTML()+'</span><span class="muted small">'+(S.water*250)+'ml / 2.0L</span></div>'+
+    '<section class="card"><div class="sec-h"><span style="display:flex;align-items:center;gap:8px;min-width:0"><h2 style="font-size:16px">'+t('Daily Water Intake')+'</h2>'+waterWaitHTML()+'</span><span class="muted small">'+(S.water*250)+'ml / 2.0L</span></div>'+
     '<div class="water">'+glasses+'</div><p class="goal">'+(S.waterDone?svgi('check',18,2.6):'')+t('Drink 8 glasses, get 1 coin')+'</p></section>'+
   '<button class="rowcard" data-a="sub" data-v="daily"><span class="rc-ic peach">'+svgi('gift',24)+'</span><span class="rc-t"><b>'+t('Daily Reward')+'</b><small>'+done+'/5 '+t('rewards claimed today')+'</small></span><span class="rc-go">'+(ready?'<span class="tag">'+ready+' '+t('to claim')+'</span>':'')+svgi('chev',20)+'</span></button>'+
-  adHomeBannerHTML()+
-  '<button class="rowcard fire" data-a="sub" data-v="streak"><span class="rc-ic fire">'+svgi('flame',24)+'</span><span class="rc-t"><b>'+liveStreak()+' '+t('day streak')+'</b><small>'+t('Keep walking daily to grow your streak.')+'</small></span><span class="rc-go">'+svgi('chev',20)+'</span></button>'+
+    '<button class="rowcard fire" data-a="sub" data-v="streak"><span class="rc-ic fire">'+svgi('flame',24)+'</span><span class="rc-t"><b>'+liveStreak()+' '+t('day streak')+'</b><small>'+t('Keep walking daily to grow your streak.')+'</small></span><span class="rc-go">'+svgi('chev',20)+'</span></button>'+
   '<section class="card"><div class="sec-h"><h2 style="font-size:19px">'+t('Weekly Progress')+'</h2><span class="reward" style="color:var(--accent-d)">'+footSVG(16)+fmt(S.weekSteps)+' '+t('steps')+'</span></div>'+weekHTML()+'</section>'+
   '<section class="mini2">'+
     '<button class="mini" data-a="sub" data-v="level"><span class="tag2">Lv '+(lv+1)+'</span><span class="l">'+t('Level')+'</span><span class="v">'+t(LEVELS[lv].n)+'</span></button>'+
@@ -1925,8 +1923,7 @@ function adTokensHTML(){
 var AD_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes cooldown
 function adCool(){
   if(!S.lastAdAt) return 0;
-  var rem = Math.max(0, AD_COOLDOWN_MS - (Date.now() - S.lastAdAt));
-  return Math.ceil(rem / 1000);
+  return Math.max(0, AD_COOLDOWN_MS - (Date.now() - S.lastAdAt));
 }
 
 function dailyHTML(){
@@ -2078,7 +2075,7 @@ function leaderboardHTML(){
   rows.sort(function(a,b){return b.s-a.s;});
   return subHeader(t('Leaderboard'))+
   '<div style="display:flex;gap:8px;margin-bottom:8px;"><button class="pill active" style="background:#0f172a;color:#fff;border-radius:20px;padding:6px 16px;border:none;font-weight:700;font-size:13px;">'+t('Week')+'</button><button class="pill" style="background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:6px 16px;font-weight:600;font-size:13px;color:var(--muted);">'+t('Month')+'</button><button class="pill" style="background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:6px 16px;font-weight:600;font-size:13px;color:var(--muted);">'+t('Friends')+'</button></div>'+
-  adProductCarouselHTML()+
+  
   '<section class="card"><ul class="list">'+rows.map(function(r,i){
     return '<li class="tx'+(r.me?' you':'')+'"><span class="rank">'+(i+1)+'</span><div class="tx-m"><b>'+esc(r.n)+'</b></div><span class="amt">'+fmt(r.s)+'</span></li>';
   }).join('')+'</ul></section>';
@@ -3062,35 +3059,7 @@ function expSheetHTML(){
 
 
 /* ---------- Ad components (Screenshots placement) ---------- */
-function adBottomBarHTML(){
-  return '<div class="ad-bottom-fixed">' +
-    '<div class="ad-bottom-card" data-a="openad" data-v="bottom_banner">' +
-      '<div class="ad-info-col">' +
-        '<span class="ad-info-i" title="Google AdChoices">ⓘ</span>' +
-        '<span class="ad-info-dots">⋮</span>' +
-      '</div>' +
-      '<div class="ad-icon-box">' +
-        '<svg width="38" height="38" viewBox="0 0 38 38" fill="none">' +
-          '<rect width="38" height="38" rx="10" fill="#0b1329"/>' +
-          '<path d="M11 9H16V29H11V9Z" fill="#38bdf8"/>' +
-          '<path d="M16 20L25 9H31L20 22L31 29H25L16 22V20Z" fill="#0284c7"/>' +
-          '<path d="M18 18L26 9H30L21 20L18 18Z" fill="#7dd3fc"/>' +
-        '</svg>' +
-      '</div>' +
-      '<div class="ad-text-box">' +
-        '<div style="display:flex;align-items:center;gap:5px;">' +
-          '<span style="background:#0284c7;color:#fff;font-size:9.5px;font-weight:800;padding:1px 5px;border-radius:4px;">Ad</span>' +
-          '<span class="ad-title">Kubiz: Play &amp; Win</span>' +
-        '</div>' +
-        '<div class="ad-meta-row">' +
-          '<span class="ad-rating">4.8 ★</span>' +
-          '<span class="ad-badge-free">Free · Sponsor Ad</span>' +
-        '</div>' +
-      '</div>' +
-      '<button class="ad-open-pill" data-a="openad" data-v="bottom_banner">OPEN</button>' +
-    '</div>' +
-  '</div>';
-}
+function adBottomBarHTML(){ return ''; }
 
 function adProductCarouselHTML(){
   return '<section class="ad-product-card">' +
@@ -3621,13 +3590,7 @@ document.addEventListener('click',function(e){
       toast('Opening WhatsApp...');
       break;}
     case 'openad':
-      if(window.KadamNative && typeof window.KadamNative.showRewardedAd === 'function'){
-        window.KadamNative.showRewardedAd('reward');
-      } else if(window.Android && typeof window.Android.showRewardedAd === 'function'){
-        window.Android.showRewardedAd('reward');
-      } else {
-        toast(t('Opening sponsor partner offer...'));
-      }
+      toast(t('Opening partner link...'));
       break;
     case 'reptab':UI.repTab=v;render();break;
     case 'repmonth':UI.repMonth=v;render();break;
@@ -3838,7 +3801,7 @@ setInterval(function(){
   if(S.stage!=='app')return;
   var w=document.querySelectorAll('[data-wt]');
   if(w.length){var l=wcool();if(l<=0)render();else for(var i=0;i<w.length;i++)w[i].textContent=mmss(l);}
-    var adEls=document.querySelectorAll('[data-adt]');if(adEls.length){var ac=adCool();if(ac<=0)render();else for(var j=0;j<adEls.length;j++)adEls[j].textContent=mmss(ac);}
+    var adEls=document.querySelectorAll('[data-adt]');if(adEls.length){var ac=adCool();if(ac<=0){render();}else{for(var j=0;j<adEls.length;j++)adEls[j].textContent=mmss(ac);var adNote=document.getElementById('ad-cool-note');if(adNote)adNote.textContent='⏳ Wait '+mmss(ac)+' for next ad (5 min cooldown)';}}
   if(UI.ad){var r=Math.ceil((UI.ad.end-Date.now())/1000);if(r<=0&&!UI.ad.done){UI.ad.done=true;render();}else{var c=document.getElementById('adcd');if(c)c.textContent=r;}}
 },500);
 window.kadamSync=syncNative;
