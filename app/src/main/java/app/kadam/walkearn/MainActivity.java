@@ -61,8 +61,8 @@ public class MainActivity extends Activity {
     // Official Google AdMob Production Rewarded Video Ad Unit ID
     private static final String REAL_REWARDED_AD_ID = "ca-app-pub-1680367915210629/8430598203";
     
-    // Official Google AdMob Banner Ad Unit ID (Sample test banner; rotates automatically)
-    private static final String BANNER_AD_ID = "ca-app-pub-3940256099942544/6300978111";
+    // Official Google AdMob Production Banner Ad Unit ID
+    private static final String BANNER_AD_ID = "ca-app-pub-1680367915210629/6050016879";
     
     private WebView web;
     private AdView bannerAdView = null;
