@@ -1,6 +1,7 @@
 package app.kadam.walkearn;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -168,7 +169,7 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void setDailyChallengeDone(final boolean done) {
             try {
-                android.content.SharedPreferences prefs = getSharedPreferences(StepService.PREFS, Context.MODE_PRIVATE);
+                android.content.SharedPreferences prefs = MainActivity.this.getSharedPreferences(StepService.PREFS, Context.MODE_PRIVATE);
                 if (done) {
                     String today = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(new java.util.Date());
                     prefs.edit().putString("challenge_completed_day", today).apply();
