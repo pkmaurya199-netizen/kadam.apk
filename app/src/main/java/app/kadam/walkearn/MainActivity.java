@@ -24,6 +24,8 @@ import com.google.android.gms.ads.initialization.OnInitializationCompleteListene
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
+import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd;
+import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -53,7 +55,7 @@ public class MainActivity extends Activity {
     
     private WebView web;
     private boolean tracking = false;
-    private RewardedAd rewardedAd = null;
+    private RewardedInterstitialAd rewardedInterstitialAd = null;
     private boolean isAdLoading = false;
 
     /** Functions the web app can call as window.KadamNative.* or window.Android.* */
@@ -107,25 +109,25 @@ public class MainActivity extends Activity {
             });
         }
 
-        /** Show AdMob Rewarded Video Ad */
+        /** Show AdMob Rewarded Interstitial Video Ad */
         @JavascriptInterface
         public void showRewardedAd(final String kind) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (rewardedAd != null) {
-                        rewardedAd.show(MainActivity.this, new OnUserEarnedRewardListener() {
+                    if (rewardedInterstitialAd != null) {
+                        rewardedInterstitialAd.show(MainActivity.this, new OnUserEarnedRewardListener() {
                             @Override
                             public void onUserEarnedReward(RewardItem rewardItem) {
                                 // User earned reward! Notify WebView
                                 notifyAdReward(kind);
                             }
                         });
-                        rewardedAd = null;
-                        loadRewardedAd();
+                        rewardedInterstitialAd = null;
+                        loadRewardedInterstitialAd();
                     } else {
-                        Toast.makeText(MainActivity.this, "Loading Google Ad...", Toast.LENGTH_SHORT).show();
-                        loadRewardedAdAndShow(kind);
+                        Toast.makeText(MainActivity.this, "Loading Rewarded Video Ad...", Toast.LENGTH_SHORT).show();
+                        loadRewardedInterstitialAndShow(kind);
                     }
                 }
             });
@@ -158,7 +160,7 @@ public class MainActivity extends Activity {
             MobileAds.initialize(this, new OnInitializationCompleteListener() {
                 @Override
                 public void onInitializationComplete(InitializationStatus status) {
-                    loadRewardedAd();
+                    loadRewardedInterstitialAd();
                 }
             });
         } catch (Exception ignored) {
@@ -190,40 +192,40 @@ public class MainActivity extends Activity {
         askPermissions();
     }
 
-    private void loadRewardedAd() {
-        if (isAdLoading || rewardedAd != null) return;
+    private void loadRewardedInterstitialAd() {
+        if (isAdLoading || rewardedInterstitialAd != null) return;
         isAdLoading = true;
         AdRequest adRequest = new AdRequest.Builder().build();
-        RewardedAd.load(this, REAL_REWARDED_AD_ID, adRequest, new RewardedAdLoadCallback() {
+        RewardedInterstitialAd.load(this, REAL_REWARDED_AD_ID, adRequest, new RewardedInterstitialAdLoadCallback() {
             @Override
-            public void onAdLoaded(RewardedAd ad) {
-                rewardedAd = ad;
+            public void onAdLoaded(RewardedInterstitialAd ad) {
+                rewardedInterstitialAd = ad;
                 isAdLoading = false;
             }
 
             @Override
             public void onAdFailedToLoad(LoadAdError error) {
-                rewardedAd = null;
+                rewardedInterstitialAd = null;
                 isAdLoading = false;
             }
         });
     }
 
-    private void loadRewardedAdAndShow(final String kind) {
+    private void loadRewardedInterstitialAndShow(final String kind) {
         if (isAdLoading) {
             // Already loading, wait briefly then check
             web.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (rewardedAd != null) {
-                        rewardedAd.show(MainActivity.this, new OnUserEarnedRewardListener() {
+                    if (rewardedInterstitialAd != null) {
+                        rewardedInterstitialAd.show(MainActivity.this, new OnUserEarnedRewardListener() {
                             @Override
                             public void onUserEarnedReward(RewardItem rewardItem) {
                                 notifyAdReward(kind);
                             }
                         });
-                        rewardedAd = null;
-                        loadRewardedAd();
+                        rewardedInterstitialAd = null;
+                        loadRewardedInterstitialAd();
                     } else {
                         notifyAdFallback(kind);
                     }
@@ -234,23 +236,23 @@ public class MainActivity extends Activity {
 
         isAdLoading = true;
         AdRequest adRequest = new AdRequest.Builder().build();
-        RewardedAd.load(this, REAL_REWARDED_AD_ID, adRequest, new RewardedAdLoadCallback() {
+        RewardedInterstitialAd.load(this, REAL_REWARDED_AD_ID, adRequest, new RewardedInterstitialAdLoadCallback() {
             @Override
-            public void onAdLoaded(final RewardedAd ad) {
-                rewardedAd = ad;
+            public void onAdLoaded(final RewardedInterstitialAd ad) {
+                rewardedInterstitialAd = ad;
                 isAdLoading = false;
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (rewardedAd != null) {
-                            rewardedAd.show(MainActivity.this, new OnUserEarnedRewardListener() {
+                        if (rewardedInterstitialAd != null) {
+                            rewardedInterstitialAd.show(MainActivity.this, new OnUserEarnedRewardListener() {
                                 @Override
                                 public void onUserEarnedReward(RewardItem rewardItem) {
                                     notifyAdReward(kind);
                                 }
                             });
-                            rewardedAd = null;
-                            loadRewardedAd();
+                            rewardedInterstitialAd = null;
+                            loadRewardedInterstitialAd();
                         }
                     }
                 });
@@ -258,7 +260,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onAdFailedToLoad(final LoadAdError error) {
-                rewardedAd = null;
+                rewardedInterstitialAd = null;
                 isAdLoading = false;
                 runOnUiThread(new Runnable() {
                     @Override
@@ -433,8 +435,8 @@ public class MainActivity extends Activity {
             askPermissions();
         }
         tellWeb();
-        if (rewardedAd == null) {
-            loadRewardedAd();
+        if (rewardedInterstitialAd == null) {
+            loadRewardedInterstitialAd();
         }
     }
 
