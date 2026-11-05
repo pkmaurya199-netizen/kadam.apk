@@ -209,50 +209,7 @@ public class MainActivity extends Activity {
                 return true;
             }
         });
-        LinearLayout rootLayout = new LinearLayout(this);
-        rootLayout.setOrientation(LinearLayout.VERTICAL);
-        rootLayout.setLayoutParams(new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.MATCH_PARENT
-        ));
-
-        LinearLayout.LayoutParams webParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            0,
-            1.0f
-        );
-        web.setLayoutParams(webParams);
-        rootLayout.addView(web);
-
-        bannerAdView = new AdView(this);
-        bannerAdView.setAdSize(AdSize.BANNER);
-        bannerAdView.setAdUnitId(BANNER_AD_ID);
-        LinearLayout.LayoutParams adParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        adParams.gravity = Gravity.CENTER_HORIZONTAL;
-        bannerAdView.setLayoutParams(adParams);
-        bannerAdView.setVisibility(View.GONE);
-
-        bannerAdView.setAdListener(new AdListener() {
-            @Override
-            public void onAdLoaded() {
-                bannerAdView.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onAdFailedToLoad(LoadAdError adError) {
-                bannerAdView.setVisibility(View.GONE);
-            }
-        });
-
-        rootLayout.addView(bannerAdView);
-        setContentView(rootLayout);
-
-        // Load the AdMob Banner!
-        AdRequest bannerRequest = new AdRequest.Builder().build();
-        bannerAdView.loadAd(bannerRequest);
+        setContentView(web);
         if (savedInstanceState == null) {
             web.loadUrl("file:///android_asset/index.html");
         } else {
