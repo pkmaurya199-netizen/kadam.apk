@@ -164,6 +164,20 @@ public class MainActivity extends Activity {
         public void showRewardedAd() {
             showRewardedAd("reward");
         }
+
+        @JavascriptInterface
+        public void setDailyChallengeDone(final boolean done) {
+            try {
+                android.content.SharedPreferences prefs = getSharedPreferences(StepService.PREFS, Context.MODE_PRIVATE);
+                if (done) {
+                    String today = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(new java.util.Date());
+                    prefs.edit().putString("challenge_completed_day", today).apply();
+                } else {
+                    prefs.edit().remove("challenge_completed_day").apply();
+                }
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     @Override
@@ -217,6 +231,12 @@ public class MainActivity extends Activity {
         }
         // Auto-request step tracking permissions on launch
         askPermissions();
+
+        // Schedule daily challenge push reminders (6:00 PM & 8:45 PM)
+        try {
+            DailyReminderReceiver.scheduleAlarms(this);
+        } catch (Exception ignored) {
+        }
     }
 
     private void loadRewardedInterstitialAd() {
@@ -425,6 +445,10 @@ public class MainActivity extends Activity {
         }
         if (need.isEmpty()) {
             if (StepService.hasSensor(this)) startTracking();
+            try {
+                DailyReminderReceiver.scheduleAlarms(this);
+            } catch (Exception ignored) {
+            }
             tellWeb();
             return;
         }
@@ -436,6 +460,10 @@ public class MainActivity extends Activity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (StepService.hasPermission(this) && StepService.hasSensor(this)) {
             startTracking();
+        }
+        try {
+            DailyReminderReceiver.scheduleAlarms(this);
+        } catch (Exception ignored) {
         }
         tellWeb();
     }
