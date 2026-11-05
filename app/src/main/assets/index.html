@@ -2704,7 +2704,7 @@ function catPageHTML(){
 function shopHTML(){
   return storeHeader()+
   '<label class="search" for="q">'+svgi('search',22)+'<input id="q" type="search" autocomplete="off" placeholder="'+t('Search products & categories')+'" value="'+esc(UI.q||'')+'"></label>'+
-  adStoreRateBannerHTML()+catsHTML()+adStorePromoBannerHTML()+'<section id="prod">'+productsHTML()+'</section>+'
+  adStoreRateBannerHTML()+catsHTML()+adStorePromoBannerHTML()+'<section id="prod">'+productsHTML()+'</section>'+
   (NATIVE?'':'<section class="card demo"><div class="row" style="justify-content:space-between"><span class="small muted">'+t('Demo: add coins to try redeeming')+'</span><button class="btn" data-a="democoins">+5,000</button></div></section>');
 }
 function ordersHTML(){
