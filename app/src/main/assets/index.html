@@ -381,7 +381,7 @@ body.acct{background:linear-gradient(180deg,var(--accent-soft) 0,var(--bg) 340px
 .hw>div:first-child{border-top:0!important}
 /* compact sizing, closer to the reference home */
 body{font-size:14px}
-.screen{gap:12px;padding-block:10px calc(88px + env(safe-area-inset-bottom,0px))}
+.screen{gap:12px;padding-block:10px calc(135px + env(safe-area-inset-bottom,0px))}
 .hdr h1{font-size:19px}
 .logo{width:32px;height:32px;border-radius:10px}
 .logo svg{width:20px;height:20px}
@@ -1875,7 +1875,8 @@ function homeHTML(){
     '<button class="mt peach" data-a="sub" data-v="coins" aria-label="Coins Details"><span class="ic">'+coin(24)+'</span><span class="l">'+t('Coins')+'</span><span class="v">'+Math.min(S.steps/CFG.STEPS_PER_COIN,stepCap()).toFixed(2)+'</span></button>'+
     '<button class="mt sky" data-a="sub" data-v="reports" data-p="calories" aria-label="Calories Report"><span class="ic">'+svgi('flame',22,1.8)+'</span><span class="l">'+t('Calories')+'</span><span class="v">'+kcal+' kcal</span></button>'+
     '<button class="mt mint" data-a="sub" data-v="reports" data-p="distance" aria-label="Distance Report"><span class="ic">'+svgi('walker',22,1.8)+'</span><span class="l">'+t('Distance')+'</span><span class="v">'+km+' km</span></button></section>'+
-    '<section class="card"><div class="sec-h"><span style="display:flex;align-items:center;gap:8px;min-width:0"><h2 style="font-size:16px">'+t('Daily Water Intake')+'</h2>'+waterWaitHTML()+'</span><span class="muted small">'+(S.water*250)+'ml / 2.0L</span></div>'+
+    adProductCarouselHTML()+
+  '<section class="card"><div class="sec-h"><span style="display:flex;align-items:center;gap:8px;min-width:0"><h2 style="font-size:16px">'+t('Daily Water Intake')+'</h2>'+waterWaitHTML()+'</span><span class="muted small">'+(S.water*250)+'ml / 2.0L</span></div>'+
     '<div class="water">'+glasses+'</div><p class="goal">'+(S.waterDone?svgi('check',18,2.6):'')+t('Drink 8 glasses, get 1 coin')+'</p></section>'+
   '<button class="rowcard" data-a="sub" data-v="daily"><span class="rc-ic peach">'+svgi('gift',24)+'</span><span class="rc-t"><b>'+t('Daily Reward')+'</b><small>'+done+'/5 '+t('rewards claimed today')+'</small></span><span class="rc-go">'+(ready?'<span class="tag">'+ready+' '+t('to claim')+'</span>':'')+svgi('chev',20)+'</span></button>'+
     '<button class="rowcard fire" data-a="sub" data-v="streak"><span class="rc-ic fire">'+svgi('flame',24)+'</span><span class="rc-t"><b>'+liveStreak()+' '+t('day streak')+'</b><small>'+t('Keep walking daily to grow your streak.')+'</small></span><span class="rc-go">'+svgi('chev',20)+'</span></button>'+
@@ -2614,6 +2615,30 @@ function bannersHTML(){
   '</div>';
 }
 
+
+function adStorePromoBannerHTML(){
+  return '<section class="ad-home-banner-card" data-a="openad" data-v="store_promo" style="margin:4px 0 10px 0;">' +
+    '<div class="ad-home-banner-top">' +
+      '<div style="display:flex;align-items:center;gap:6px;">' +
+        '<span class="ad-pill-badge">Ad</span>' +
+        '<span class="ad-sponsor-label">Google AdMob · Partner Store Deals</span>' +
+      '</div>' +
+      '<span class="ad-info-i" title="Google AdChoices">ⓘ</span>' +
+    '</div>' +
+    '<div class="ad-home-banner-body">' +
+      '<div class="ad-home-banner-icon" style="background:linear-gradient(135deg, #f59e0b, #d97706);">' +
+        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' +
+      '</div>' +
+      '<div class="ad-home-banner-info">' +
+        '<div class="ad-home-banner-title">Mega Shopping &amp; Gadget Deals</div>' +
+        '<div class="ad-home-banner-sub">Up to 80% Off on Top Brands · Free Delivery</div>' +
+        '<div class="ad-home-banner-rating">4.9 ★★★★★ · Verified Partner</div>' +
+      '</div>' +
+      '<button class="ad-home-banner-btn" data-a="openad" data-v="store_promo">SHOP NOW</button>' +
+    '</div>' +
+  '</section>';
+}
+
 function storeHeader(){
   return '<header class="hdr"><h1>'+t('Store')+'</h1><div class="row">'+
     '<button class="ibtn2" data-a="sub" data-v="cart" aria-label="'+t('Cart')+'">'+svgi('cart',24)+(S.cart.length?'<i class="badge">'+S.cart.length+'</i>':'')+'</button>'+
@@ -2679,7 +2704,7 @@ function catPageHTML(){
 function shopHTML(){
   return storeHeader()+
   '<label class="search" for="q">'+svgi('search',22)+'<input id="q" type="search" autocomplete="off" placeholder="'+t('Search products & categories')+'" value="'+esc(UI.q||'')+'"></label>'+
-  adStoreRateBannerHTML()+catsHTML()+'<section id="prod">'+productsHTML()+'</section>'+
+  adStoreRateBannerHTML()+catsHTML()+adStorePromoBannerHTML()+'<section id="prod">'+productsHTML()+'</section>+'
   (NATIVE?'':'<section class="card demo"><div class="row" style="justify-content:space-between"><span class="small muted">'+t('Demo: add coins to try redeeming')+'</span><button class="btn" data-a="democoins">+5,000</button></div></section>');
 }
 function ordersHTML(){
@@ -3059,7 +3084,35 @@ function expSheetHTML(){
 
 
 /* ---------- Ad components (Screenshots placement) ---------- */
-function adBottomBarHTML(){ return ''; }
+function adBottomBarHTML(){
+  return '<div class="ad-bottom-fixed">' +
+    '<div class="ad-bottom-card" data-a="openad" data-v="bottom_banner">' +
+      '<div class="ad-info-col">' +
+        '<span class="ad-info-i" title="Google AdChoices">ⓘ</span>' +
+        '<span class="ad-info-dots">⋮</span>' +
+      '</div>' +
+      '<div class="ad-icon-box">' +
+        '<svg width="38" height="38" viewBox="0 0 38 38" fill="none">' +
+          '<rect width="38" height="38" rx="10" fill="#0b1329"/>' +
+          '<path d="M11 9H16V29H11V9Z" fill="#38bdf8"/>' +
+          '<path d="M16 20L25 9H31L20 22L31 29H25L16 22V20Z" fill="#0284c7"/>' +
+          '<path d="M18 18L26 9H30L21 20L18 18Z" fill="#7dd3fc"/>' +
+        '</svg>' +
+      '</div>' +
+      '<div class="ad-text-box">' +
+        '<div style="display:flex;align-items:center;gap:5px;">' +
+          '<span style="background:#0284c7;color:#fff;font-size:9.5px;font-weight:800;padding:1px 5px;border-radius:4px;">Ad</span>' +
+          '<span class="ad-title">Kubiz: Play &amp; Win</span>' +
+        '</div>' +
+        '<div class="ad-meta-row">' +
+          '<span class="ad-rating">4.8 ★</span>' +
+          '<span class="ad-badge-free">Free · Sponsor Ad</span>' +
+        '</div>' +
+      '</div>' +
+      '<button class="ad-open-pill" data-a="openad" data-v="bottom_banner">OPEN</button>' +
+    '</div>' +
+  '</div>';
+}
 
 function adProductCarouselHTML(){
   return '<section class="ad-product-card">' +
@@ -3136,10 +3189,13 @@ function adAccountPromoHTML(){
   return '<div class="ad-acc-promo-card" data-a="openad" data-v="promo50">' +
     '<div class="ad-promo-badge">₹50</div>' +
     '<div class="ad-promo-info">' +
-      '<div style="font-size:13.5px;font-weight:700;color:var(--text);">' + t('Bonus ₹50 Instant Voucher') + '</div>' +
-      '<div style="font-size:11px;color:var(--muted);">' + t('Limited time sponsor reward') + '</div>' +
+      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">' +
+        '<span style="background:#0284c7;color:#fff;font-size:9.5px;font-weight:800;padding:1px 5px;border-radius:4px;">Ad</span>' +
+        '<b style="font-size:13.5px;color:var(--text);">' + t('Bonus ₹50 Instant Voucher') + '</b>' +
+      '</div>' +
+      '<div style="font-size:11px;color:var(--muted);">' + t('Google AdMob · Sponsored Partner Reward') + '</div>' +
     '</div>' +
-    '<button class="ad-promo-btn">' + t('Claim Now!') + '</button>' +
+    '<button class="ad-promo-btn" data-a="openad" data-v="promo50">' + t('Claim Now!') + '</button>' +
   '</div>';
 }
 
@@ -3590,7 +3646,7 @@ document.addEventListener('click',function(e){
       toast('Opening WhatsApp...');
       break;}
     case 'openad':
-      toast(t('Opening partner link...'));
+      toast(t('Opening sponsor partner link...'));
       break;
     case 'reptab':UI.repTab=v;render();break;
     case 'repmonth':UI.repMonth=v;render();break;
