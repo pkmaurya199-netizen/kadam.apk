@@ -6,16 +6,22 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
@@ -55,7 +61,11 @@ public class MainActivity extends Activity {
     // Official Google AdMob Production Rewarded Video Ad Unit ID
     private static final String REAL_REWARDED_AD_ID = "ca-app-pub-1680367915210629/8430598203";
     
+    // Official Google AdMob Banner Ad Unit ID (Sample test banner; rotates automatically)
+    private static final String BANNER_AD_ID = "ca-app-pub-3940256099942544/6300978111";
+    
     private WebView web;
+    private AdView bannerAdView = null;
     private boolean tracking = false;
     private RewardedInterstitialAd rewardedInterstitialAd = null;
     private boolean isAdLoading = false;
@@ -199,7 +209,50 @@ public class MainActivity extends Activity {
                 return true;
             }
         });
-        setContentView(web);
+        LinearLayout rootLayout = new LinearLayout(this);
+        rootLayout.setOrientation(LinearLayout.VERTICAL);
+        rootLayout.setLayoutParams(new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.MATCH_PARENT
+        ));
+
+        LinearLayout.LayoutParams webParams = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            0,
+            1.0f
+        );
+        web.setLayoutParams(webParams);
+        rootLayout.addView(web);
+
+        bannerAdView = new AdView(this);
+        bannerAdView.setAdSize(AdSize.BANNER);
+        bannerAdView.setAdUnitId(BANNER_AD_ID);
+        LinearLayout.LayoutParams adParams = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        adParams.gravity = Gravity.CENTER_HORIZONTAL;
+        bannerAdView.setLayoutParams(adParams);
+        bannerAdView.setVisibility(View.GONE);
+
+        bannerAdView.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                bannerAdView.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAdFailedToLoad(LoadAdError adError) {
+                bannerAdView.setVisibility(View.GONE);
+            }
+        });
+
+        rootLayout.addView(bannerAdView);
+        setContentView(rootLayout);
+
+        // Load the AdMob Banner!
+        AdRequest bannerRequest = new AdRequest.Builder().build();
+        bannerAdView.loadAd(bannerRequest);
         if (savedInstanceState == null) {
             web.loadUrl("file:///android_asset/index.html");
         } else {
@@ -455,6 +508,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (bannerAdView != null) {
+            bannerAdView.resume();
+        }
         tracking = false;
         if (StepService.hasPermission(this) && StepService.hasSensor(this)) {
             startTracking();
@@ -465,6 +521,22 @@ public class MainActivity extends Activity {
         if (rewardedInterstitialAd == null) {
             loadRewardedInterstitialAd();
         }
+    }
+
+    @Override
+    protected void onPause() {
+        if (bannerAdView != null) {
+            bannerAdView.pause();
+        }
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (bannerAdView != null) {
+            bannerAdView.destroy();
+        }
+        super.onDestroy();
     }
 
     @Override
