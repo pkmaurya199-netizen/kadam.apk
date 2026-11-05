@@ -381,7 +381,7 @@ body.acct{background:linear-gradient(180deg,var(--accent-soft) 0,var(--bg) 340px
 .hw>div:first-child{border-top:0!important}
 /* compact sizing, closer to the reference home */
 body{font-size:14px}
-.screen{gap:12px;padding-block:10px calc(88px + env(safe-area-inset-bottom,0px))}
+.screen{gap:12px;padding-block:10px calc(135px + env(safe-area-inset-bottom,0px))}
 .hdr h1{font-size:19px}
 .logo{width:32px;height:32px;border-radius:10px}
 .logo svg{width:20px;height:20px}
@@ -877,6 +877,111 @@ button.mt:active {
   animation: sheetIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+
+/* ==================== ADS REVAMP (HOME BANNER & BOTTOM BANNER) ==================== */
+.ad-home-banner-card {
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 20px;
+  padding: 13px 15px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  overflow: hidden;
+}
+.ad-home-banner-card:active {
+  transform: scale(0.985);
+}
+.ad-home-banner-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ad-pill-badge {
+  background: #0284c7;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1.5px 7px;
+  border-radius: 5px;
+  letter-spacing: 0.5px;
+}
+.ad-sponsor-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.ad-info-i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  color: #0284c7;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.ad-home-banner-body {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ad-home-banner-icon {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+}
+.ad-home-banner-info {
+  flex: 1;
+  min-width: 0;
+}
+.ad-home-banner-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+.ad-home-banner-sub {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.ad-home-banner-rating {
+  font-size: 10.5px;
+  color: #f59e0b;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.ad-home-banner-btn {
+  flex: none;
+  background: #1a73e8;
+  color: #ffffff;
+  border: none;
+  border-radius: 99px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(26,115,232,0.35);
+  transition: transform 0.1s ease;
+}
+.ad-home-banner-btn:active {
+  transform: scale(0.95);
+}
+
 </style>
 <style>html,body{margin:0}:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
 </head>
@@ -1144,10 +1249,19 @@ function claimChallenge(id){
   rollover();
   var c=findCh(id);
   if(!c||!c.joined||c.claimed||c.ended||!c.done)return;
-  S.claims[c.id]=c.key;
-  S.chWins = (S.chWins || 0) + 1;
-  addTx('challenge',c.reward,c.title);toast('+'+c.reward+' coins');
-  checkBadges();save();render();
+
+  if(window.KadamNative && typeof window.KadamNative.showRewardedAd === 'function'){
+    toast('🎬 Loading Video Ad to claim reward...');
+    window.KadamNative.showRewardedAd('challenge:' + c.id);
+  } else if(window.Android && typeof window.Android.showRewardedAd === 'function'){
+    toast('🎬 Loading Video Ad to claim reward...');
+    window.Android.showRewardedAd('challenge:' + c.id);
+  } else {
+    toast('🎬 Playing Video Ad (Browser Simulation)...');
+    setTimeout(function(){
+      window.kadamOnAdRewarded('challenge:' + c.id);
+    }, 1500);
+  }
 }
 function totalChWins(){
   var wins = S.chWins || 0;
@@ -1765,6 +1879,7 @@ function homeHTML(){
   '<section class="card"><div class="sec-h"><span style="display:flex;align-items:center;gap:8px;min-width:0"><h2 style="font-size:16px">'+t('Daily Water Intake')+'</h2>'+waterWaitHTML()+'</span><span class="muted small">'+(S.water*250)+'ml / 2.0L</span></div>'+
     '<div class="water">'+glasses+'</div><p class="goal">'+(S.waterDone?svgi('check',18,2.6):'')+t('Drink 8 glasses, get 1 coin')+'</p></section>'+
   '<button class="rowcard" data-a="sub" data-v="daily"><span class="rc-ic peach">'+svgi('gift',24)+'</span><span class="rc-t"><b>'+t('Daily Reward')+'</b><small>'+done+'/5 '+t('rewards claimed today')+'</small></span><span class="rc-go">'+(ready?'<span class="tag">'+ready+' '+t('to claim')+'</span>':'')+svgi('chev',20)+'</span></button>'+
+  adHomeBannerHTML()+
   '<button class="rowcard fire" data-a="sub" data-v="streak"><span class="rc-ic fire">'+svgi('flame',24)+'</span><span class="rc-t"><b>'+liveStreak()+' '+t('day streak')+'</b><small>'+t('Keep walking daily to grow your streak.')+'</small></span><span class="rc-go">'+svgi('chev',20)+'</span></button>'+
   '<section class="card"><div class="sec-h"><h2 style="font-size:19px">'+t('Weekly Progress')+'</h2><span class="reward" style="color:var(--accent-d)">'+footSVG(16)+fmt(S.weekSteps)+' '+t('steps')+'</span></div>'+weekHTML()+'</section>'+
   '<section class="mini2">'+
@@ -1806,13 +1921,38 @@ function adTokensHTML(){
     o+='<div style="display:grid;justify-items:center;gap:4px;opacity:'+(on?1:.45)+'"><div style="position:relative;width:52px;height:52px">'+coin(52)+(on?'<span style="position:absolute;right:-5px;bottom:-5px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;border:2px solid var(--bg)">'+svgi('check',12,3.4)+'</span>':'')+'</div><small class="muted" style="font-weight:700">+1</small></div>';}
   return o;
 }
+
+var AD_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes cooldown
+function adCool(){
+  if(!S.lastAdAt) return 0;
+  var rem = Math.max(0, AD_COOLDOWN_MS - (Date.now() - S.lastAdAt));
+  return Math.ceil(rem / 1000);
+}
+
 function dailyHTML(){
-  var dc=challenges().filter(function(c){return c.scope==='d';}),n=Math.min(S.adsD||0,AD_MAX),all=n>=AD_MAX;
+  var dc=challenges().filter(function(c){return c.scope==='d';}),n=Math.min(S.adsD||0,AD_MAX),all=n>=AD_MAX,cool=adCool();
+  var adBtnText = '';
+  var adBtnDisabled = false;
+  var adBtnStyle = '';
+  if(all){
+    adBtnText = t('All rewards claimed');
+    adBtnDisabled = true;
+    adBtnStyle = 'background:#b0b0b0;color:#fff;cursor:not-allowed;';
+  } else if(cool > 0){
+    adBtnText = '⏳ ' + t('Next ad in') + ' <span data-adt>' + mmss(cool) + '</span>';
+    adBtnDisabled = true;
+    adBtnStyle = 'background:#cbd5e1;color:#475569;cursor:not-allowed;border:1.5px solid #94a3b8;';
+  } else {
+    adBtnText = '🎬 ' + t('Watch ad for 1 coin');
+    adBtnDisabled = false;
+    adBtnStyle = 'background:var(--coin);color:var(--coin-ink);cursor:pointer;box-shadow:0 6px 20px rgba(245,158,11,0.35);';
+  }
+
   return subHeader2(t('Daily Reward'))+
   '<section style="display:grid;gap:14px;padding:6px 0 4px"><div><h2 style="font-size:20px">'+t('Daily Rewards')+'</h2><p class="small muted" style="margin-top:2px">'+n+'/'+AD_MAX+' '+t('rewards claimed today')+'</p></div>'+
     '<div style="display:flex;justify-content:space-between;padding:2px 4px">'+adTokensHTML()+'</div>'+
-    '<button class="btn block" data-a="watchad" data-v="reward"'+(all?' disabled':'')+' style="min-height:52px;border-radius:99px;border:0;font-family:var(--display);font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:16px;'+(all?'background:#b0b0b0;color:#fff':'background:var(--coin);color:var(--coin-ink)')+'">'+(all?t('All rewards claimed'):t('Watch ad'))+'</button>'+
-    '<p class="small muted" style="text-align:center">'+(all?t('Come back tomorrow for more.'):t('You will be shown an ad'))+'</p></section>'+
+    '<button class="btn block" data-a="watchad" data-v="reward"'+(adBtnDisabled?' disabled':'')+' style="min-height:52px;border-radius:99px;border:0;font-family:var(--display);font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:16px;'+adBtnStyle+'">'+adBtnText+'</button>'+
+    '<p class="small muted" style="text-align:center">'+(all?t('Come back tomorrow for more.'):cool>0?('⏳ Wait '+mmss(cool)+' for next ad (5 min cooldown)'):t('Watch a video ad to earn 1 free coin'))+'</p></section>'+
   loginCardHTML()+
   '<section class="card stack"><div class="card-h" style="margin-bottom:0"><h2>'+t('Challenges')+'</h2></div>'+dc.map(function(c){return chRow(c,false);}).join('')+'</section>'+
   '<section class="card"><div class="ch"><div class="ch-top"><b>'+t('Water goal')+'</b><span class="reward">+1 '+coin(16)+'</span></div>'+
@@ -2436,6 +2576,30 @@ function catsHTML(){
   '</div>';
 }
 
+
+function adHomeBannerHTML(){
+  return '<section class="ad-home-banner-card" data-a="openad" data-v="home_banner">' +
+    '<div class="ad-home-banner-top">' +
+      '<div style="display:flex;align-items:center;gap:6px;">' +
+        '<span class="ad-pill-badge">Ad</span>' +
+        '<span class="ad-sponsor-label">Google AdMob · Sponsor Partner</span>' +
+      '</div>' +
+      '<span class="ad-info-i" title="AdChoices">ⓘ</span>' +
+    '</div>' +
+    '<div class="ad-home-banner-body">' +
+      '<div class="ad-home-banner-icon">' +
+        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' +
+      '</div>' +
+      '<div class="ad-home-banner-info">' +
+        '<div class="ad-home-banner-title">StepMudra Prime Rewards</div>' +
+        '<div class="ad-home-banner-sub">Install app &amp; win 1,000 bonus coins</div>' +
+        '<div class="ad-home-banner-rating">4.8 ★★★★★ · 1M+ Installs · Free</div>' +
+      '</div>' +
+      '<button class="ad-home-banner-btn" data-a="openad" data-v="home_banner">INSTALL</button>' +
+    '</div>' +
+  '</section>';
+}
+
 function bannersHTML(){
   return '<div class="banner-hero" style="position:relative;overflow:hidden;border-radius:24px;background:radial-gradient(circle at 90% 20%, rgba(245,158,11,0.3) 0, transparent 40%), linear-gradient(135deg, #1e293b, #0f172a);padding:18px;color:#fff;margin-bottom:14px;border:1px solid rgba(255,255,255,0.08);box-shadow:var(--shadow);">' +
     '<div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:#fbbf24;margin-bottom:6px;">' +
@@ -2900,9 +3064,9 @@ function expSheetHTML(){
 /* ---------- Ad components (Screenshots placement) ---------- */
 function adBottomBarHTML(){
   return '<div class="ad-bottom-fixed">' +
-    '<div class="ad-bottom-card">' +
+    '<div class="ad-bottom-card" data-a="openad" data-v="bottom_banner">' +
       '<div class="ad-info-col">' +
-        '<span class="ad-info-i" title="Google Ad Info">ⓘ</span>' +
+        '<span class="ad-info-i" title="Google AdChoices">ⓘ</span>' +
         '<span class="ad-info-dots">⋮</span>' +
       '</div>' +
       '<div class="ad-icon-box">' +
@@ -2914,13 +3078,16 @@ function adBottomBarHTML(){
         '</svg>' +
       '</div>' +
       '<div class="ad-text-box">' +
-        '<div class="ad-title">Kubiz</div>' +
+        '<div style="display:flex;align-items:center;gap:5px;">' +
+          '<span style="background:#0284c7;color:#fff;font-size:9.5px;font-weight:800;padding:1px 5px;border-radius:4px;">Ad</span>' +
+          '<span class="ad-title">Kubiz: Play &amp; Win</span>' +
+        '</div>' +
         '<div class="ad-meta-row">' +
-          '<span class="ad-rating">4.1 ★</span>' +
-          '<span class="ad-badge-free">Free</span>' +
+          '<span class="ad-rating">4.8 ★</span>' +
+          '<span class="ad-badge-free">Free · Sponsor Ad</span>' +
         '</div>' +
       '</div>' +
-      '<button class="ad-open-pill" data-a="openad" data-v="kubiz">OPEN</button>' +
+      '<button class="ad-open-pill" data-a="openad" data-v="bottom_banner">OPEN</button>' +
     '</div>' +
   '</div>';
 }
@@ -3514,21 +3681,24 @@ document.addEventListener('click',function(e){
     case 'closelimit':UI.limit=false;render();break;
     case 'noop':break;
     case 'watchad':{rollover();
-      if(v==='reward'&&(S.adsD||0)>=AD_MAX){toast(t('All ads watched today'));break;}
+      if(v==='reward'){
+        if((S.adsD||0)>=AD_MAX){toast(t('All ads watched today'));break;}
+        if(adCool()>0){toast('⏳ Please wait ' + mmss(adCool()) + ' before watching next ad!');break;}
+      }
       if(v==='limit'&&(S.limitAds||0)>=LIMIT_AD_MAX){toast(t('Limit maxed for today'));break;}
       if(window.KadamNative && typeof window.KadamNative.showRewardedAd === 'function'){
         toast('🎬 Loading Video Ad...');
         window.KadamNative.showRewardedAd(v);
+      } else if(window.Android && typeof window.Android.showRewardedAd === 'function'){
+        toast('🎬 Loading Video Ad...');
+        window.Android.showRewardedAd(v);
       } else {
-        UI.ad={kind:v,end:Date.now()+AD_SECS*1000};
-        render();
+        toast('🎬 Video Ad Simulator...');
+        setTimeout(function(){ window.kadamOnAdRewarded(v); }, 1500);
       }
       break;}
     case 'adclose':UI.ad=null;render();break;
-    case 'adclaim':{if(!UI.ad||Date.now()<UI.ad.end)break;rollover();var k=UI.ad.kind;UI.ad=null;
-      if(k==='reward'){if((S.adsD||0)<AD_MAX){S.adsD=(S.adsD||0)+1;S.adsTotal=(S.adsTotal||0)+1;addTx('challenge',1,'Watched an ad');toast('+1 coin');checkBadges();}}
-      else if((S.limitAds||0)<LIMIT_AD_MAX){S.limitAds=(S.limitAds||0)+1;S.adsTotal=(S.adsTotal||0)+1;creditSteps();toast(t('Daily limit +1,000 steps'));checkBadges();}
-      save();render();break;}
+    case 'adclaim':UI.ad=null;toast('Ad complete karein tabhi reward milega.');render();break;
     case 'bell':UI.notifOpen=true;render();break;
     case 'closen':UI.notifOpen=false;render();break;
     case 'claim':claimChallenge(v);break;
@@ -3668,18 +3838,34 @@ setInterval(function(){
   if(S.stage!=='app')return;
   var w=document.querySelectorAll('[data-wt]');
   if(w.length){var l=wcool();if(l<=0)render();else for(var i=0;i<w.length;i++)w[i].textContent=mmss(l);}
+    var adEls=document.querySelectorAll('[data-adt]');if(adEls.length){var ac=adCool();if(ac<=0)render();else for(var j=0;j<adEls.length;j++)adEls[j].textContent=mmss(ac);}
   if(UI.ad){var r=Math.ceil((UI.ad.end-Date.now())/1000);if(r<=0&&!UI.ad.done){UI.ad.done=true;render();}else{var c=document.getElementById('adcd');if(c)c.textContent=r;}}
 },500);
 window.kadamSync=syncNative;
 window.kadamOnAdRewarded=function(kind){
   rollover();
   UI.ad=null;
+  if(!kind) kind = 'reward';
+
   if(kind==='reward'){
     if((S.adsD||0)<AD_MAX){
       S.adsD=(S.adsD||0)+1;
       S.adsTotal=(S.adsTotal||0)+1;
-      addTx('challenge',1,'Watched an AdMob Ad');
-      toast('🎉 +1 Coin earned from Ad!');
+      S.lastAdAt = Date.now(); // 5-minute cooldown starts
+      addTx('challenge',1,'Watched a Video Ad');
+      toast('🎉 +1 Coin earned from Video Ad!');
+      checkBadges();
+      save();
+      render();
+    }
+  } else if(kind.indexOf('challenge:') === 0){
+    var chId = kind.replace('challenge:', '');
+    var c = findCh(chId);
+    if(c && c.joined && !c.claimed && c.done){
+      S.claims[c.id] = c.key;
+      S.chWins = (S.chWins || 0) + 1;
+      addTx('challenge', c.reward, c.title);
+      toast('🎉 Challenge Reward Claimed! +' + c.reward + ' coins');
       checkBadges();
       save();
       render();
@@ -3694,10 +3880,22 @@ window.kadamOnAdRewarded=function(kind){
       save();
       render();
     }
+  } else if(kind==='home_banner'||kind==='bottom_banner'){
+    addTx('challenge',1,'Sponsor Partner Ad');
+    toast('🎉 +1 Bonus coin for exploring partner!');
+    checkBadges();
+    save();
+    render();
   }
 };
+window.kadamOnAdFailed=function(kind, error){
+  UI.ad=null;
+  toast('⚠️ Ad nahi chala ya cancel hua. Reward ke liye poora ad dekhna zaroori hai! (No coins earned)');
+  render();
+};
 window.kadamOnAdFallback=function(kind){
-  UI.ad={kind:kind,end:Date.now()+AD_SECS*1000};
+  UI.ad=null;
+  toast('⚠️ Ad uplabdh nahi hai. Thodi der baad koshish karein. (No coins earned)');
   render();
 };
 if(NATIVE){
