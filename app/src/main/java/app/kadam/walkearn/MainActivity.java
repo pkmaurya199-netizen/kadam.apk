@@ -14,7 +14,9 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.OnUserEarnedRewardListener;
@@ -116,10 +118,25 @@ public class MainActivity extends Activity {
                 @Override
                 public void run() {
                     if (rewardedInterstitialAd != null) {
+                        rewardedInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                            @Override
+                            public void onAdDismissedFullScreenContent() {
+                                rewardedInterstitialAd = null;
+                                loadRewardedInterstitialAd();
+                            }
+
+                            @Override
+                            public void onAdFailedToShowFullScreenContent(AdError adError) {
+                                rewardedInterstitialAd = null;
+                                loadRewardedInterstitialAd();
+                                notifyAdFailed(kind, adError.getMessage());
+                            }
+                        });
+
                         rewardedInterstitialAd.show(MainActivity.this, new OnUserEarnedRewardListener() {
                             @Override
                             public void onUserEarnedReward(RewardItem rewardItem) {
-                                // User earned reward! Notify WebView
+                                // User watched the ad completely!
                                 notifyAdReward(kind);
                             }
                         });
@@ -265,8 +282,8 @@ public class MainActivity extends Activity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MainActivity.this, "AdMob: " + error.getMessage() + " (" + error.getCode() + ")", Toast.LENGTH_LONG).show();
-                        notifyAdFallback(kind);
+                        Toast.makeText(MainActivity.this, "AdMob: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        notifyAdFailed(kind, error.getMessage());
                     }
                 });
             }
@@ -278,6 +295,16 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 web.evaluateJavascript("window.kadamOnAdRewarded && window.kadamOnAdRewarded('" + kind + "');", null);
+            }
+        });
+    }
+
+    private void notifyAdFailed(final String kind, final String error) {
+        web.post(new Runnable() {
+            @Override
+            public void run() {
+                String safe = error == null ? "" : error.replace("'", "\\'");
+                web.evaluateJavascript("window.kadamOnAdFailed && window.kadamOnAdFailed('" + kind + "','" + safe + "');", null);
             }
         });
     }
