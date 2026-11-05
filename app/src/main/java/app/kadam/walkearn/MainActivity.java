@@ -18,6 +18,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.OnUserEarnedRewardListener;
+import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.gms.ads.rewarded.RewardItem;
@@ -40,6 +41,8 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends Activity {
     private static final int REQ_PERMS = 7;
@@ -138,8 +141,20 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Initialize Google Mobile Ads SDK
+        // Initialize Google Mobile Ads SDK with test device configuration
         try {
+            List<String> testDeviceIds = Arrays.asList(
+                "ab42b275-d52c-42c2-896b-c7ef52bc44ea",
+                "AB42B275-D52C-42C2-896B-C7EF52BC44EA",
+                "ab42b275d52c42c2896bc7ef52bc44ea",
+                "AB42B275D52C42C2896BC7EF52BC44EA",
+                AdRequest.DEVICE_ID_EMULATOR
+            );
+            RequestConfiguration configuration = new RequestConfiguration.Builder()
+                    .setTestDeviceIds(testDeviceIds)
+                    .build();
+            MobileAds.setRequestConfiguration(configuration);
+
             MobileAds.initialize(this, new OnInitializationCompleteListener() {
                 @Override
                 public void onInitializationComplete(InitializationStatus status) {
@@ -242,12 +257,13 @@ public class MainActivity extends Activity {
             }
 
             @Override
-            public void onAdFailedToLoad(LoadAdError error) {
+            public void onAdFailedToLoad(final LoadAdError error) {
                 rewardedAd = null;
                 isAdLoading = false;
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        Toast.makeText(MainActivity.this, "AdMob: " + error.getMessage() + " (" + error.getCode() + ")", Toast.LENGTH_LONG).show();
                         notifyAdFallback(kind);
                     }
                 });
