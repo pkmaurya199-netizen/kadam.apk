@@ -1076,7 +1076,26 @@ function fresh(){return{stage:'app',seen:false,lang:'en',notif:true,name:'Walker
 var S=fresh();
 try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);for(var k in o){S[k]=o[k];}}}catch(e){}
 if(S.code&&S.code.indexOf('KDM')===0){S.code='STM'+S.code.slice(3);}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function syncDailyChallengeStatus(){
+  try{
+    var dk=dkey();
+    var isDone = false;
+    if(S.claims && (S.claims['d10']===dk || S.claims['d5']===dk)){
+      isDone = true;
+    } else if((S.steps||0) >= 10000){
+      isDone = true;
+    } else {
+      var c = findCh('d10');
+      if(c && (c.claimed || c.done)) isDone = true;
+    }
+    if(window.KadamNative && typeof window.KadamNative.setDailyChallengeDone === 'function'){
+      window.KadamNative.setDailyChallengeDone(isDone);
+    } else if(window.Android && typeof window.Android.setDailyChallengeDone === 'function'){
+      window.Android.setDailyChallengeDone(isDone);
+    }
+  }catch(e){}
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));syncDailyChallengeStatus();}catch(e){}}
 
 var UI={chF:'all',exp:false,q:'',prod:null,notifOpen:false,auth:'login',slide:0,phone:'',ref:'',err:'',sub:null,chTab:'d',cat:'All',shopView:'items',confirm:null,wFilter:'All',gsel:'',chS:'all',cj:null,delArm:false,delWarn:false,refCamp:'weekly',invitePopup:true,ad:null,limit:false,busy:false};
 
