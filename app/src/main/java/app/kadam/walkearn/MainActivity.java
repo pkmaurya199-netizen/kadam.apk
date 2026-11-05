@@ -66,6 +66,7 @@ public class MainActivity extends Activity {
     private static final String BANNER_AD_ID = "ca-app-pub-1680367915210629/6050016879";
     
     private WebView web;
+    private android.speech.tts.TextToSpeech tts;
     private AdView bannerAdView = null;
     private boolean tracking = false;
     private RewardedInterstitialAd rewardedInterstitialAd = null;
@@ -73,6 +74,36 @@ public class MainActivity extends Activity {
 
     /** Functions the web app can call as window.KadamNative.* or window.Android.* */
     public class Bridge {
+        @JavascriptInterface
+        public void speak(final String text, final String lang) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (tts != null && text != null && !text.isEmpty()) {
+                        if ("hi".equalsIgnoreCase(lang) || "hi-IN".equalsIgnoreCase(lang)) {
+                            tts.setLanguage(new java.util.Locale("hi", "IN"));
+                        } else {
+                            tts.setLanguage(java.util.Locale.US);
+                        }
+                        tts.setSpeechRate(0.85f);
+                        tts.setPitch(1.15f);
+                        tts.speak(text, android.speech.tts.TextToSpeech.QUEUE_FLUSH, null, "tts_" + System.currentTimeMillis());
+                    }
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void stopSpeaking() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (tts != null) {
+                        tts.stop();
+                    }
+                }
+            });
+        }
         @JavascriptInterface
         public String status() {
             boolean supported = StepService.hasSensor(MainActivity.this);
@@ -184,6 +215,14 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        tts = new android.speech.tts.TextToSpeech(this, new android.speech.tts.TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == android.speech.tts.TextToSpeech.SUCCESS && tts != null) {
+                    tts.setLanguage(new java.util.Locale("hi", "IN"));
+                }
+            }
+        });
         
         // Initialize Google Mobile Ads SDK with test device configuration
         try {
