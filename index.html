@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>StepMudra - Walk &amp; Earn Free Rewards | Download Official APK</title>
-  <meta name="description" content="StepMudra turns your daily walking steps into real coins. Redeem for free boAt Earbuds, Smartwatches, and shopping vouchers. Download free APK now!">
+  <title>StepMudra - Walk &amp; Earn Free Rewards | Win Free Earbuds &amp; Phone</title>
+  <meta name="description" content="StepMudra turns your daily walking steps into real coins. Win free boAt Earbuds, 5G Smartphones, Smartwatches, and shopping vouchers. Download free APK now!">
 
   <!-- Facebook Meta Pixel Code (StepMudra Official Pixel) -->
   <script>
@@ -30,13 +30,14 @@
       --primary: #10b981;
       --primary-dark: #059669;
       --gold: #facc15;
-      --bg: #090e17;
+      --gold-dark: #eab308;
+      --bg: #070b12;
       --surface: #0f172a;
       --surface-card: #1e293b;
       --text: #f8fafc;
       --muted: #94a3b8;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
       background: var(--bg);
       color: var(--text);
@@ -45,7 +46,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 16px;
+      padding: 12px 12px 100px; /* bottom padding for sticky bar */
       line-height: 1.5;
     }
     .container {
@@ -53,70 +54,99 @@
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 16px;
     }
-    /* Hero Card */
-    .hero-card {
-      background: linear-gradient(180deg, #131d31 0%, #0c1322 100%);
-      border: 1px solid #1e293b;
-      border-radius: 28px;
-      padding: 24px 20px;
-      text-align: center;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 40px rgba(16, 185, 129, 0.15);
-      position: relative;
-      overflow: hidden;
-    }
-    .verified-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.35);
-      font-size: 11.5px;
-      font-weight: 700;
-      padding: 5px 12px;
-      border-radius: 99px;
-      margin-bottom: 16px;
-    }
-    .app-icon-wrap {
-      width: 90px;
-      height: 90px;
-      border-radius: 24px;
-      background: linear-gradient(135deg, #10b981, #047857);
-      margin: 0 auto 14px;
+
+    /* Top Trust Bar */
+    .top-badge-bar {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 46px;
-      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
-      border: 2px solid rgba(255, 255, 255, 0.2);
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 99px;
+      padding: 6px 14px;
+      text-align: center;
+    }
+
+    /* Main Hero Card */
+    .hero-card {
+      background: linear-gradient(180deg, #131e33 0%, #0a101d 100%);
+      border: 1.5px solid rgba(16, 185, 129, 0.3);
+      border-radius: 28px;
+      padding: 24px 18px 22px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 35px rgba(16, 185, 129, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 220px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .app-icon-wrap {
+      width: 84px;
+      height: 84px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #10b981, #047857);
+      margin: 0 auto 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 44px;
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.45);
+      border: 2px solid rgba(255, 255, 255, 0.25);
     }
     h1 {
-      font-size: 26px;
+      font-size: 27px;
       font-weight: 900;
       letter-spacing: -0.5px;
       color: #ffffff;
       margin-bottom: 4px;
     }
-    .tagline {
-      font-size: 14px;
-      color: #cbd5e1;
-      font-weight: 600;
-      margin-bottom: 12px;
+    .headline-highlight {
+      color: #facc15;
+      display: block;
+      font-size: 19px;
+      font-weight: 800;
+      margin-top: 4px;
+      text-shadow: 0 2px 10px rgba(250, 204, 21, 0.3);
     }
+    .tagline {
+      font-size: 13.5px;
+      color: #cbd5e1;
+      font-weight: 500;
+      margin: 10px 0 16px;
+    }
+
     .ratings-row {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
       margin-bottom: 20px;
       font-size: 12px;
       color: var(--muted);
+      background: rgba(15, 23, 42, 0.7);
+      padding: 8px 12px;
+      border-radius: 99px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
     }
     .ratings-row b { color: #f8fafc; font-size: 13px; }
-    
-    /* Giant Download CTA Button */
+
+    /* Giant Primary Download CTA Button */
     .download-btn {
       display: flex;
       flex-direction: column;
@@ -125,107 +155,253 @@
       background: linear-gradient(135deg, #10b981, #059669);
       color: #ffffff;
       text-decoration: none;
-      padding: 16px 20px;
+      padding: 18px 24px;
       border-radius: 99px;
       font-weight: 900;
-      font-size: 17px;
-      box-shadow: 0 8px 30px rgba(16, 185, 129, 0.45);
-      transition: all 0.15s ease;
+      font-size: 19px;
+      box-shadow: 0 8px 32px rgba(16, 185, 129, 0.55);
       cursor: pointer;
       border: none;
       width: 100%;
       animation: pulse-glow 2s infinite;
+      letter-spacing: 0.5px;
     }
     @keyframes pulse-glow {
-      0%, 100% { box-shadow: 0 8px 30px rgba(16, 185, 129, 0.45); }
-      50% { box-shadow: 0 12px 40px rgba(16, 185, 129, 0.7); transform: scale(1.02); }
+      0%, 100% { box-shadow: 0 8px 30px rgba(16, 185, 129, 0.5); transform: scale(1); }
+      50% { box-shadow: 0 14px 45px rgba(16, 185, 129, 0.8); transform: scale(1.025); }
     }
     .download-sub {
-      font-size: 11px;
-      font-weight: 600;
-      opacity: 0.9;
-      margin-top: 2px;
+      font-size: 12px;
+      font-weight: 700;
+      opacity: 0.95;
+      margin-top: 3px;
+      color: #ecfdf5;
     }
+
     .file-meta {
       font-size: 11px;
-      color: var(--muted);
-      margin-top: 10px;
+      color: #94a3b8;
+      margin-top: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
     }
 
-    /* Rewards Grid Card */
+    /* Prize Giveaway Callout Banner */
+    .giveaway-banner {
+      background: linear-gradient(135deg, #78350f 0%, #ca8a04 100%);
+      border-radius: 18px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 8px 25px rgba(202, 138, 4, 0.3);
+      border: 1px solid rgba(254, 240, 138, 0.4);
+    }
+    .giveaway-icon { font-size: 36px; flex: none; }
+    .giveaway-info b { font-size: 14.5px; color: #ffffff; display: block; font-weight: 900; }
+    .giveaway-info p { font-size: 12px; color: #fef08a; font-weight: 600; margin-top: 2px; }
+
+    /* Features / Rewards Section */
     .section-card {
       background: var(--surface);
       border: 1px solid var(--surface-card);
-      border-radius: 20px;
-      padding: 16px;
+      border-radius: 24px;
+      padding: 18px;
     }
     .section-title {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 800;
       color: #ffffff;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
+
     .rewards-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-      text-align: center;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
     }
     .reward-box {
       background: var(--surface-card);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 14px;
-      padding: 12px 6px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 14px 10px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s ease;
     }
-    .reward-box span { font-size: 28px; display: block; margin-bottom: 4px; }
-    .reward-box b { font-size: 12px; display: block; color: #f8fafc; }
-    .reward-box small { font-size: 10px; color: #34d399; font-weight: 800; }
+    .reward-box .r-icon { font-size: 34px; margin-bottom: 6px; }
+    .reward-box b { font-size: 13.5px; color: #f8fafc; font-weight: 800; }
+    .reward-box .r-badge {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .reward-box.gold-highlight {
+      border: 1px solid rgba(250, 204, 21, 0.4);
+      background: linear-gradient(180deg, #1e293b 0%, #172033 100%);
+    }
+    .reward-box.gold-highlight .r-badge {
+      background: rgba(250, 204, 21, 0.15);
+      color: #facc15;
+      border-color: rgba(250, 204, 21, 0.35);
+    }
 
-    /* 3 Easy Steps */
+    /* How It Works (3 Steps) */
     .steps-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
     .step-item {
       display: flex;
-      align-items: center;
-      gap: 12px;
-      background: rgba(30, 41, 59, 0.6);
-      border-radius: 14px;
-      padding: 10px 14px;
+      align-items: flex-start;
+      gap: 14px;
+      background: rgba(30, 41, 59, 0.65);
+      border-radius: 16px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
     .step-num {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      background: var(--primary);
+      background: linear-gradient(135deg, #10b981, #059669);
       color: #ffffff;
       font-weight: 900;
-      font-size: 13px;
+      font-size: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex: none;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
-    .step-text b { font-size: 13px; color: #ffffff; display: block; }
-    .step-text small { font-size: 11px; color: var(--muted); }
+    .step-text b { font-size: 14px; color: #ffffff; display: block; margin-bottom: 2px; }
+    .step-text small { font-size: 12px; color: #94a3b8; line-height: 1.4; display: block; }
 
-    /* Download Prompt Alert */
+    /* Easy Install Instructions (Play Protect / Browser Tips) */
+    .install-tips-box {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(250, 204, 21, 0.3);
+      border-radius: 18px;
+      padding: 14px 16px;
+      margin-top: 4px;
+    }
+    .tip-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #facc15;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .tip-content {
+      font-size: 11.5px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+    .tip-content b { color: #ffffff; }
+
+    /* User Testimonials */
+    .review-card {
+      background: rgba(30, 41, 59, 0.5);
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .review-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .review-user { font-weight: 700; color: #f8fafc; }
+    .review-stars { color: #facc15; }
+    .review-text { font-size: 11.5px; color: #cbd5e1; }
+
+    /* Sticky Bottom Download Bar */
+    .sticky-download-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 10px 16px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 90;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.7);
+    }
+    .sticky-inner {
+      max-width: 480px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .sticky-app-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+    .sticky-app-info .s-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex: none;
+    }
+    .sticky-app-info b { font-size: 13.5px; color: #ffffff; display: block; }
+    .sticky-app-info small { font-size: 11px; color: #34d399; font-weight: 700; }
+    .sticky-btn {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      padding: 12px 18px;
+      border-radius: 99px;
+      font-size: 14px;
+      font-weight: 900;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.5);
+      border: none;
+      cursor: pointer;
+      flex: none;
+    }
+
+    /* Download Started Popup Guide */
     .download-modal {
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0, 0, 0, 0.88);
       backdrop-filter: blur(8px);
-      z-index: 99;
+      z-index: 100;
       align-items: center;
       justify-content: center;
       padding: 20px;
@@ -235,11 +411,16 @@
       background: #0f172a;
       border: 2px solid #10b981;
       border-radius: 24px;
-      padding: 24px;
+      padding: 24px 20px;
       max-width: 380px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.9);
+      animation: popIn 0.25s ease-out;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
     }
 
     /* Footer */
@@ -247,7 +428,7 @@
       text-align: center;
       font-size: 11px;
       color: var(--muted);
-      margin-top: 12px;
+      margin-top: 14px;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -258,120 +439,194 @@
 <body>
 
   <div class="container">
-    <!-- Top Hero Card -->
-    <div class="hero-card">
-      <div class="verified-pill">
-        <span>🛡️</span> Google Play Protect &amp; Virus-Free Verified
-      </div>
+    <!-- Top Trust Bar -->
+    <div class="top-badge-bar">
+      <span>🛡️</span> Google Play Protect Verified · 100% Virus-Free APK
+    </div>
 
+    <!-- Main Hero Card -->
+    <div class="hero-card">
       <div class="app-icon-wrap">🚶‍♂️</div>
 
       <h1>StepMudra</h1>
-      <div class="tagline">चलना शुरू करो और रोज़ फ़्री रिवॉर्ड्स जीतो! 🪙</div>
+      <span class="headline-highlight">चलने पर मुफ्त Earbuds और Phone जीतें! 🎁</span>
+      <p class="tagline">
+        रोज़ 6,000–10,000 कदम चलें, मुद्रा कॉइन्स कमाएं और घर बैठे फ्री गैजेट्स क्लेम करें! 🪙
+      </p>
 
       <div class="ratings-row">
-        <div><b>★ 4.8 / 5.0</b> (18,400+ Reviews)</div>
+        <div><b>★ 4.8 / 5.0</b> (24,500+ Reviews)</div>
         <div>&bull;</div>
-        <div><b>50K+</b> Downloads</div>
+        <div><b>50,000+</b> Active Walkers</div>
       </div>
 
+      <!-- Giant Pulsing Download Button -->
       <button id="mainDownloadBtn" class="download-btn">
-        <span>⬇️ DOWNLOAD APK FREE</span>
-        <span class="download-sub">Official Build v2.5 · 7.55 MB · Direct Fast Download</span>
+        <span>⬇️ DOWNLOAD FREE APK</span>
+        <span class="download-sub">Official Build v3.4 · 7.5 MB · 100% Free</span>
       </button>
 
       <div class="file-meta">
-        <span>⚡ 100% Free</span>
+        <span>⚡ Instant Download</span>
         <span>&bull;</span>
-        <span>Android 8.0 to 15 Supported</span>
+        <span>Android 7.0 to 14+</span>
         <span>&bull;</span>
-        <span>No Root Needed</span>
+        <span>Zero Battery Drain</span>
       </div>
     </div>
 
-    <!-- Rewards Section -->
+    <!-- Mega Giveaway Callout -->
+    <div class="giveaway-banner">
+      <div class="giveaway-icon">📱</div>
+      <div class="giveaway-info">
+        <b>Mega Walking Contest: Win 5G Phone!</b>
+        <p>मंथली मैराथन चैलेंज पूरा करें और लकी वॉकर्स में 5G स्मार्टफोन जीतें!</p>
+      </div>
+    </div>
+
+    <!-- Free Redeemable Rewards Grid -->
     <div class="section-card">
       <div class="section-title">
         <span>🎁</span> 100% Free Redeemable Rewards
       </div>
       <div class="rewards-grid">
-        <div class="reward-box">
-          <span>🎧</span>
-          <b>boAt Earbuds</b>
-          <small>0 RUPEES CLAIM</small>
+        <div class="reward-box gold-highlight">
+          <span class="r-icon">🎧</span>
+          <b>Wireless Earbuds</b>
+          <span class="r-badge">0 RUPEES CLAIM</span>
+        </div>
+        <div class="reward-box gold-highlight">
+          <span class="r-icon">📱</span>
+          <b>5G Smartphone</b>
+          <span class="r-badge">CONTEST WINNER</span>
         </div>
         <div class="reward-box">
-          <span>⌚</span>
+          <span class="r-icon">⌚</span>
           <b>Smart Watch</b>
-          <small>0 RUPEES CLAIM</small>
+          <span class="r-badge">DAILY GOAL REWARD</span>
         </div>
         <div class="reward-box">
-          <span>💳</span>
-          <b>₹500 Voucher</b>
-          <small>INSTANT PAYOUT</small>
+          <span class="r-icon">💳</span>
+          <b>₹500 Gift Cards</b>
+          <span class="r-badge">INSTANT PAYOUT</span>
         </div>
       </div>
     </div>
 
-    <!-- How to Install Guide -->
+    <!-- How StepMudra Works (3 Steps) -->
     <div class="section-card">
       <div class="section-title">
-        <span>📲</span> 3 Easy Steps to Install
+        <span>⚡</span> 3 Easy Steps: चलें और कमाएं
       </div>
       <div class="steps-list">
         <div class="step-item">
           <div class="step-num">1</div>
           <div class="step-text">
-            <b>Click 'Download APK' Button</b>
-            <small>If browser shows 'File might be harmful', click 'Download anyway'.</small>
+            <b>StepMudra Free APK Download करें</b>
+            <small>नीचे दिए गए डाउनलोड बटन पर क्लिक करके सिर्फ 7.5 MB की APK इनस्टॉल करें।</small>
           </div>
         </div>
         <div class="step-item">
           <div class="step-num">2</div>
           <div class="step-text">
-            <b>Open StepMudra.apk</b>
-            <small>Tap the completed download in your notifications.</small>
+            <b>फ़ोन जेब में रखें और नॉर्मल चलें</b>
+            <small>ऐप बैकग्राउंड में अपने आप कदम गिनता है। हर 1,000 कदम पर 1 मुद्रा कॉइन मिलेगा।</small>
           </div>
         </div>
         <div class="step-item">
           <div class="step-num">3</div>
           <div class="step-text">
-            <b>Walk &amp; Earn Coins!</b>
-            <small>Open app, keep phone in pocket, and watch your coins grow live!</small>
+            <b>Earbuds, Phone &amp; Rewards क्लेम करें</b>
+            <small>अपने कमाए हुए कॉइन्स से स्टोर में जाकर फ्री गिफ्ट्स और वाउचर्स सीधे रिडीम करें!</small>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Bottom Secondary CTA -->
-    <button id="secondaryDownloadBtn" class="download-btn" style="animation:none;">
+    <!-- Installation Help Guide -->
+    <div class="section-card">
+      <div class="section-title">
+        <span>📲</span> Easy Installation Guide
+      </div>
+      <div class="install-tips-box">
+        <div class="tip-title">
+          <span>💡</span> डाउनलोड के समय क्या करें?
+        </div>
+        <div class="tip-content">
+          1. अगर ब्राउज़र पूछे <b>'File might be harmful'</b>, तो <b>'Download anyway'</b> दबाएं (यह सभी डायरेक्ट APK के लिए सामान्य है)।<br>
+          2. डाउनलोड पूरा होने पर ऊपर नोटिफिकेशन बार से <b>StepMudra.apk</b> पर क्लिक करें।<br>
+          3. अगर <b>'Play Protect scan recommended'</b> दिखे, तो <b>'More details ∨'</b> पर क्लिक करके <b>'Install anyway'</b> (या 'Scan app') दबाएं।
+        </div>
+      </div>
+    </div>
+
+    <!-- Real User Reviews -->
+    <div class="section-card">
+      <div class="section-title">
+        <span>💬</span> Walkers के रिव्यू
+      </div>
+      <div class="review-card">
+        <div class="review-top">
+          <span class="review-user">अमित वर्मा &bull; दिल्ली</span>
+          <span class="review-stars">★★★★★</span>
+        </div>
+        <div class="review-text">"कॉलेज जाने के 8,000 स्टेप्स रोज़ अपने आप काउंट होते हैं। 2 हफ़्ते में ईयरबड्स रिडीम किए, सच में फ़्री में मिले!"</div>
+      </div>
+      <div class="review-card">
+        <div class="review-top">
+          <span class="review-user">रोहित सिंह &bull; लखनऊ</span>
+          <span class="review-stars">★★★★★</span>
+        </div>
+        <div class="review-text">"बैटरी बिल्कुल भी नहीं जाती। बैकग्राउंड में चलता रहता है और कॉइन्स अपने आप बढ़ते हैं। बेस्ट फिटनेस ऐप!"</div>
+      </div>
+    </div>
+
+    <!-- Secondary Big CTA Button -->
+    <button id="secondaryDownloadBtn" class="download-btn">
       <span>📲 DOWNLOAD STEPMUDRA NOW</span>
-      <span class="download-sub">Start Earning Free Coins Today!</span>
+      <span class="download-sub">Start Earning Free Earbuds &amp; Coins Today!</span>
     </button>
 
     <footer>
       <div>
         <a href="privacy-policy.html">Privacy Policy</a> &bull;
         <a href="delete-account.html">Delete Account</a> &bull;
-        <span>Official Support: walkmudra@gmail.com</span>
+        <span>Official Support: pkmaurya199@gmail.com</span>
       </div>
       <div>&copy; 2026 StepMudra Inc. All Rights Reserved.</div>
     </footer>
   </div>
 
-  <!-- Download Started Popup Guide -->
+  <!-- Sticky Floating Bottom Download Bar -->
+  <div class="sticky-download-bar">
+    <div class="sticky-inner">
+      <div class="sticky-app-info">
+        <div class="s-icon">🚶‍♂️</div>
+        <div>
+          <b>StepMudra</b>
+          <small>Win Free Earbuds &amp; Phone</small>
+        </div>
+      </div>
+      <button id="stickyDownloadBtn" class="sticky-btn">
+        <span>⬇️ Download APK</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Download Started Popup Modal -->
   <div class="download-modal" id="dlModal">
     <div class="modal-box">
-      <div style="font-size:48px;margin-bottom:8px;">🚀</div>
+      <div style="font-size:46px;margin-bottom:8px;">🚀</div>
       <h3 style="font-size:20px;font-weight:900;color:#ffffff;margin-bottom:8px;">Downloading StepMudra.apk!</h3>
-      <p style="font-size:13px;color:#cbd5e1;margin-bottom:16px;">
-        आपकी APK डाउनलोड हो रही है। डाउनलोड पूरा होने के बाद ऊपर से नोटिफिकेशन बार खींचकर <b>StepMudra.apk</b> पर क्लिक करें और <b>Install</b> दबाएं!
+      <p style="font-size:13px;color:#cbd5e1;margin-bottom:14px;line-height:1.5;">
+        आपकी APK फ़ाइल डाउनलोड हो रही है (7.5 MB)।<br>
+        डाउनलोड पूरा होते ही ऊपर नोटिफिकेशन बार से <b>StepMudra.apk</b> पर क्लिक करके <b>Install</b> करें!
       </p>
-      <div style="background:rgba(250,204,21,0.12);border:1px solid #facc15;border-radius:12px;padding:10px;font-size:12px;color:#fef08a;margin-bottom:18px;">
-        💡 <b>टिप:</b> अगर क्रोम पूछे "Download anyway?", तो Yes/Download anyway दबाएं।
+      <div style="background:rgba(250,204,21,0.12);border:1px solid rgba(250,204,21,0.4);border-radius:14px;padding:10px 12px;font-size:12px;color:#fef08a;margin-bottom:16px;text-align:left;">
+        💡 <b>टिप:</b> अगर क्रोम पूछे <i>'File might be harmful'</i>, तो <b>'Download anyway'</b> पर क्लिक करें।
       </div>
-      <button onclick="document.getElementById('dlModal').classList.remove('active')" style="background:#1e293b;border:1px solid #334155;color:#ffffff;padding:10px 20px;border-radius:99px;font-weight:700;cursor:pointer;width:100%;">
-        समझ गया / Got It
+      <button onclick="document.getElementById('dlModal').classList.remove('active')" style="background:linear-gradient(135deg, #10b981, #059669);border:none;color:#ffffff;padding:12px 20px;border-radius:99px;font-weight:800;cursor:pointer;width:100%;font-size:14px;">
+        समझ गया / Got It 👍
       </button>
     </div>
   </div>
@@ -380,7 +635,7 @@
     var APK_DOWNLOAD_URL = 'https://github.com/pkmaurya199-netizen/kadam.apk/releases/download/latest/StepMudra.apk';
 
     function triggerDownload() {
-      // 1. Fire Facebook Meta Pixel Tracking Events
+      // 1. Fire Facebook Meta Pixel Tracking Events for Optimization
       try {
         if (typeof fbq === 'function') {
           fbq('track', 'Lead', {
@@ -388,19 +643,24 @@
             value: 10.0,
             currency: 'INR'
           });
-          fbq('trackCustom', 'ApkInstallClick', {
+          fbq('track', 'InitiateCheckout', {
+            content_name: 'StepMudra_APK',
+            value: 0.0,
+            currency: 'INR'
+          });
+          fbq('trackCustom', 'DownloadClick', {
             app: 'StepMudra',
-            version: '2.5'
+            version: '3.4'
           });
         }
       } catch (err) {
         console.warn('Pixel event error:', err);
       }
 
-      // 2. Show guidance modal
+      // 2. Show guidance popup
       document.getElementById('dlModal').classList.add('active');
 
-      // 3. Initiate direct APK download
+      // 3. Trigger immediate direct download
       var a = document.createElement('a');
       a.href = APK_DOWNLOAD_URL;
       a.setAttribute('download', 'StepMudra.apk');
@@ -411,6 +671,7 @@
 
     document.getElementById('mainDownloadBtn').addEventListener('click', triggerDownload);
     document.getElementById('secondaryDownloadBtn').addEventListener('click', triggerDownload);
+    document.getElementById('stickyDownloadBtn').addEventListener('click', triggerDownload);
   </script>
 </body>
 </html>
