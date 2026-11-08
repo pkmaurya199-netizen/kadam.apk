@@ -1708,6 +1708,40 @@ var ITEMS=[
   P('rope','Fitness','High-Speed Skipping Rope with Counter',149,45,0,129,299),
   P('shk','Fitness','Steel Protein Shaker Bottle 700 ml',299,30,1,269,499)
 ];
+
+// StepMudra Cloud Store Sync System
+function syncStoreItems() {
+  try {
+    fetch('https://raw.githubusercontent.com/pkmaurya199-netizen/kadam.apk/main/store_items.json?t=' + Date.now())
+      .then(function(res){ if(res.ok) return res.json(); throw new Error('Network status ' + res.status); })
+      .then(function(data){
+        if (Array.isArray(data) && data.length > 0) {
+          ITEMS = data;
+          try {
+            localStorage.setItem('stepmudra_cloud_items', JSON.stringify(data));
+          } catch(e){}
+          if (typeof S !== 'undefined' && S.tab === 'shop') {
+            render();
+          }
+        }
+      })
+      .catch(function(err){
+        console.log('Store items offline / using cache:', err.message);
+      });
+  } catch(e){}
+}
+
+// Load cached cloud items immediately on startup
+try {
+  var _cached = localStorage.getItem('stepmudra_cloud_items');
+  if (_cached) {
+    var _parsed = JSON.parse(_cached);
+    if (Array.isArray(_parsed) && _parsed.length > 0) {
+      ITEMS = _parsed;
+    }
+  }
+} catch(e){}
+
 function catOf(id){
   for(var i=0;i<CATS.length;i++){if(CATS[i].id===id)return CATS[i];}
   return {id:id,label:id,ic:'bag',tone:'sky'};
@@ -2547,6 +2581,7 @@ function prodCard(it){
       '<h4 style="font-size:13.5px;font-weight:700;color:var(--text);margin:0;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' +
         esc(it.name) +
       '</h4>' +
+      (it.desc ? '<p style="font-size:11.5px;color:var(--muted);margin:0;line-height:1.3;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;">' + esc(it.desc) + '</p>' : '') +
       '<div style="display:flex;align-items:center;gap:7px;">' +
         '<span style="font-size:16px;font-weight:800;color:#1e8e4e;">₹' + fmt(it.rs || 0) + '</span>' +
         mrpTag +
@@ -2749,12 +2784,30 @@ function prodSheetHTML(){
   var it=itemById(UI.prod);if(!it)return '';
   var c=catOf(it.cat),st=stockOf(it),inCart=S.cart.indexOf(it.id)>-1,own=(it.id==='frame'&&S.frame),can=S.balance>=it.price&&st>0&&!own,msg='';
   if(own)msg=t('Owned');else if(st<1)msg=t('Out of stock');else if(S.balance<it.price)msg=t('Not enough coins')+': '+fmt(it.price-S.balance)+' '+t('more coins needed');
-  return '<div class="overlay" data-a="overlay"><div class="sheet" role="dialog" aria-modal="true" aria-label="'+esc(it.name)+'">'+
-    '<span class="pimg big tone-'+c.tone+'">'+svgi(c.ic,72,1.2)+'</span><h2 style="font-size:20px">'+t(it.name)+'</h2>'+
-    '<div class="row wrap"><span class="reward" style="font-size:20px">'+coin(22)+fmt(it.price)+'</span>'+(it.rs?'<span class="prs" style="font-size:16px">₹'+fmt(it.rs)+'</span>':'')+(it.stock<999?'<span class="small muted">'+st+' '+t('left')+'</span>':'')+'</div>'+
-    '<div class="row" style="justify-content:space-between"><span class="muted">'+t('Your balance')+'</span><b class="num">'+fmt(S.balance)+'</b></div>'+
+
+  var imgHTML = it.img 
+    ? '<div style="width:100%;height:160px;border-radius:16px;overflow:hidden;margin-bottom:12px;background:#f8fafc;display:grid;place-items:center;"><img src="'+it.img+'" alt="'+esc(it.name)+'" style="max-width:100%;max-height:100%;object-fit:contain;"></div>'
+    : ('<div style="width:100%;height:130px;border-radius:16px;overflow:hidden;margin-bottom:12px;background:#f8fafc;display:grid;place-items:center;">' + prodArt(it.id, it.cat) + '</div>');
+
+  var descHTML = it.desc 
+    ? '<div style="margin:12px 0;padding:12px 14px;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;text-align:left;">' +
+        '<span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);display:block;margin-bottom:5px;">' + t('Product Details & Specifications') + '</span>' +
+        '<p style="font-size:13px;line-height:1.5;color:var(--text);margin:0;white-space:pre-line;">' + esc(it.desc) + '</p>' +
+      '</div>'
+    : '';
+
+  return '<div class="overlay" data-a="overlay"><div class="sheet" role="dialog" aria-modal="true" aria-label="'+esc(it.name)+'" style="max-height:85vh;overflow-y:auto;">'+
+    imgHTML +
+    '<h2 style="font-size:18px;line-height:1.3;margin-bottom:6px;">'+esc(it.name)+'</h2>'+
+    '<div class="row wrap" style="gap:8px;align-items:center;margin-bottom:8px;">'+
+      '<span class="reward" style="font-size:20px;font-weight:800;color:var(--coin-d);display:inline-flex;align-items:center;gap:4px;">'+coin(22)+fmt(it.price)+'</span>'+
+      (it.mrp?'<span class="muted" style="font-size:13.5px;text-decoration:line-through;">₹'+fmt(it.mrp)+'</span>':'')+
+      (it.stock<999?'<span class="small '+(st<1?'err':'muted')+'" style="font-weight:700;">'+(st<1?t('Out of stock'):(st+' '+t('left')))+'</span>':'')+
+    '</div>'+
+    descHTML +
+    '<div class="row" style="justify-content:space-between;margin:10px 0;"><span class="muted">'+t('Your balance')+'</span><b class="num">'+coin(16)+fmt(S.balance)+'</b></div>'+
     (msg?'<p class="err">'+msg+'</p>':'')+
-    (it.cat!=='More'?'<p class="small muted">'+t('Delivery details are collected at checkout in the real app.')+'</p>':'')+
+    (it.cat!=='More'?'<p class="small muted" style="margin-bottom:12px;">'+t('Delivery details are collected at checkout.')+'</p>':'')+
     '<div class="two"><button class="btn" data-a="cart" data-v="'+it.id+'" '+(own||st<1?'disabled':'')+'>'+(inCart?t('Remove from cart'):t('Add to cart'))+'</button><button class="btn primary" data-a="ask" data-v="'+it.id+'" '+(can?'':'disabled')+'>'+t('Redeem')+'</button></div></div></div>';
 }
 function sheetHTML(){
@@ -3705,7 +3758,7 @@ document.addEventListener('click',function(e){
       S.phone='';
       if(NATIVE&&NATIVE.signIn){UI.busy=true;UI.err='';render();try{NATIVE.signIn();}catch(e){UI.busy=false;UI.err=t('Google sign-in error');render();}break;}
       enterApp(gr);break;}
-    case 'tab':S.tab=v;UI.sub=null;if(v==='games')UI.gsel='';if(L.run){lstop();L.msg='';}save();render();window.scrollTo(0,0);break;
+    case 'tab':S.tab=v;UI.sub=null;if(v==='shop')syncStoreItems();if(v==='games')UI.gsel='';if(L.run){lstop();L.msg='';}save();render();window.scrollTo(0,0);break;
     case 'sub':UI.sub=v;if(L.run)lstop();render();window.scrollTo(0,0);break;
     case 'back':UI.sub=null;render();window.scrollTo(0,0);break;
     case 'walk':addSteps(Number(v));break;
