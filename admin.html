@@ -448,7 +448,10 @@
           <div class="form-row">
             <div class="form-group">
               <label>Coins Required *</label>
-              <input type="number" id="pCoins" placeholder="e.g. 50000" min="1" required>
+              <input type="number" id="pCoins" placeholder="e.g. 50000" min="1" required oninput="updateShippingBadge()">
+              <div id="shipCalcBadge" style="margin-top:6px;font-size:12px;font-weight:700;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;padding:4px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;">
+                🚚 Delivery Fee: ₹89 (&lt; 400 coins)
+              </div>
             </div>
             <div class="form-group">
               <label>Category *</label>
@@ -613,6 +616,23 @@
       document.getElementById('countDisplay').innerText = items.length;
     }
 
+    
+    function getShipping(coins) {
+      const c = parseInt(coins) || 0;
+      if (c < 400) return 89;
+      if (c <= 600) return 100;
+      return 120;
+    }
+
+    function updateShippingBadge() {
+      const val = parseInt(document.getElementById('pCoins').value) || 0;
+      const ship = getShipping(val);
+      const badge = document.getElementById('shipCalcBadge');
+      if (badge) {
+        badge.innerHTML = '🚚 Delivery Fee: <b>₹' + ship + '</b> (' + (val < 400 ? '< 400 coins' : val <= 600 ? '400 to 600 coins' : '> 600 coins') + ')';
+      }
+    }
+
     function renderList() {
       const listEl = document.getElementById('productsList');
       const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
@@ -644,6 +664,7 @@
               <div class="prod-desc-snippet">${escapeHtml(item.desc || 'No description provided.')}</div>
               <div class="prod-meta">
                 <span class="badge badge-coins">🪙 ${Number(item.price).toLocaleString('en-IN')} Coins</span>
+                <span class="badge" style="background:#dcfce7;color:#15803d;font-weight:700;">🚚 ₹${item.price < 400 ? 89 : item.price <= 600 ? 100 : 120} Shipping</span>
                 <span class="badge badge-cat">${item.cat}</span>
                 ${item.mrp ? `<span class="badge" style="background:#f1f5f9;color:#475569">₹${item.mrp} MRP</span>` : ''}
                 ${isOutOfStock 
@@ -722,6 +743,7 @@
       document.getElementById('editId').value = item.id;
       document.getElementById('pName').value = item.name;
       document.getElementById('pCoins').value = item.price;
+      updateShippingBadge();
       document.getElementById('pCat').value = item.cat || 'Electronics';
       document.getElementById('pMrp').value = item.mrp || 0;
       document.getElementById('pStock').value = item.stock !== undefined ? item.stock : 25;
