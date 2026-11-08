@@ -1808,7 +1808,7 @@ function handleOrderConfirmation(target) {
       name: it.name,
       price: it.price,
       shipping: shippingOf(it.price),
-      payMethod: (payMethod === 'upi' ? 'UPI (Paid)' : 'COD Delivery Fee'),
+      payMethod: 'UPI (Online Payment)',
       customer: { name: name, phone: phone, address: address, pincode: pincode },
       status: 'Confirmed',
       code: vcode(),
@@ -2677,14 +2677,12 @@ function prodCard(it){
 
   var hybrid = isHybridProduct(it);
   var priceBadges = hybrid
-    ? ('<span style="background:var(--coin-soft);color:var(--coin-d);font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:3px;">' +
+    ? ('<span style="background:var(--coin-soft);color:var(--coin-d);font-size:11.5px;font-weight:800;padding:2px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:3px;">' +
         coin(12) + ' Max ' + fmt(coinsToRedeem(it)) + (cashToPay(it) > 0 ? (' + ₹' + fmt(cashToPay(it))) : '') +
-      '</span>' +
-      '<span style="background:#ecfdf5;color:#047857;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;">🚚 FREE Delivery</span>')
-    : ('<span style="background:var(--coin-soft);color:var(--coin-d);font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:3px;">' +
+      '</span>')
+    : ('<span style="background:var(--coin-soft);color:var(--coin-d);font-size:11.5px;font-weight:800;padding:2px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:3px;">' +
         coin(12) + ' ' + fmt(it.price) +
-      '</span>' +
-      '<span style="background:#dcfce7;color:#15803d;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;">+ ₹' + shippingOf(it) + ' Delivery</span>');
+      '</span>');
   return '<article class="prod-single-card" data-a="prod" data-v="'+it.id+'" style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:18px;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);cursor:pointer;margin-bottom:10px;text-align:left;position:relative;">' +
     imgHTML +
     '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;">' +
@@ -3007,13 +3005,12 @@ function sheetHTML(){
     '</div>' +
 
     '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px;margin-bottom:14px;">' +
-      '<div style="font-size:12.5px;font-weight:800;color:#15803d;margin-bottom:6px;">' + t('Choose Cash Payment Method') + ' (₹' + fmt(grandPay) + '):</div>' +
-      '<label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px;cursor:pointer;">' +
-        '<input type="radio" name="shipPay" value="upi" checked> ' + t('UPI Payment (PhonePe / GPay / Paytm)') +
-      '</label>' +
-      '<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">' +
-        '<input type="radio" name="shipPay" value="cod"> ' + t('Cash on Delivery (COD Shipping Charge)') +
-      '</label>' +
+      '<div style="font-size:12.5px;font-weight:800;color:#15803d;margin-bottom:6px;">' + t('Payment Method') + ' (₹' + fmt(grandPay) + '):</div>' +
+      '<div style="display:flex;align-items:center;gap:10px;padding:4px 0;font-size:13.5px;font-weight:700;color:#166534;">' +
+        '<span style="font-size:20px;">📱</span> ' + t('UPI Payment (PhonePe / Google Pay / Paytm / BHIM)') +
+      '</div>' +
+      '<input type="hidden" name="shipPay" value="upi">' +
+      '<small style="font-size:11px;color:#15803d;display:block;margin-top:4px;">' + t('Only UPI online payment accepted for delivery charges.') + '</small>' +
     '</div>' +
 
     (ok ? '' : '<p class="err" style="margin-bottom:10px;">' + t('Not enough coins') + ': ' + fmt(-after) + ' ' + t('more coins needed') + '</p>') +
