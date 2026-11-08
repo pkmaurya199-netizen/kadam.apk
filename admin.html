@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StepMudra • Store Manager Admin Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #059669;
+      --primary-dark: #047857;
+      --primary-light: #d1fae5;
+      --gold: #f59e0b;
+      --gold-dark: #b45309;
+      --gold-light: #fef3c7;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-2: #f1f5f9;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+      --danger-light: #fee2e2;
+      --radius: 14px;
+      --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 60px; }
+
+    /* Header */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #059669, #10b981);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 20px;
+      box-shadow: 0 4px 10px rgba(5,150,105,0.25);
+    }
+    .brand-title {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+    .brand-badge {
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--gold-light);
+      color: var(--gold-dark);
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-left: 6px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+    }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .btn-gold {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+    }
+    .btn-gold:hover { filter: brightness(1.05); transform: translateY(-1px); }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { background: var(--surface-2); }
+    .btn-danger {
+      background: var(--danger-light);
+      color: var(--danger);
+    }
+    .btn-danger:hover { background: #fecaca; }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 18px 20px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow);
+    }
+    .stat-info h5 { font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+    .stat-info p { font-size: 24px; font-weight: 800; color: var(--text); font-family: 'Space Grotesk', sans-serif; }
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+    }
+
+    /* Layout Split */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Card Panels */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-header h3 { font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+
+    /* Form */
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--primary);
+      background: var(--surface);
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .form-check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .form-check input { width: 18px; height: 18px; accent-color: var(--primary); }
+
+    /* Search & Filters */
+    .filters-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 13.5px;
+    }
+
+    /* Product Cards in Admin */
+    .products-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 750px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .prod-item {
+      display: flex;
+      gap: 14px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      transition: all 0.2s ease;
+      align-items: flex-start;
+    }
+    .prod-item:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .prod-thumb {
+      width: 72px;
+      height: 72px;
+      border-radius: 10px;
+      background: var(--surface-2);
+      object-fit: cover;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+    }
+    .prod-details { flex: 1; min-width: 0; }
+    .prod-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+    .prod-desc-snippet {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.4;
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .prod-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .badge-coins { background: var(--gold-light); color: var(--gold-dark); }
+    .badge-cat { background: var(--surface-2); color: var(--muted); }
+    .badge-stock { background: #dcfce7; color: #15803d; }
+    .badge-out { background: var(--danger-light); color: var(--danger); }
+    .badge-trend { background: #e0e7ff; color: #4338ca; }
+
+    .prod-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .action-btn {
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .action-btn:hover { background: var(--surface-2); }
+    .action-edit { color: var(--primary); border-color: #a7f3d0; }
+    .action-edit:hover { background: var(--primary-light); }
+    .action-del { color: var(--danger); border-color: #fecaca; }
+    .action-del:hover { background: var(--danger-light); }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: white;
+      padding: 14px 22px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      font-size: 14px;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      z-index: 1000;
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Modal for PIN */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      place-items: center;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon">👟</div>
+        <div>
+          <div style="display:flex;align-items:center;">
+            <h1 class="brand-title">StepMudra</h1>
+            <span class="brand-badge">Store Admin</span>
+          </div>
+          <small style="font-size:11px;color:var(--muted)">Live Rewards & Description Manager</small>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="btn btn-outline" onclick="exportJSON()">📥 Backup JSON</button>
+        <button class="btn btn-gold" id="btnPublish" onclick="publishToCloud()">
+          ☁️ Save & Publish to Cloud
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="container">
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-info">
+          <h5>Total Products</h5>
+          <p id="statTotal">0</p>
+        </div>
+        <div class="stat-icon" style="background:#e0f2fe;color:#0284c7">🎁</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <h5>In Stock</h5>
+          <p id="statInStock" style="color:#059669">0</p>
+        </div>
+        <div class="stat-icon" style="background:#d1fae5;color:#059669">✅</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <h5>Out of Stock</h5>
+          <p id="statOutOfStock" style="color:#ef4444">0</p>
+        </div>
+        <div class="stat-icon" style="background:#fee2e2;color:#ef4444">⚠️</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <h5>Trending Items</h5>
+          <p id="statTrending" style="color:#f59e0b">0</p>
+        </div>
+        <div class="stat-icon" style="background:#fef3c7;color:#f59e0b">🔥</div>
+      </div>
+    </div>
+
+    <!-- Main 2-Column Grid -->
+    <div class="main-grid">
+
+      <!-- LEFT: Add / Edit Form -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3 id="formTitle">✨ Add New Product</h3>
+          <button class="btn btn-outline" style="padding:4px 10px;font-size:12px;" onclick="resetForm()">Reset Form</button>
+        </div>
+
+        <form id="productForm" onsubmit="handleSaveProduct(event)">
+          <input type="hidden" id="editId" value="">
+
+          <div class="form-group">
+            <label>Product Title / Name *</label>
+            <input type="text" id="pName" placeholder="e.g. boAt Airdopes 141 ANC" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Coins Required *</label>
+              <input type="number" id="pCoins" placeholder="e.g. 50000" min="1" required>
+            </div>
+            <div class="form-group">
+              <label>Category *</label>
+              <select id="pCat">
+                <option value="Electronics">Electronics</option>
+                <option value="Gadgets">Gadgets & Tech</option>
+                <option value="Home">Home & Kitchen</option>
+                <option value="Fitness">Fitness & Sports</option>
+                <option value="Fashion">Fashion & Apparel</option>
+                <option value="Care">Personal Care</option>
+                <option value="Snacks">Snacks & Nutrition</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Original MRP (₹)</label>
+              <input type="number" id="pMrp" placeholder="e.g. 2990" value="0">
+            </div>
+            <div class="form-group">
+              <label>Available Stock (Qty)</label>
+              <input type="number" id="pStock" placeholder="e.g. 25" value="25" min="0">
+            </div>
+          </div>
+
+          <!-- Description Section -->
+          <div class="form-group">
+            <label>Detailed Description & Specifications *</label>
+            <textarea id="pDesc" rows="4" placeholder="Write full specifications, battery life, features, warranty, or delivery details..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Image URL (Optional)</label>
+            <input type="url" id="pImg" placeholder="https://example.com/image.jpg (leave empty for default icon)">
+          </div>
+
+          <div class="form-check">
+            <input type="checkbox" id="pTrend" checked>
+            <label for="pTrend" style="margin-bottom:0">Show in Trending / Home Screen</label>
+          </div>
+
+          <div style="margin-top:20px;display:flex;gap:10px;">
+            <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center;" id="btnSubmitForm">
+              💾 Save Item to Store
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- RIGHT: Products List -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3>📦 Store Catalog (<span id="countDisplay">0</span> items)</h3>
+          <div style="font-size:12px;color:var(--muted)">Live Sync Ready</div>
+        </div>
+
+        <div class="filters-bar">
+          <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search items by name, category or description..." oninput="renderList()">
+          <select id="catFilter" onchange="renderList()" style="padding:10px;border-radius:10px;border:1px solid var(--border)">
+            <option value="All">All Categories</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Gadgets">Gadgets</option>
+            <option value="Home">Home</option>
+            <option value="Fitness">Fitness</option>
+            <option value="Fashion">Fashion</option>
+            <option value="Care">Care</option>
+            <option value="Snacks">Snacks</option>
+          </select>
+        </div>
+
+        <div class="products-list" id="productsList">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <script>
+    // GitHub API Config for 1-Click Cloud Sync
+    const GITHUB_REPO = 'pkmaurya199-netizen/kadam.apk';
+    const GITHUB_BRANCH = 'main';
+    const FILE_PATH = 'store_items.json';
+
+    // Current in-memory items
+    let items = [];
+
+    // Category Emoji Icons
+    const CAT_ICONS = {
+      'Electronics': '🎧',
+      'Gadgets': '⌚',
+      'Home': '🏠',
+      'Fitness': '🏃‍♂️',
+      'Fashion': '👕',
+      'Care': '✨',
+      'Snacks': '🍫'
+    };
+
+    // Load initial data
+    window.addEventListener('DOMContentLoaded', async () => {
+      // 1. Check local storage first
+      const saved = localStorage.getItem('stepmudra_admin_items');
+      if (saved) {
+        try {
+          items = JSON.parse(saved);
+        } catch(e){}
+      }
+
+      // 2. Fetch latest from Cloud if online
+      try {
+        const resp = await fetch('https://raw.githubusercontent.com/pkmaurya199-netizen/kadam.apk/main/store_items.json?t=' + Date.now());
+        if (resp.ok) {
+          const cloudData = await resp.json();
+          if (Array.isArray(cloudData) && cloudData.length > 0) {
+            items = cloudData;
+            localStorage.setItem('stepmudra_admin_items', JSON.stringify(items));
+          }
+        }
+      } catch (err) {
+        console.warn('Could not reach cloud directly, using local cache:', err);
+      }
+
+      renderList();
+      updateStats();
+    });
+
+    function showToast(msg, isErr = false) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.style.background = isErr ? '#ef4444' : '#0f172a';
+      t.style.display = 'flex';
+      setTimeout(() => { t.style.display = 'none'; }, 4000);
+    }
+
+    function updateStats() {
+      document.getElementById('statTotal').innerText = items.length;
+      document.getElementById('statInStock').innerText = items.filter(x => x.stock > 0).length;
+      document.getElementById('statOutOfStock').innerText = items.filter(x => x.stock <= 0).length;
+      document.getElementById('statTrending').innerText = items.filter(x => x.trend).length;
+      document.getElementById('countDisplay').innerText = items.length;
+    }
+
+    function renderList() {
+      const listEl = document.getElementById('productsList');
+      const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+      const cat = document.getElementById('catFilter').value;
+
+      let filtered = items.filter(item => {
+        const matchQ = !q || item.name.toLowerCase().includes(q) || (item.desc && item.desc.toLowerCase().includes(q)) || item.cat.toLowerCase().includes(q);
+        const matchCat = cat === 'All' || item.cat === cat;
+        return matchQ && matchCat;
+      });
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)">No products found matching your search.</div>`;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(item => {
+        const icon = CAT_ICONS[item.cat] || '🎁';
+        const isOutOfStock = item.stock <= 0;
+        const imgHtml = item.img 
+          ? `<img src="${item.img}" class="prod-thumb" alt="${item.name}">` 
+          : `<div class="prod-thumb">${icon}</div>`;
+
+        return `
+          <div class="prod-item" id="item-${item.id}">
+            ${imgHtml}
+            <div class="prod-details">
+              <div class="prod-title">${escapeHtml(item.name)}</div>
+              <div class="prod-desc-snippet">${escapeHtml(item.desc || 'No description provided.')}</div>
+              <div class="prod-meta">
+                <span class="badge badge-coins">🪙 ${Number(item.price).toLocaleString('en-IN')} Coins</span>
+                <span class="badge badge-cat">${item.cat}</span>
+                ${item.mrp ? `<span class="badge" style="background:#f1f5f9;color:#475569">₹${item.mrp} MRP</span>` : ''}
+                ${isOutOfStock 
+                  ? `<span class="badge badge-out">Out of Stock</span>` 
+                  : `<span class="badge badge-stock">${item.stock} in Stock</span>`}
+                ${item.trend ? `<span class="badge badge-trend">🔥 Trending</span>` : ''}
+              </div>
+            </div>
+            <div class="prod-actions">
+              <button class="action-btn action-edit" onclick="editProduct('${item.id}')">✏️ Edit</button>
+              <button class="action-btn" onclick="toggleStock('${item.id}')">${isOutOfStock ? '🟢 Restock' : '🔴 Out of Stock'}</button>
+              <button class="action-btn action-del" onclick="deleteProduct('${item.id}')">🗑️ Delete</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function handleSaveProduct(e) {
+      e.preventDefault();
+      const editId = document.getElementById('editId').value;
+      const name = document.getElementById('pName').value.trim();
+      const coins = parseInt(document.getElementById('pCoins').value) || 100;
+      const cat = document.getElementById('pCat').value;
+      const mrp = parseInt(document.getElementById('pMrp').value) || 0;
+      const stock = parseInt(document.getElementById('pStock').value) || 0;
+      const desc = document.getElementById('pDesc').value.trim();
+      const img = document.getElementById('pImg').value.trim();
+      const trend = document.getElementById('pTrend').checked ? 1 : 0;
+
+      if (!name || !desc) {
+        showToast('Please enter both title and description!', true);
+        return;
+      }
+
+      if (editId) {
+        // Update existing
+        const idx = items.findIndex(x => x.id === editId);
+        if (idx !== -1) {
+          items[idx] = { ...items[idx], name, price: coins, cat, mrp, stock, desc, img, trend };
+          showToast(`✓ Updated "${name}" successfully!`);
+        }
+      } else {
+        // Add new
+        const id = 'prod_' + Date.now();
+        items.unshift({
+          id,
+          name,
+          price: coins,
+          cat,
+          mrp,
+          rs: 0,
+          stock,
+          desc,
+          img,
+          trend
+        });
+        showToast(`✓ Added new product "${name}"!`);
+      }
+
+      localStorage.setItem('stepmudra_admin_items', JSON.stringify(items));
+      resetForm();
+      renderList();
+      updateStats();
+    }
+
+    function editProduct(id) {
+      const item = items.find(x => x.id === id);
+      if (!item) return;
+
+      document.getElementById('editId').value = item.id;
+      document.getElementById('pName').value = item.name;
+      document.getElementById('pCoins').value = item.price;
+      document.getElementById('pCat').value = item.cat || 'Electronics';
+      document.getElementById('pMrp').value = item.mrp || 0;
+      document.getElementById('pStock').value = item.stock !== undefined ? item.stock : 25;
+      document.getElementById('pDesc').value = item.desc || '';
+      document.getElementById('pImg').value = item.img || '';
+      document.getElementById('pTrend').checked = !!item.trend;
+
+      document.getElementById('formTitle').innerText = '✏️ Edit: ' + item.name.slice(0, 20) + '...';
+      document.getElementById('btnSubmitForm').innerText = '💾 Update Product';
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+      document.getElementById('productForm').reset();
+      document.getElementById('editId').value = '';
+      document.getElementById('formTitle').innerText = '✨ Add New Product';
+      document.getElementById('btnSubmitForm').innerText = '💾 Save Item to Store';
+    }
+
+    function toggleStock(id) {
+      const item = items.find(x => x.id === id);
+      if (!item) return;
+      item.stock = (item.stock > 0) ? 0 : 25;
+      localStorage.setItem('stepmudra_admin_items', JSON.stringify(items));
+      renderList();
+      updateStats();
+      showToast(`${item.name} is now ${item.stock > 0 ? 'In Stock (25)' : 'Out of Stock'}`);
+    }
+
+    function deleteProduct(id) {
+      const item = items.find(x => x.id === id);
+      if (!item) return;
+      if (confirm(`Are you sure you want to delete "${item.name}" from store?`)) {
+        items = items.filter(x => x.id !== id);
+        localStorage.setItem('stepmudra_admin_items', JSON.stringify(items));
+        renderList();
+        updateStats();
+        showToast(`Deleted "${item.name}"`);
+      }
+    }
+
+    function exportJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(items, null, 2));
+      const dl = document.createElement('a');
+      dl.setAttribute("href", dataStr);
+      dl.setAttribute("download", "store_items.json");
+      dl.click();
+    }
+
+    // 1-Click Publish to GitHub Cloud API
+    async function publishToCloud() {
+      const btn = document.getElementById('btnPublish');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '⏳ Publishing...';
+      btn.disabled = true;
+
+      // Ask for GitHub Token if not in storage
+      let token = localStorage.getItem('stepmudra_gh_token');
+      if (!token) {
+        token = prompt('Please enter your GitHub Token to publish directly (it will be saved securely in your browser):');
+        if (!token) {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          return;
+        }
+        localStorage.setItem('stepmudra_gh_token', token.trim());
+      }
+
+      try {
+        // 1. Get current file SHA
+        const getUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`;
+        const getRes = await fetch(getUrl, {
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+
+        let sha = '';
+        if (getRes.ok) {
+          const data = await getRes.json();
+          sha = data.sha;
+        }
+
+        // 2. Prepare content
+        const jsonContent = JSON.stringify(items, null, 2);
+        const b64 = btoa(unescape(encodeURIComponent(jsonContent)));
+
+        // 3. PUT commit
+        const putRes = await fetch(getUrl, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/vnd.github.v3+json'
+          },
+          body: JSON.stringify({
+            message: `Update store_items.json via Admin Portal [${items.length} items]`,
+            content: b64,
+            sha: sha || undefined,
+            branch: GITHUB_BRANCH
+          })
+        });
+
+        if (putRes.ok) {
+          showToast('🚀 Store successfully published to Cloud! All users will see the changes immediately.');
+        } else {
+          const errData = await putRes.json();
+          if (putRes.status === 401) {
+            localStorage.removeItem('stepmudra_gh_token');
+            alert('Invalid GitHub Token. Please try again.');
+          } else {
+            alert('Cloud update failed: ' + (errData.message || 'Unknown error'));
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Network error while publishing: ' + err.message);
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
