@@ -468,6 +468,26 @@
             </div>
           </div>
 
+          <!-- High-Value Coin Limit & Co-Pay Card -->
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:14px;margin-bottom:16px;">
+            <div style="font-size:13px;font-weight:800;color:#1e40af;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+              💎 High-Value Product Policy (> 1,000 Coins / Pocket Co-Pay)
+            </div>
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom:0">
+                <label style="color:#1e40af;">Max Wallet Coins Limit</label>
+                <input type="number" id="pMaxCoins" placeholder="e.g. 500 (0 for full coins)" value="0" oninput="updateShippingBadge()">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label style="color:#1e40af;">Cash to Pay from Pocket (₹)</label>
+                <input type="number" id="pRs" placeholder="e.g. 499" value="0" oninput="updateShippingBadge()">
+              </div>
+            </div>
+            <div id="hybridNote" style="font-size:11.5px;color:#1e3a8a;margin-top:8px;line-height:1.4;">
+              ℹ️ Agar product 1,000 coins se upar ka hai to user wallet se sirf ek limit tak coins use karega, baaki paise pocket se dega aur delivery ₹0 (FREE) rahegi!
+            </div>
+          </div>
+
           <!-- Description Section -->
           <div class="form-group">
             <label>Detailed Description & Specifications *</label>
@@ -574,7 +594,18 @@
       'Snacks': '🍫'
     };
 
-    function getShipping(coins) {
+    function isHybridItem(item) {
+      if (!item) return false;
+      const maxC = parseInt(item.maxCoins) || 0;
+      const coins = parseInt(item.price) || 0;
+      const rs = parseInt(item.rs) || 0;
+      return maxC > 0 || (coins > 1000 && rs > 0);
+    }
+
+    function getShipping(coins, maxCoins = 0, rs = 0) {
+      if (maxCoins > 0 || (coins > 1000 && rs > 0)) {
+        return 0; // FREE Shipping for Co-Pay items!
+      }
       const c = parseInt(coins) || 0;
       if (c < 400) return 89;
       if (c <= 600) return 100;
@@ -583,10 +614,34 @@
 
     function updateShippingBadge() {
       const val = parseInt(document.getElementById('pCoins').value) || 0;
-      const ship = getShipping(val);
+      const maxC = parseInt(document.getElementById('pMaxCoins').value) || 0;
+      const rs = parseInt(document.getElementById('pRs').value) || 0;
+
+      const isHybrid = maxC > 0 || (val > 1000 && rs > 0);
+      const ship = getShipping(val, maxC, rs);
       const badge = document.getElementById('shipCalcBadge');
-      if (badge) {
-        badge.innerHTML = '🚚 Delivery Fee: <b>₹' + ship + '</b> (' + (val < 400 ? '< 400 coins' : val <= 600 ? '400 to 600 coins' : '> 600 coins') + ')';
+      const note = document.getElementById('hybridNote');
+
+      if (isHybrid) {
+        if (badge) {
+          badge.innerHTML = '🚚 Delivery Fee: <b>₹0 (FREE Delivery)</b>';
+          badge.style.background = '#eff6ff';
+          badge.style.borderColor = '#bfdbfe';
+          badge.style.color = '#1e40af';
+        }
+        if (note) {
+          note.innerHTML = '✨ <b>Co-Pay Active:</b> User wallet se max <b>' + (maxC || Math.min(val, 1000)) + ' coins</b> dega + pocket se <b>₹' + rs + '</b> pay karega. 🚚 Delivery bilkul <b>FREE (₹0)</b> rahegi!';
+        }
+      } else {
+        if (badge) {
+          badge.innerHTML = '🚚 Delivery Fee: <b>₹' + ship + '</b> (' + (val < 400 ? '< 400 coins' : val <= 600 ? '400 to 600 coins' : '> 600 coins') + ')';
+          badge.style.background = '#f0fdf4';
+          badge.style.borderColor = '#bbf7d0';
+          badge.style.color = '#15803d';
+        }
+        if (note) {
+          note.innerHTML = 'ℹ️ Standard Coins: Full coins from wallet + standard delivery fee applies.';
+        }
       }
     }
 
@@ -719,8 +774,13 @@
               <div class="prod-title">${escapeHtml(item.name)}</div>
               <div class="prod-desc-snippet">${escapeHtml(item.desc || 'No description provided.')}</div>
               <div class="prod-meta">
-                <span class="badge badge-coins">🪙 ${Number(item.price).toLocaleString('en-IN')} Coins</span>
-                <span class="badge badge-ship">🚚 ₹${ship} Delivery</span>
+                ${isHybridItem(item)
+                  ? ('<span class="badge badge-coins">🪙 Max ' + Number(item.maxCoins || item.price).toLocaleString('en-IN') + ' Coins</span>' +
+                     '<span class="badge" style="background:#dbeafe;color:#1e40af;font-weight:800;">💵 Pay ₹' + (item.rs || 0) + '</span>' +
+                     '<span class="badge" style="background:#ecfdf5;color:#047857;font-weight:700;">🚚 FREE Delivery</span>')
+                  : ('<span class="badge badge-coins">🪙 ' + Number(item.price).toLocaleString('en-IN') + ' Coins</span>' +
+                     '<span class="badge badge-ship">🚚 ₹' + ship + ' Delivery</span>')
+                }
                 <span class="badge badge-cat">${item.cat}</span>
                 ${item.mrp ? `<span class="badge" style="background:#f1f5f9;color:#475569">₹${item.mrp} MRP</span>` : ''}
                 ${isOutOfStock 
@@ -752,6 +812,8 @@
       const cat = document.getElementById('pCat').value;
       const mrp = parseInt(document.getElementById('pMrp').value) || 0;
       const stock = parseInt(document.getElementById('pStock').value) || 0;
+      const maxCoins = parseInt(document.getElementById('pMaxCoins').value) || 0;
+      const rs = parseInt(document.getElementById('pRs').value) || 0;
       let desc = document.getElementById('pDesc').value.trim();
       const img = document.getElementById('pImg').value.trim();
       const trend = document.getElementById('pTrend').checked ? 1 : 0;
@@ -764,7 +826,7 @@
       if (editId) {
         const idx = items.findIndex(x => x.id === editId);
         if (idx !== -1) {
-          items[idx] = { ...items[idx], name, price: coins, cat, mrp, stock, desc, img, trend };
+          items[idx] = { ...items[idx], name, price: coins, cat, mrp, stock, maxCoins, rs, desc, img, trend };
           showToast(`✓ Updated "${name}" successfully!`);
         }
       } else {
@@ -777,6 +839,8 @@
           mrp,
           rs: 0,
           stock,
+          maxCoins,
+          rs,
           desc,
           img,
           trend
@@ -801,6 +865,8 @@
       document.getElementById('pCat').value = item.cat || 'Electronics';
       document.getElementById('pMrp').value = item.mrp || 0;
       document.getElementById('pStock').value = item.stock !== undefined ? item.stock : 25;
+      document.getElementById('pMaxCoins').value = item.maxCoins || 0;
+      document.getElementById('pRs').value = item.rs || 0;
       document.getElementById('pDesc').value = item.desc || '';
       
       if (item.img && item.img.length > 10) {
