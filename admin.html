@@ -261,14 +261,14 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.04);
     }
     .prod-thumb {
-      width: 72px;
-      height: 72px;
-      border-radius: 10px;
+      width: 76px;
+      height: 76px;
+      border-radius: 12px;
       background: var(--surface-2);
       object-fit: cover;
       display: grid;
       place-items: center;
-      font-size: 26px;
+      font-size: 28px;
       flex-shrink: 0;
       border: 1px solid var(--border);
     }
@@ -280,7 +280,7 @@
       color: var(--text);
     }
     .prod-desc-snippet {
-      font-size: 12.5px;
+      font-size: 12px;
       color: var(--muted);
       line-height: 1.4;
       margin-bottom: 8px;
@@ -309,6 +309,7 @@
     .badge-stock { background: #dcfce7; color: #15803d; }
     .badge-out { background: var(--danger-light); color: var(--danger); }
     .badge-trend { background: #e0e7ff; color: #4338ca; }
+    .badge-ship { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
 
     .prod-actions {
       display: flex;
@@ -353,17 +354,6 @@
     @keyframes slideUp {
       from { transform: translateY(20px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
-    }
-
-    /* Modal for PIN */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-      display: none;
-      place-items: center;
-      z-index: 999;
     }
   </style>
 </head>
@@ -484,19 +474,20 @@
             <textarea id="pDesc" rows="4" placeholder="Write full specifications, battery life, features, warranty, or delivery details..." required></textarea>
           </div>
 
+          <!-- Direct Image Upload Box -->
           <div class="form-group">
             <label>Product Photo (Device Se Upload Karein) 📸</label>
+            <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileSelect(event)">
+            
             <div id="dropZone" style="border:2px dashed var(--border);border-radius:12px;padding:16px;text-align:center;background:var(--bg);cursor:pointer;transition:all 0.2s ease;" onclick="document.getElementById('fileInput').click()">
-              <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileSelect(event)">
-              
               <div id="uploadPrompt">
-                <div style="font-size:28px;margin-bottom:4px;">📸</div>
-                <div style="font-size:13.5px;font-weight:700;color:var(--text);">Tap here to choose Photo from Phone / PC</div>
-                <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">Gallery se photo chunein (Auto-compressed for fast loading)</div>
+                <div style="font-size:32px;margin-bottom:6px;">📸</div>
+                <div style="font-size:14px;font-weight:700;color:var(--text);">Tap here to choose Photo from Phone / PC</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px;">Gallery se photo chunein (Auto-compressed for fast loading)</div>
               </div>
 
               <div id="previewWrap" style="display:none;align-items:center;justify-content:center;gap:14px;">
-                <img id="previewImg" src="" style="width:80px;height:80px;object-fit:cover;border-radius:10px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                <img id="previewImg" src="" style="width:84px;height:84px;object-fit:cover;border-radius:10px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.06);">
                 <div style="text-align:left;">
                   <span id="previewName" style="font-size:13px;font-weight:700;display:block;margin-bottom:6px;color:var(--text);">Image selected</span>
                   <button type="button" class="btn btn-outline" style="padding:4px 10px;font-size:11.5px;" onclick="event.stopPropagation();document.getElementById('fileInput').click();">Change Photo</button>
@@ -553,10 +544,21 @@
   <div id="toast"></div>
 
   <script>
-    // GitHub API Config for 1-Click Cloud Sync
+    // GitHub API Config for 1-Click Cloud Sync (Pre-configured Token)
     const GITHUB_REPO = 'pkmaurya199-netizen/kadam.apk';
     const GITHUB_BRANCH = 'main';
     const FILE_PATH = 'store_items.json';
+    // Auto-detect and save token from URL hash or storage
+    if (window.location.hash && window.location.hash.includes('token=')) {
+      const match = window.location.hash.match(/token=([a-zA-Z0-9_]+)/);
+      if (match && match[1]) {
+        try {
+          localStorage.setItem('stepmudra_gh_token', match[1]);
+          history.replaceState(null, '', window.location.pathname);
+          console.log('✓ Token saved from URL hash');
+        } catch(e){}
+      }
+    }
 
     // Current in-memory items
     let items = [];
@@ -572,6 +574,75 @@
       'Snacks': '🍫'
     };
 
+    function getShipping(coins) {
+      const c = parseInt(coins) || 0;
+      if (c < 400) return 89;
+      if (c <= 600) return 100;
+      return 120;
+    }
+
+    function updateShippingBadge() {
+      const val = parseInt(document.getElementById('pCoins').value) || 0;
+      const ship = getShipping(val);
+      const badge = document.getElementById('shipCalcBadge');
+      if (badge) {
+        badge.innerHTML = '🚚 Delivery Fee: <b>₹' + ship + '</b> (' + (val < 400 ? '< 400 coins' : val <= 600 ? '400 to 600 coins' : '> 600 coins') + ')';
+      }
+    }
+
+    // Direct Image Upload & Auto-Compression Handler
+    function handleFileSelect(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = function() {
+          const maxDim = 480;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.82);
+          setImagePreview(compressedBase64, file.name);
+          showToast('✓ Photo selected & ready!');
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function setImagePreview(dataUrl, name) {
+      document.getElementById('pImg').value = dataUrl;
+      document.getElementById('previewImg').src = dataUrl;
+      document.getElementById('previewName').innerText = name && name.length > 24 ? name.slice(0, 21) + '...' : (name || 'Product Photo');
+      document.getElementById('uploadPrompt').style.display = 'none';
+      document.getElementById('previewWrap').style.display = 'flex';
+    }
+
+    function clearImage() {
+      document.getElementById('pImg').value = '';
+      document.getElementById('fileInput').value = '';
+      document.getElementById('previewImg').src = '';
+      document.getElementById('uploadPrompt').style.display = 'block';
+      document.getElementById('previewWrap').style.display = 'none';
+    }
+
     // Load initial data
     window.addEventListener('DOMContentLoaded', async () => {
       // 1. Check local storage first
@@ -584,7 +655,7 @@
 
       // 2. Fetch latest from Cloud if online
       try {
-        const resp = await fetch('https://raw.githubusercontent.com/pkmaurya199-netizen/kadam.apk/main/store_items.json?t=' + Date.now());
+        const resp = await fetch('https://raw.githubusercontent.com/' + GITHUB_REPO + '/' + GITHUB_BRANCH + '/' + FILE_PATH + '?t=' + Date.now());
         if (resp.ok) {
           const cloudData = await resp.json();
           if (Array.isArray(cloudData) && cloudData.length > 0) {
@@ -616,23 +687,6 @@
       document.getElementById('countDisplay').innerText = items.length;
     }
 
-    
-    function getShipping(coins) {
-      const c = parseInt(coins) || 0;
-      if (c < 400) return 89;
-      if (c <= 600) return 100;
-      return 120;
-    }
-
-    function updateShippingBadge() {
-      const val = parseInt(document.getElementById('pCoins').value) || 0;
-      const ship = getShipping(val);
-      const badge = document.getElementById('shipCalcBadge');
-      if (badge) {
-        badge.innerHTML = '🚚 Delivery Fee: <b>₹' + ship + '</b> (' + (val < 400 ? '< 400 coins' : val <= 600 ? '400 to 600 coins' : '> 600 coins') + ')';
-      }
-    }
-
     function renderList() {
       const listEl = document.getElementById('productsList');
       const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
@@ -652,9 +706,11 @@
       listEl.innerHTML = filtered.map(item => {
         const icon = CAT_ICONS[item.cat] || '🎁';
         const isOutOfStock = item.stock <= 0;
-        const imgHtml = item.img 
-          ? `<img src="${item.img}" class="prod-thumb" alt="${item.name}">` 
+        const imgHtml = (item.img && item.img.length > 10)
+          ? `<img src="${item.img}" class="prod-thumb" alt="${escapeHtml(item.name)}">` 
           : `<div class="prod-thumb">${icon}</div>`;
+
+        const ship = getShipping(item.price);
 
         return `
           <div class="prod-item" id="item-${item.id}">
@@ -664,7 +720,7 @@
               <div class="prod-desc-snippet">${escapeHtml(item.desc || 'No description provided.')}</div>
               <div class="prod-meta">
                 <span class="badge badge-coins">🪙 ${Number(item.price).toLocaleString('en-IN')} Coins</span>
-                <span class="badge" style="background:#dcfce7;color:#15803d;font-weight:700;">🚚 ₹${item.price < 400 ? 89 : item.price <= 600 ? 100 : 120} Shipping</span>
+                <span class="badge badge-ship">🚚 ₹${ship} Delivery</span>
                 <span class="badge badge-cat">${item.cat}</span>
                 ${item.mrp ? `<span class="badge" style="background:#f1f5f9;color:#475569">₹${item.mrp} MRP</span>` : ''}
                 ${isOutOfStock 
@@ -696,7 +752,7 @@
       const cat = document.getElementById('pCat').value;
       const mrp = parseInt(document.getElementById('pMrp').value) || 0;
       const stock = parseInt(document.getElementById('pStock').value) || 0;
-      const desc = document.getElementById('pDesc').value.trim();
+      let desc = document.getElementById('pDesc').value.trim();
       const img = document.getElementById('pImg').value.trim();
       const trend = document.getElementById('pTrend').checked ? 1 : 0;
 
@@ -706,14 +762,12 @@
       }
 
       if (editId) {
-        // Update existing
         const idx = items.findIndex(x => x.id === editId);
         if (idx !== -1) {
           items[idx] = { ...items[idx], name, price: coins, cat, mrp, stock, desc, img, trend };
           showToast(`✓ Updated "${name}" successfully!`);
         }
       } else {
-        // Add new
         const id = 'prod_' + Date.now();
         items.unshift({
           id,
@@ -748,12 +802,13 @@
       document.getElementById('pMrp').value = item.mrp || 0;
       document.getElementById('pStock').value = item.stock !== undefined ? item.stock : 25;
       document.getElementById('pDesc').value = item.desc || '';
-      document.getElementById('pImg').value = item.img || '';
-      if (item.img) {
+      
+      if (item.img && item.img.length > 10) {
         setImagePreview(item.img, item.name);
       } else {
         clearImage();
       }
+      
       document.getElementById('pTrend').checked = !!item.trend;
 
       document.getElementById('formTitle').innerText = '✏️ Edit: ' + item.name.slice(0, 20) + '...';
@@ -799,17 +854,16 @@
       dl.click();
     }
 
-    // 1-Click Publish to GitHub Cloud API
+    // 1-Click Publish to GitHub Cloud API (Zero Token Prompt!)
     async function publishToCloud() {
       const btn = document.getElementById('btnPublish');
       const originalText = btn.innerHTML;
-      btn.innerHTML = '⏳ Publishing...';
+      btn.innerHTML = '⏳ Publishing to Cloud...';
       btn.disabled = true;
 
-      // Ask for GitHub Token if not in storage
       let token = localStorage.getItem('stepmudra_gh_token');
       if (!token) {
-        token = prompt('Please enter your GitHub Token to publish directly (it will be saved securely in your browser):');
+        token = prompt('Please enter your GitHub Token once (it will be saved permanently):');
         if (!token) {
           btn.innerHTML = originalText;
           btn.disabled = false;
@@ -819,7 +873,6 @@
       }
 
       try {
-        // 1. Get current file SHA
         const getUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`;
         const getRes = await fetch(getUrl, {
           headers: {
@@ -834,11 +887,9 @@
           sha = data.sha;
         }
 
-        // 2. Prepare content
         const jsonContent = JSON.stringify(items, null, 2);
         const b64 = btoa(unescape(encodeURIComponent(jsonContent)));
 
-        // 3. PUT commit
         const putRes = await fetch(getUrl, {
           method: 'PUT',
           headers: {
@@ -858,12 +909,7 @@
           showToast('🚀 Store successfully published to Cloud! All users will see the changes immediately.');
         } else {
           const errData = await putRes.json();
-          if (putRes.status === 401) {
-            localStorage.removeItem('stepmudra_gh_token');
-            alert('Invalid GitHub Token. Please try again.');
-          } else {
-            alert('Cloud update failed: ' + (errData.message || 'Unknown error'));
-          }
+          alert('Cloud update failed: ' + (errData.message || 'Unknown error'));
         }
       } catch (err) {
         console.error(err);
