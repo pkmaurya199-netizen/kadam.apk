@@ -1764,7 +1764,72 @@ function placeOrder(it){
   S.orders.unshift(o);
   S.cart=S.cart.filter(function(x){return x!==it.id;});
 }
+
+function handleOrderConfirmation(target) {
+  var isCart = (target === 'cart');
+  var items = isCart ? S.cart.map(itemById).filter(Boolean) : [itemById(target)].filter(Boolean);
+  if (!items.length) { UI.confirm = null; render(); return; }
+
+  var totalCoins = items.reduce(function(a, i){ return a + i.price; }, 0);
+  var totalShip = items.reduce(function(a, i){ return a + shippingOf(i.price); }, 0);
+
+  if (S.balance < totalCoins || items.some(unavailable)) {
+    toast(t('Cannot place order: check coins or stock'));
+    render();
+    return;
+  }
+
+  // Get shipping inputs
+  var name = (document.getElementById('chkName') && document.getElementById('chkName').value || '').trim();
+  var phone = (document.getElementById('chkPhone') && document.getElementById('chkPhone').value || '').trim();
+  var address = (document.getElementById('chkAddress') && document.getElementById('chkAddress').value || '').trim();
+  var pincode = (document.getElementById('chkPincode') && document.getElementById('chkPincode').value || '').trim();
+  var payRadio = document.querySelector('input[name="shipPay"]:checked');
+  var payMethod = payRadio ? payRadio.value : 'upi';
+
+  if (!name || !phone || !address || !pincode) {
+    toast(t('Please fill all delivery address fields'));
+    return;
+  }
+
+  // Save address for future orders
+  S.shippingAddr = { name: name, phone: phone, address: address, pincode: pincode, method: payMethod };
+
+  // Deduct coins from wallet & place orders
+  items.forEach(function(it) {
+    addTx('shop', -it.price, 'Redeemed: ' + it.name);
+    S.stock[it.id] = stockOf(it) - 1;
+    var o = {
+      id: Date.now() + Math.random(),
+      name: it.name,
+      price: it.price,
+      shipping: shippingOf(it.price),
+      payMethod: (payMethod === 'upi' ? 'UPI (Paid)' : 'COD Delivery Fee'),
+      customer: { name: name, phone: phone, address: address, pincode: pincode },
+      status: 'Confirmed',
+      code: vcode(),
+      ts: Date.now()
+    };
+    S.orders.unshift(o);
+  });
+
+  if (isCart) {
+    S.cart = [];
+  } else {
+    S.cart = S.cart.filter(function(x){ return x !== target; });
+  }
+
+  UI.confirm = null;
+  UI.sub = 'orders';
+  checkBadges();
+  save();
+  render();
+  toast('🎉 ' + t('Order Confirmed! Coins deducted. Shipping: ₹') + totalShip);
+  scheduleOrders();
+}
+
 function buy(id){
+
   var it=itemById(id);
   if(!it||S.balance<it.price||unavailable(it)){UI.confirm=null;render();return;}
   placeOrder(it);
@@ -2557,7 +2622,16 @@ function prodArt(id, cat) {
   }
 }
 
+
+function shippingOf(price) {
+  var p = Number(price) || 0;
+  if (p < 400) return 89;
+  if (p <= 600) return 100;
+  return 120;
+}
+
 function prodCard(it){
+
   var c=catOf(it.cat);
   var imgHTML = it.img 
     ? '<img src="'+it.img+'" alt="'+esc(it.name)+'" style="width:84px;height:84px;object-fit:cover;border-radius:12px;background:#f8fafc;flex:none;">'
@@ -2592,6 +2666,7 @@ function prodCard(it){
         '<span style="background:var(--coin-soft);color:var(--coin-d);font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:3px;">' +
           coin(12) + ' ' + fmt(it.price) +
         '</span>' +
+        '<span style="background:#dcfce7;color:#15803d;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;">+ ₹' + shippingOf(it.price) + ' Delivery</span>' +
         (unavailable(it) ? '<span style="font-size:10.5px;color:#ef4444;font-weight:700;">' + t('Out of stock') + '</span>' : '') +
       '</div>' +
     '</div>' +
@@ -2772,13 +2847,19 @@ function ordersHTML(){
 function cartHTML(){
   var items=S.cart.map(itemById).filter(Boolean),total=items.reduce(function(a,i){return a+i.price;},0),after=S.balance-total,bad=items.some(unavailable);
   if(!items.length)return subHeader(t('Cart'))+'<section class="card" style="display:grid;gap:12px;justify-items:center;text-align:center"><span class="pimg tone-mint" style="width:72px">'+svgi('cart',34,1.5)+'</span><b>'+t('Your cart is empty')+'</b><button class="btn primary" data-a="back">'+t('Browse products')+'</button></section>';
+  var totalShip = items.reduce(function(a, i){ return a + shippingOf(i.price); }, 0);
   return subHeader(t('Cart'))+
   '<section class="card">'+items.map(function(i){var c=catOf(i.cat);
-    return '<div class="crow"><span class="pimg tone-'+c.tone+'">'+svgi(c.ic,26,1.5)+'</span><div class="tx-m"><b>'+t(i.name)+'</b><span class="reward">'+coin(14)+fmt(i.price)+'</span></div><button class="btn" style="min-height:36px;padding:6px 10px" data-a="uncart" data-v="'+i.id+'">'+t('Remove')+'</button></div>';}).join('')+'</section>'+
-  '<section class="card stack"><div class="row" style="justify-content:space-between"><span class="muted">'+t('Total')+'</span><span class="reward" style="font-size:20px">'+coin(20)+fmt(total)+'</span></div>'+
-    '<div class="row" style="justify-content:space-between"><span class="muted">'+t('Balance after')+'</span><b class="num" style="color:'+(after>=0?'inherit':'var(--danger)')+'">'+fmt(after)+'</b></div>'+
+    return '<div class="crow"><span class="pimg tone-'+c.tone+'">'+svgi(c.ic,26,1.5)+'</span><div class="tx-m"><b>'+t(i.name)+'</b><span class="reward">'+coin(14)+fmt(i.price)+' <small style="color:#15803d;font-weight:700;">(+₹'+shippingOf(i.price)+' delivery)</small></span></div><button class="btn" style="min-height:36px;padding:6px 10px" data-a="uncart" data-v="'+i.id+'">'+t('Remove')+'</button></div>';}).join('')+'</section>'+
+  '<section class="card stack">'+
+    '<div class="row" style="justify-content:space-between"><span class="muted">'+t('Redeem Coins (Wallet)')+'</span><span class="reward" style="font-size:18px">'+coin(18)+fmt(total)+'</span></div>'+
+    '<div class="row" style="justify-content:space-between"><span class="muted">'+t('Total Delivery & Shipping')+'</span><b style="font-size:16px;color:#1e8e4e;">₹' + totalShip + '</b></div>'+
+    '<div class="row" style="justify-content:space-between;border-top:1px dashed var(--line);padding-top:8px;"><span class="muted">'+t('Wallet Coins After')+'</span><b class="num" style="color:'+(after>=0?'inherit':'var(--danger)')+'">'+fmt(after)+'</b></div>'+
+    '<div style="background:var(--surface-2);border-radius:10px;padding:9px 12px;font-size:12px;color:var(--text);line-height:1.4;">' +
+      'ℹ️ ' + t('Only coins will be deducted from your app wallet. The delivery charge of') + ' <b>₹' + totalShip + '</b> ' + t('is payable upon confirming your order.') +
+    '</div>' +
     (after<0?'<p class="err">'+t('Not enough coins')+': '+fmt(-after)+' '+t('more coins needed')+'</p>':'')+(bad?'<p class="err">'+t('Some items are unavailable')+'</p>':'')+
-    '<button class="btn primary block" data-a="checkout" '+(after<0||bad?'disabled':'')+'>'+t('Checkout')+'</button></section>';
+    '<button class="btn primary block" data-a="ask-cart" '+(after<0||bad?'disabled':'')+'>'+t('Proceed to Checkout (₹' + totalShip + ' Delivery)')+'</button></section>';
 }
 function prodSheetHTML(){
   var it=itemById(UI.prod);if(!it)return '';
@@ -2789,12 +2870,25 @@ function prodSheetHTML(){
     ? '<div style="width:100%;height:160px;border-radius:16px;overflow:hidden;margin-bottom:12px;background:#f8fafc;display:grid;place-items:center;"><img src="'+it.img+'" alt="'+esc(it.name)+'" style="max-width:100%;max-height:100%;object-fit:contain;"></div>'
     : ('<div style="width:100%;height:130px;border-radius:16px;overflow:hidden;margin-bottom:12px;background:#f8fafc;display:grid;place-items:center;">' + prodArt(it.id, it.cat) + '</div>');
 
-  var descHTML = it.desc 
-    ? '<div style="margin:12px 0;padding:12px 14px;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;text-align:left;">' +
-        '<span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);display:block;margin-bottom:5px;">' + t('Product Details & Specifications') + '</span>' +
-        '<p style="font-size:13px;line-height:1.5;color:var(--text);margin:0;white-space:pre-line;">' + esc(it.desc) + '</p>' +
-      '</div>'
-    : '';
+  var shipFee = shippingOf(it.price);
+  var shippingBanner = '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:10px 12px;margin:10px 0;display:flex;align-items:center;justify-content:space-between;text-align:left;">' +
+    '<div style="display:flex;align-items:center;gap:10px;">' +
+      '<span style="font-size:22px;">🚚</span>' +
+      '<div>' +
+        '<b style="font-size:13px;color:#15803d;display:block;">' + t('Standard Delivery Charge') + ': ₹' + shipFee + '</b>' +
+        '<small style="font-size:11px;color:#166534;">' + t('Coins deducted from wallet; shipping payable at checkout') + '</small>' +
+      '</div>' +
+    '</div>' +
+    '<span style="background:#22c55e;color:#fff;font-size:12px;font-weight:800;padding:3px 8px;border-radius:6px;">₹' + shipFee + '</span>' +
+  '</div>';
+
+  var descHTML = '<div style="margin:12px 0;padding:12px 14px;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;text-align:left;">' +
+      '<span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);display:block;margin-bottom:5px;">' + t('Product Details & Specifications') + '</span>' +
+      '<p style="font-size:13px;line-height:1.5;color:var(--text);margin:0;white-space:pre-line;">' + esc(it.desc || 'Complete walking challenges and redeem this reward for free with Step Coins!') + '</p>' +
+      '<div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:12px;color:#15803d;font-weight:600;">' +
+        '📦 ' + t('Shipping Rule') + ': ' + (it.price < 400 ? 'Under 400 coins = ₹89 delivery' : it.price <= 600 ? '400 to 600 coins = ₹100 delivery' : 'Above 600 coins = ₹120 delivery') +
+      '</div>' +
+    '</div>';
 
   return '<div class="overlay" data-a="overlay"><div class="sheet" role="dialog" aria-modal="true" aria-label="'+esc(it.name)+'" style="max-height:85vh;overflow-y:auto;">'+
     imgHTML +
@@ -2804,20 +2898,76 @@ function prodSheetHTML(){
       (it.mrp?'<span class="muted" style="font-size:13.5px;text-decoration:line-through;">₹'+fmt(it.mrp)+'</span>':'')+
       (it.stock<999?'<span class="small '+(st<1?'err':'muted')+'" style="font-weight:700;">'+(st<1?t('Out of stock'):(st+' '+t('left')))+'</span>':'')+
     '</div>'+
-    descHTML +
+    shippingBanner + descHTML +
     '<div class="row" style="justify-content:space-between;margin:10px 0;"><span class="muted">'+t('Your balance')+'</span><b class="num">'+coin(16)+fmt(S.balance)+'</b></div>'+
     (msg?'<p class="err">'+msg+'</p>':'')+
     (it.cat!=='More'?'<p class="small muted" style="margin-bottom:12px;">'+t('Delivery details are collected at checkout.')+'</p>':'')+
     '<div class="two"><button class="btn" data-a="cart" data-v="'+it.id+'" '+(own||st<1?'disabled':'')+'>'+(inCart?t('Remove from cart'):t('Add to cart'))+'</button><button class="btn primary" data-a="ask" data-v="'+it.id+'" '+(can?'':'disabled')+'>'+t('Redeem')+'</button></div></div></div>';
 }
 function sheetHTML(){
-  var it=ITEMS.filter(function(x){return x.id===UI.confirm;})[0];if(!it)return '';
-  var after=S.balance-it.price,ok=after>=0;
-  return '<div class="overlay" data-a="overlay"><div class="sheet" role="dialog" aria-modal="true" aria-label="'+t('Confirm redeem')+'">'+
-    '<h2 style="font-size:20px">'+t('Confirm redeem')+'</h2><div><b>'+t(it.name)+'</b><div class="reward" style="margin-top:4px">'+coin(18)+fmt(it.price)+'</div></div>'+
-    '<div class="row" style="justify-content:space-between"><span class="muted">'+t('Balance after')+'</span><span class="num" style="font-size:20px;color:'+(ok?'inherit':'var(--danger)')+'">'+fmt(after)+'</span></div>'+
-    (ok?'':'<p class="err">'+t('Not enough coins')+': '+fmt(-after)+' '+t('more coins needed')+'</p>')+
-    '<div class="two"><button class="btn" data-a="cancel">'+t('Cancel')+'</button><button class="btn primary" data-a="buy" data-v="'+it.id+'" '+(ok?'':'disabled')+'>'+t('Confirm')+'</button></div></div></div>';
+  var isCart = (UI.confirm === 'cart');
+  var items = isCart ? S.cart.map(itemById).filter(Boolean) : [itemById(UI.confirm)].filter(Boolean);
+  if(!items.length) return '';
+
+  var totalCoins = items.reduce(function(a, i){ return a + i.price; }, 0);
+  var totalShip = items.reduce(function(a, i){ return a + shippingOf(i.price); }, 0);
+  var after = S.balance - totalCoins;
+  var ok = after >= 0;
+
+  var savedAddr = S.shippingAddr || { name: '', phone: S.phone || '', address: '', pincode: '', method: 'upi' };
+
+  return '<div class="overlay" data-a="overlay"><div class="sheet" role="dialog" aria-modal="true" aria-label="' + t('Delivery & Checkout') + '" style="max-height:90vh;overflow-y:auto;text-align:left;">' +
+    '<h2 style="font-size:19px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">📦 ' + t('Delivery Address & Payment') + '</h2>' +
+
+    '<div style="background:var(--surface-2);border-radius:14px;padding:12px;margin-bottom:14px;border:1px solid var(--line);">' +
+      '<div style="font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">' + t('Order Summary') + '</div>' +
+      items.map(function(it){
+        return '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">' +
+          '<span style="font-weight:600;flex:1;margin-right:10px;">' + esc(it.name) + '</span>' +
+          '<span>' + coin(14) + fmt(it.price) + ' <small style="color:#15803d;font-weight:700;">(+₹' + shippingOf(it.price) + ' ship)</small></span>' +
+        '</div>';
+      }).join('') +
+      '<div style="border-top:1px dashed var(--line);margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;font-size:13.5px;">' +
+        '<span style="color:var(--muted);">' + t('Coins to Deduct (Wallet)') + ':</span>' +
+        '<b class="reward">' + coin(16) + fmt(totalCoins) + '</b>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:space-between;font-size:14px;margin-top:4px;">' +
+        '<span style="color:var(--muted);">' + t('Shipping Charge to Pay') + ':</span>' +
+        '<b style="color:#1e8e4e;font-size:16px;">₹' + totalShip + '</b>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:space-between;font-size:12.5px;margin-top:4px;">' +
+        '<span style="color:var(--muted);">' + t('Wallet Balance After') + ':</span>' +
+        '<b class="num" style="color:' + (ok ? 'inherit' : 'var(--danger)') + ';">' + fmt(after) + '</b>' +
+      '</div>' +
+    '</div>' +
+
+    '<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">' +
+      '<div style="font-size:12.5px;font-weight:800;color:var(--text);">' + t('Enter Shipping Address') + ' *</div>' +
+      '<input type="text" id="chkName" placeholder="' + t('Full Name') + '" value="' + esc(savedAddr.name) + '" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);">' +
+      '<input type="tel" id="chkPhone" placeholder="' + t('Mobile Number (for delivery OTP/updates)') + '" value="' + esc(savedAddr.phone) + '" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);">' +
+      '<textarea id="chkAddress" rows="2" placeholder="' + t('House / Flat No, Landmark, Street Address') + '" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);">' + esc(savedAddr.address) + '</textarea>' +
+      '<input type="text" id="chkPincode" placeholder="' + t('6-Digit Pincode') + '" value="' + esc(savedAddr.pincode) + '" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);">' +
+    '</div>' +
+
+    '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px;margin-bottom:14px;">' +
+      '<div style="font-size:12.5px;font-weight:800;color:#15803d;margin-bottom:6px;">' + t('Choose Shipping Payment Method') + ' (₹' + totalShip + '):</div>' +
+      '<label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px;cursor:pointer;">' +
+        '<input type="radio" name="shipPay" value="upi" checked> ' + t('UPI Payment (PhonePe / GPay / Paytm)') +
+      '</label>' +
+      '<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">' +
+        '<input type="radio" name="shipPay" value="cod"> ' + t('Cash on Delivery (COD Shipping Charge)') +
+      '</label>' +
+    '</div>' +
+
+    (ok ? '' : '<p class="err" style="margin-bottom:10px;">' + t('Not enough coins') + ': ' + fmt(-after) + ' ' + t('more coins needed') + '</p>') +
+
+    '<div class="two">' +
+      '<button class="btn" data-a="cancel">' + t('Cancel') + '</button>' +
+      '<button class="btn primary" data-a="confirm-order" data-v="' + (isCart ? 'cart' : items[0].id) + '" ' + (ok ? '' : 'disabled') + '>' +
+        t('Pay ₹' + totalShip + ' & Confirm') +
+      '</button>' +
+    '</div>' +
+  '</div></div>';
 }
 
 /* original card artwork for the Game Play hub */
@@ -3804,7 +3954,8 @@ document.addEventListener('click',function(e){
     case 'prod':UI.prod=v;render();break;
     case 'cart':{var ci=S.cart.indexOf(v);if(ci>-1){S.cart.splice(ci,1);toast(t('Removed from cart'));}else{S.cart.push(v);toast(t('Added to cart'));}save();render();break;}
     case 'uncart':S.cart=S.cart.filter(function(x){return x!==v;});save();render();break;
-    case 'checkout':checkout();break;
+    case 'checkout':
+    case 'ask-cart':UI.confirm='cart';render();break;
     case 'pro':toast(t('StepMudra Plus is coming soon'));break;
     case 'followp':S.following[v]=!S.following[v];save();render();break;
     case 'exportsteps':UI.exp=true;render();break;
@@ -3815,6 +3966,7 @@ document.addEventListener('click',function(e){
     case 'ask':UI.prod=null;UI.confirm=v;render();break;
     case 'cancel':UI.confirm=null;render();break;
     case 'buy':buy(v);break;
+    case 'confirm-order':handleOrderConfirmation(v);break;
     case 'gsel':UI.gsel=v;if(L.run)lstop();render();break;
     case 'mv':move(Number(v));break;
     case 'ng':newGame();render();break;
