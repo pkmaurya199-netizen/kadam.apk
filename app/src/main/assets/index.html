@@ -1771,7 +1771,11 @@ function handleOrderConfirmation(target) {
   if (!items.length) { UI.confirm = null; render(); return; }
 
   var totalCoins = items.reduce(function(a, i){ return a + i.price; }, 0);
-  var totalShip = items.reduce(function(a, i){ return a + shippingOf(i.price); }, 0);
+  var totalCoins = items.reduce(function(a, i){ return a + coinsToRedeem(i); }, 0);
+  var totalCash = items.reduce(function(a, i){ return a + cashToPay(i); }, 0);
+  var totalShip = items.reduce(function(a, i){ return a + shippingOf(i); }, 0);
+  var grandPay = totalCash + totalShip;
+  var after = S.balance - totalCoins;
 
   if (S.balance < totalCoins || items.some(unavailable)) {
     toast(t('Cannot place order: check coins or stock'));
@@ -2623,8 +2627,30 @@ function prodArt(id, cat) {
 }
 
 
-function shippingOf(price) {
-  var p = Number(price) || 0;
+function isHybridProduct(it) {
+  if (!it) return false;
+  return (it.maxCoins && Number(it.maxCoins) > 0) || (Number(it.price) > 1000 && Number(it.rs) > 0);
+}
+
+function coinsToRedeem(it) {
+  if (!it) return 0;
+  if (it.maxCoins && Number(it.maxCoins) > 0) return Number(it.maxCoins);
+  return Number(it.price) || 0;
+}
+
+function cashToPay(it) {
+  if (!it) return 0;
+  if (isHybridProduct(it)) return Number(it.rs) || 0;
+  return 0;
+}
+
+function shippingOf(it) {
+  if (!it) return 0;
+  // Products with coin limit / co-pay have FREE Shipping (₹0)!
+  if (isHybridProduct(it)) return 0;
+  
+  var p = (typeof it === 'object') ? Number(it.price) : Number(it);
+  p = p || 0;
   if (p < 400) return 89;
   if (p <= 600) return 100;
   return 120;
@@ -2649,6 +2675,16 @@ function prodCard(it){
     mrpTag = '<span style="font-size:12px;color:var(--muted);text-decoration:line-through;">₹' + fmt(it.rs) + '</span>';
   }
 
+  var hybrid = isHybridProduct(it);
+  var priceBadges = hybrid
+    ? ('<span style="background:var(--coin-soft);color:var(--coin-d);font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:3px;">' +
+        coin(12) + ' Max ' + fmt(coinsToRedeem(it)) + (cashToPay(it) > 0 ? (' + ₹' + fmt(cashToPay(it))) : '') +
+      '</span>' +
+      '<span style="background:#ecfdf5;color:#047857;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;">🚚 FREE Delivery</span>')
+    : ('<span style="background:var(--coin-soft);color:var(--coin-d);font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:3px;">' +
+        coin(12) + ' ' + fmt(it.price) +
+      '</span>' +
+      '<span style="background:#dcfce7;color:#15803d;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;">+ ₹' + shippingOf(it) + ' Delivery</span>');
   return '<article class="prod-single-card" data-a="prod" data-v="'+it.id+'" style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:18px;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);cursor:pointer;margin-bottom:10px;text-align:left;position:relative;">' +
     imgHTML +
     '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;">' +
@@ -2663,10 +2699,7 @@ function prodCard(it){
       '</div>' +
       '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px;">' +
         saveTag +
-        '<span style="background:var(--coin-soft);color:var(--coin-d);font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:3px;">' +
-          coin(12) + ' ' + fmt(it.price) +
-        '</span>' +
-        '<span style="background:#dcfce7;color:#15803d;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;">+ ₹' + shippingOf(it.price) + ' Delivery</span>' +
+        priceBadges +
         (unavailable(it) ? '<span style="font-size:10.5px;color:#ef4444;font-weight:700;">' + t('Out of stock') + '</span>' : '') +
       '</div>' +
     '</div>' +
@@ -2852,35 +2885,51 @@ function cartHTML(){
   '<section class="card">'+items.map(function(i){var c=catOf(i.cat);
     return '<div class="crow"><span class="pimg tone-'+c.tone+'">'+svgi(c.ic,26,1.5)+'</span><div class="tx-m"><b>'+t(i.name)+'</b><span class="reward">'+coin(14)+fmt(i.price)+' <small style="color:#15803d;font-weight:700;">(+₹'+shippingOf(i.price)+' delivery)</small></span></div><button class="btn" style="min-height:36px;padding:6px 10px" data-a="uncart" data-v="'+i.id+'">'+t('Remove')+'</button></div>';}).join('')+'</section>'+
   '<section class="card stack">'+
-    '<div class="row" style="justify-content:space-between"><span class="muted">'+t('Redeem Coins (Wallet)')+'</span><span class="reward" style="font-size:18px">'+coin(18)+fmt(total)+'</span></div>'+
-    '<div class="row" style="justify-content:space-between"><span class="muted">'+t('Total Delivery & Shipping')+'</span><b style="font-size:16px;color:#1e8e4e;">₹' + totalShip + '</b></div>'+
-    '<div class="row" style="justify-content:space-between;border-top:1px dashed var(--line);padding-top:8px;"><span class="muted">'+t('Wallet Coins After')+'</span><b class="num" style="color:'+(after>=0?'inherit':'var(--danger)')+'">'+fmt(after)+'</b></div>'+
+    '<div class="row" style="justify-content:space-between"><span class="muted">'+t('Redeem Coins (Wallet)')+'</span><span class="reward" style="font-size:18px">'+coin(18)+fmt(totalCoins)+'</span></div>'+
+    (totalCash > 0 ? ('<div class="row" style="justify-content:space-between"><span class="muted">'+t('Product Co-Pay (Pocket)')+'</span><b style="font-size:16px;color:#1e8e4e;">₹' + fmt(totalCash) + '</b></div>') : '') +
+    '<div class="row" style="justify-content:space-between"><span class="muted">'+t('Shipping & Delivery Fee')+'</span><b style="font-size:16px;color:#15803d;">' + (totalShip > 0 ? ('₹' + totalShip) : t('FREE (₹0)')) + '</b></div>'+
+    '<div class="row" style="justify-content:space-between;border-top:1px dashed var(--line);padding-top:8px;"><span class="muted">'+t('Total Cash to Pay')+'</span><b style="font-size:18px;color:#1e8e4e;">₹' + fmt(grandPay) + '</b></div>'+
+    '<div class="row" style="justify-content:space-between"><span class="muted">'+t('Wallet Coins After')+'</span><b class="num" style="color:'+(after>=0?'inherit':'var(--danger)')+'">'+fmt(after)+'</b></div>'+
     '<div style="background:var(--surface-2);border-radius:10px;padding:9px 12px;font-size:12px;color:var(--text);line-height:1.4;">' +
-      'ℹ️ ' + t('Only coins will be deducted from your app wallet. The delivery charge of') + ' <b>₹' + totalShip + '</b> ' + t('is payable upon confirming your order.') +
+      'ℹ️ ' + t('Coins are deducted from your wallet balance. Total payable cash via UPI / COD is') + ' <b>₹' + fmt(grandPay) + '</b>' + (totalShip === 0 ? ' (' + t('FREE Delivery') + ')' : '') + '.' +
     '</div>' +
     (after<0?'<p class="err">'+t('Not enough coins')+': '+fmt(-after)+' '+t('more coins needed')+'</p>':'')+(bad?'<p class="err">'+t('Some items are unavailable')+'</p>':'')+
-    '<button class="btn primary block" data-a="ask-cart" '+(after<0||bad?'disabled':'')+'>'+t('Proceed to Checkout (₹' + totalShip + ' Delivery)')+'</button></section>';
+    '<button class="btn primary block" data-a="ask-cart" '+(after<0||bad?'disabled':'')+'>'+t('Proceed to Checkout (₹' + fmt(grandPay) + ')')+'</button></section>';
 }
 function prodSheetHTML(){
   var it=itemById(UI.prod);if(!it)return '';
-  var c=catOf(it.cat),st=stockOf(it),inCart=S.cart.indexOf(it.id)>-1,own=(it.id==='frame'&&S.frame),can=S.balance>=it.price&&st>0&&!own,msg='';
-  if(own)msg=t('Owned');else if(st<1)msg=t('Out of stock');else if(S.balance<it.price)msg=t('Not enough coins')+': '+fmt(it.price-S.balance)+' '+t('more coins needed');
+  var c=catOf(it.cat),st=stockOf(it),inCart=S.cart.indexOf(it.id)>-1,own=(it.id==='frame'&&S.frame);
+  var neededCoins = coinsToRedeem(it);
+  var can=S.balance>=neededCoins&&st>0&&!own,msg='';
+  if(own)msg=t('Owned');else if(st<1)msg=t('Out of stock');else if(S.balance<neededCoins)msg=t('Not enough coins')+': '+fmt(neededCoins-S.balance)+' '+t('more coins needed');
 
   var imgHTML = it.img 
     ? '<div style="width:100%;height:160px;border-radius:16px;overflow:hidden;margin-bottom:12px;background:#f8fafc;display:grid;place-items:center;"><img src="'+it.img+'" alt="'+esc(it.name)+'" style="max-width:100%;max-height:100%;object-fit:contain;"></div>'
     : ('<div style="width:100%;height:130px;border-radius:16px;overflow:hidden;margin-bottom:12px;background:#f8fafc;display:grid;place-items:center;">' + prodArt(it.id, it.cat) + '</div>');
 
-  var shipFee = shippingOf(it.price);
-  var shippingBanner = '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:10px 12px;margin:10px 0;display:flex;align-items:center;justify-content:space-between;text-align:left;">' +
-    '<div style="display:flex;align-items:center;gap:10px;">' +
-      '<span style="font-size:22px;">🚚</span>' +
-      '<div>' +
-        '<b style="font-size:13px;color:#15803d;display:block;">' + t('Standard Delivery Charge') + ': ₹' + shipFee + '</b>' +
-        '<small style="font-size:11px;color:#166534;">' + t('Coins deducted from wallet; shipping payable at checkout') + '</small>' +
-      '</div>' +
-    '</div>' +
-    '<span style="background:#22c55e;color:#fff;font-size:12px;font-weight:800;padding:3px 8px;border-radius:6px;">₹' + shipFee + '</span>' +
-  '</div>';
+  var hybrid = isHybridProduct(it);
+  var shipFee = shippingOf(it);
+  var shippingBanner = hybrid
+    ? ('<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:10px 12px;margin:10px 0;display:flex;align-items:center;justify-content:space-between;text-align:left;">' +
+        '<div style="display:flex;align-items:center;gap:10px;">' +
+          '<span style="font-size:22px;">💎</span>' +
+          '<div>' +
+            '<b style="font-size:13px;color:#1e40af;display:block;">' + t('Coin Limit + Co-Pay') + ': Max ' + fmt(neededCoins) + ' Coins</b>' +
+            '<small style="font-size:11px;color:#1e3a8a;">' + t('Pay ₹') + fmt(cashToPay(it)) + ' ' + t('from pocket. No shipping charge (FREE Delivery)!') + '</small>' +
+          '</div>' +
+        '</div>' +
+        '<span style="background:#3b82f6;color:#fff;font-size:11.5px;font-weight:800;padding:3px 8px;border-radius:6px;">' + t('FREE Delivery') + '</span>' +
+      '</div>')
+    : ('<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:10px 12px;margin:10px 0;display:flex;align-items:center;justify-content:space-between;text-align:left;">' +
+        '<div style="display:flex;align-items:center;gap:10px;">' +
+          '<span style="font-size:22px;">🚚</span>' +
+          '<div>' +
+            '<b style="font-size:13px;color:#15803d;display:block;">' + t('Standard Delivery Charge') + ': ₹' + shipFee + '</b>' +
+            '<small style="font-size:11px;color:#166534;">' + t('Coins deducted from wallet; shipping payable at checkout') + '</small>' +
+          '</div>' +
+        '</div>' +
+        '<span style="background:#22c55e;color:#fff;font-size:12px;font-weight:800;padding:3px 8px;border-radius:6px;">₹' + shipFee + '</span>' +
+      '</div>');
 
   var descHTML = '<div style="margin:12px 0;padding:12px 14px;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;text-align:left;">' +
       '<span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);display:block;margin-bottom:5px;">' + t('Product Details & Specifications') + '</span>' +
@@ -2909,8 +2958,10 @@ function sheetHTML(){
   var items = isCart ? S.cart.map(itemById).filter(Boolean) : [itemById(UI.confirm)].filter(Boolean);
   if(!items.length) return '';
 
-  var totalCoins = items.reduce(function(a, i){ return a + i.price; }, 0);
-  var totalShip = items.reduce(function(a, i){ return a + shippingOf(i.price); }, 0);
+  var totalCoins = items.reduce(function(a, i){ return a + coinsToRedeem(i); }, 0);
+  var totalCash = items.reduce(function(a, i){ return a + cashToPay(i); }, 0);
+  var totalShip = items.reduce(function(a, i){ return a + shippingOf(i); }, 0);
+  var grandPay = totalCash + totalShip;
   var after = S.balance - totalCoins;
   var ok = after >= 0;
 
@@ -2922,18 +2973,24 @@ function sheetHTML(){
     '<div style="background:var(--surface-2);border-radius:14px;padding:12px;margin-bottom:14px;border:1px solid var(--line);">' +
       '<div style="font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">' + t('Order Summary') + '</div>' +
       items.map(function(it){
+        var h = isHybridProduct(it);
         return '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">' +
           '<span style="font-weight:600;flex:1;margin-right:10px;">' + esc(it.name) + '</span>' +
-          '<span>' + coin(14) + fmt(it.price) + ' <small style="color:#15803d;font-weight:700;">(+₹' + shippingOf(it.price) + ' ship)</small></span>' +
+          '<span>' + coin(14) + fmt(coinsToRedeem(it)) + (cashToPay(it) > 0 ? (' + ₹' + fmt(cashToPay(it))) : '') + ' <small style="color:#15803d;font-weight:700;">(' + (h ? 'FREE Ship' : '+₹' + shippingOf(it) + ' ship') + ')</small></span>' +
         '</div>';
       }).join('') +
       '<div style="border-top:1px dashed var(--line);margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;font-size:13.5px;">' +
         '<span style="color:var(--muted);">' + t('Coins to Deduct (Wallet)') + ':</span>' +
         '<b class="reward">' + coin(16) + fmt(totalCoins) + '</b>' +
       '</div>' +
-      '<div style="display:flex;justify-content:space-between;font-size:14px;margin-top:4px;">' +
-        '<span style="color:var(--muted);">' + t('Shipping Charge to Pay') + ':</span>' +
-        '<b style="color:#1e8e4e;font-size:16px;">₹' + totalShip + '</b>' +
+      (totalCash > 0 ? ('<div style="display:flex;justify-content:space-between;font-size:13.5px;margin-top:4px;"><span style="color:var(--muted);">' + t('Product Co-Pay (Pocket)') + ':</span><b style="color:#1e8e4e;">₹' + fmt(totalCash) + '</b></div>') : '') +
+      '<div style="display:flex;justify-content:space-between;font-size:13.5px;margin-top:4px;">' +
+        '<span style="color:var(--muted);">' + t('Delivery & Shipping') + ':</span>' +
+        '<b style="color:#15803d;">' + (totalShip > 0 ? ('₹' + totalShip) : t('FREE (₹0)')) + '</b>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;border-top:1px solid var(--line);margin-top:6px;padding-top:6px;">' +
+        '<span style="color:var(--text);">' + t('Total Cash to Pay') + ':</span>' +
+        '<b style="color:#1e8e4e;font-size:17px;">₹' + fmt(grandPay) + '</b>' +
       '</div>' +
       '<div style="display:flex;justify-content:space-between;font-size:12.5px;margin-top:4px;">' +
         '<span style="color:var(--muted);">' + t('Wallet Balance After') + ':</span>' +
@@ -2950,7 +3007,7 @@ function sheetHTML(){
     '</div>' +
 
     '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px;margin-bottom:14px;">' +
-      '<div style="font-size:12.5px;font-weight:800;color:#15803d;margin-bottom:6px;">' + t('Choose Shipping Payment Method') + ' (₹' + totalShip + '):</div>' +
+      '<div style="font-size:12.5px;font-weight:800;color:#15803d;margin-bottom:6px;">' + t('Choose Cash Payment Method') + ' (₹' + fmt(grandPay) + '):</div>' +
       '<label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px;cursor:pointer;">' +
         '<input type="radio" name="shipPay" value="upi" checked> ' + t('UPI Payment (PhonePe / GPay / Paytm)') +
       '</label>' +
@@ -2964,7 +3021,7 @@ function sheetHTML(){
     '<div class="two">' +
       '<button class="btn" data-a="cancel">' + t('Cancel') + '</button>' +
       '<button class="btn primary" data-a="confirm-order" data-v="' + (isCart ? 'cart' : items[0].id) + '" ' + (ok ? '' : 'disabled') + '>' +
-        t('Pay ₹' + totalShip + ' & Confirm') +
+        t('Pay ₹' + fmt(grandPay) + ' & Confirm') +
       '</button>' +
     '</div>' +
   '</div></div>';
