@@ -482,8 +482,26 @@
           </div>
 
           <div class="form-group">
-            <label>Image URL (Optional)</label>
-            <input type="url" id="pImg" placeholder="https://example.com/image.jpg (leave empty for default icon)">
+            <label>Product Photo (Device Se Upload Karein) 📸</label>
+            <div id="dropZone" style="border:2px dashed var(--border);border-radius:12px;padding:16px;text-align:center;background:var(--bg);cursor:pointer;transition:all 0.2s ease;" onclick="document.getElementById('fileInput').click()">
+              <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileSelect(event)">
+              
+              <div id="uploadPrompt">
+                <div style="font-size:28px;margin-bottom:4px;">📸</div>
+                <div style="font-size:13.5px;font-weight:700;color:var(--text);">Tap here to choose Photo from Phone / PC</div>
+                <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">Gallery se photo chunein (Auto-compressed for fast loading)</div>
+              </div>
+
+              <div id="previewWrap" style="display:none;align-items:center;justify-content:center;gap:14px;">
+                <img id="previewImg" src="" style="width:80px;height:80px;object-fit:cover;border-radius:10px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                <div style="text-align:left;">
+                  <span id="previewName" style="font-size:13px;font-weight:700;display:block;margin-bottom:6px;color:var(--text);">Image selected</span>
+                  <button type="button" class="btn btn-outline" style="padding:4px 10px;font-size:11.5px;" onclick="event.stopPropagation();document.getElementById('fileInput').click();">Change Photo</button>
+                  <button type="button" class="btn btn-danger" style="padding:4px 10px;font-size:11.5px;margin-left:6px;" onclick="event.stopPropagation();clearImage();">Remove</button>
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="pImg" value="">
           </div>
 
           <div class="form-check">
@@ -709,6 +727,11 @@
       document.getElementById('pStock').value = item.stock !== undefined ? item.stock : 25;
       document.getElementById('pDesc').value = item.desc || '';
       document.getElementById('pImg').value = item.img || '';
+      if (item.img) {
+        setImagePreview(item.img, item.name);
+      } else {
+        clearImage();
+      }
       document.getElementById('pTrend').checked = !!item.trend;
 
       document.getElementById('formTitle').innerText = '✏️ Edit: ' + item.name.slice(0, 20) + '...';
@@ -718,6 +741,7 @@
 
     function resetForm() {
       document.getElementById('productForm').reset();
+      clearImage();
       document.getElementById('editId').value = '';
       document.getElementById('formTitle').innerText = '✨ Add New Product';
       document.getElementById('btnSubmitForm').innerText = '💾 Save Item to Store';
